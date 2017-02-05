@@ -8,31 +8,30 @@ const PORT = 8080;
 // The length of the ID string for drawings
 const ID_LEN = 16
 
-// Override console.log so it gets output to a nice file, easier to check
-var fs = require('fs');
-var util = require('util');
-var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
-var log_stdout = process.stdout;
-console.log = function(d) { //
-	log_file.write(util.format(d) + '\n');
-	log_stdout.write(util.format(d) + '\n');
-};
+var drawings;
 
-// Set up the app
-const app = express();
-var drawings = {}
-configureEndpoints(app)
-app.listen(PORT);
-console.log("Running on http://localhost:" + PORT);
+function main() {
+	// Override console.log so it gets output to a nice file, easier to check
+	var fs = require('fs');
+	var util = require('util');
+	var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
+	var log_stdout = process.stdout;
+	console.log = function(d) { //
+		log_file.write(util.format(d) + '\n');
+		log_stdout.write(util.format(d) + '\n');
+	};
+
+	// Set up the app
+	drawings = new AssocArray();
+	const app = express();
+	configureEndpoints(app);
+	app.listen(PORT);
+	console.log("Running on http://localhost:" + PORT);
+}
 
 function configureEndpoints(app) {
-	// Tell node to serve files from the "public" subdirectory
+	// Tell node to serve static files from the "public" subdirectory
 	app.use(express.static("public"))
-
-	// Non-static example
-	app.get("/test", function (req, res) {
-	  res.send("This is not static.\n");
-	});
 
 	// Create a new drawing in memory, and return its unique ID to the client
 	app.get("/create_drawing", function (req, res) {
@@ -46,9 +45,10 @@ function configureEndpoints(app) {
 		}
 
 		// 2. Set up the drawing
-		drawings[drawID] = {
+		// Consider using a background queue to generate the empty image here
+		drawings.set(drawID, {
 			test: "value"
-		}
+		});
 
 		// 3. Send the unique drawing ID to the client
 		res.send(drawID);
@@ -58,7 +58,7 @@ function configureEndpoints(app) {
 	app.get("/drawings/:id", function (req, res) {
 		var drawID = req.params.id
 
-		if (typeof(drawings[drawID]) !== 'undefined') {
+		if (drawings.get(drawID)) {
 			res.send("You've reached ["+drawID+"].");
 		} else {
 			res.send("["+drawID+"] does not exist.");
@@ -77,7 +77,7 @@ function makeDrawID() {
 		if (nTries >= maxTries) {
 			return null;
 		}
-	} while(typeof(drawings[drawID]) !== 'undefined');
+	} while(drawings.get(drawID) !== null);
 	return drawID;
 }
 
@@ -89,3 +89,19 @@ function randomString(length) {
         text += charset.charAt(Math.floor(Math.random() * charset.length));
     return text;
 }
+
+function AssocArray() {
+	this.values = {},
+	this.get = function(key) {
+		if (typeof(this.values[key]) !== 'undefined') {
+			return this.values[key];
+		}
+		return null;
+	}
+	this.set = function(key, value) {
+		this.values[key] = value;
+	}
+};
+
+// get the party started
+main();

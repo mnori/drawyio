@@ -1,3 +1,4 @@
+// drawcloud.js (c) Matthew Norris 2017
 
 function initSplash() {
 	$("#create_drawing_btn").click(function() {
@@ -6,6 +7,7 @@ function initSplash() {
 			url: "/create_drawing"
 
 		}).done(function(drawingID) {
+			// Redirect to the drawing's page
 			window.location.href = "/drawings/"+drawingID
 		});
 	});
