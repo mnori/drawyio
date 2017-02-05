@@ -9,8 +9,8 @@ WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
 RUN npm install
 
-# Bundle app source
-COPY . /usr/src/app
+# Determine the working directory for running the code
+WORKDIR /usr/src/app/code
 
 EXPOSE 8080
 CMD [ "npm", "start" ]
