@@ -54,11 +54,6 @@ function configureEndpoints(app) {
 
 		// 2. Set up the drawing
 		// Consider using a background queue to generate the empty image here
-		var width = 1920;
-		var height = 1080;
-		var channels = 4;
-		var rgbaPixel = 0x00000000;
-
 		var tl = new Timeline();
 		tl.log("a");
 
