@@ -1,10 +1,12 @@
 "use strict";
 
-var fs = require('fs');
-var util = require('util');
+var fs = require("fs");
+var util = require("util");
 
 const express = require("express");
+const nunjucks = require("nunjucks")
 const app = express();
+
 
 // Which port to expose to the outside world
 const PORT = 8080;
@@ -20,12 +22,15 @@ function main() {
 	setupDebug();	
 	drawings = new AssocArray();
 	configureEndpoints(app);
+
+	nunjucks.configure("templates", {express: app});
+
 	app.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
 
 // Set up all the endpoints
-// Probably shouldn't put too much code in here
+// Probably shouldn"t put too much code in here
 function configureEndpoints(app) {
 	// Tell node to serve static files from the "public" subdirectory
 	app.use(express.static("public"))
@@ -53,7 +58,7 @@ function configureEndpoints(app) {
 		console.log("["+drawings.getLength()+"] total drawings.")
 	});
 
-	// Go to a drawing's page
+	// Go to a drawing"s page
 	app.get("/drawings/:id", function (req, res) {
 		var drawID = req.params.id
 
@@ -64,10 +69,19 @@ function configureEndpoints(app) {
 		}
 	});
 
+	// Tell it that index page should be rendered as a template
+	app.get("/", function(req, res) {
+		res.render("wrapper.html");
+	});
+
 	// Default action - nothing to do so must send 404
 	app.use(function (req, res, next) {
 		send404(res);
 	})
+
+	app.get("*",function(req,res){
+		res.send("default");
+	});
 }
 
 function send404(res) {
@@ -102,7 +116,7 @@ function randomString(length) {
 function AssocArray() {
 	this.values = {};
 	this.get = function(key) {
-		if (typeof(this.values[key]) !== 'undefined') {
+		if (typeof(this.values[key]) !== "undefined") {
 			return this.values[key];
 		}
 		return null;
@@ -118,12 +132,12 @@ function AssocArray() {
 // Override console.log so it gets output to a nice file, easier to check
 // The log files get emptied every restart
 function setupDebug() {
-	var debugFilepath = __dirname+'/debug.log'
-	var log_file = fs.createWriteStream(debugFilepath, {flags : 'w'});
+	var debugFilepath = __dirname+"/debug.log"
+	var log_file = fs.createWriteStream(debugFilepath, {flags : "w"});
 	var log_stdout = process.stdout;
 	console.log = function(d) { //
-		log_file.write(util.format(d) + '\n');
-		log_stdout.write(util.format(d) + '\n');
+		log_file.write(util.format(d) + "\n");
+		log_stdout.write(util.format(d) + "\n");
 	};
 }
 
