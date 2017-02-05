@@ -5,6 +5,7 @@ var util = require("util");
 
 const express = require("express");
 const nunjucks = require("nunjucks")
+const sharp = require("sharp")
 const app = express();
 
 
@@ -21,8 +22,8 @@ var drawings;
 function main() {
 	setupDebug();	
 	drawings = new AssocArray();
-	configureEndpoints(app);
 	nunjucks.configure("templates", {express: app});
+	configureEndpoints(app);
 	app.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
@@ -46,9 +47,19 @@ function configureEndpoints(app) {
 
 		// 2. Set up the drawing
 		// Consider using a background queue to generate the empty image here
+		var width = 800;
+		var height = 600;
+		var channels = 4;
+		var rgbaPixel = 0x00000000;
+		var tl = new Timeline();
+
+		tl.log("a");
+		var canvas = Buffer.alloc(width * height * channels, rgbaPixel);
 		drawings.set(drawID, {
-			test: "value"
+			image: canvas
 		});
+		tl.log("b");
+		tl.dump();
 
 		// 3. Send the unique drawing ID to the client
 		res.send(drawID);
@@ -62,7 +73,6 @@ function configureEndpoints(app) {
 
 		if (drawings.get(drawID)) {
 			res.render("drawing.html", { drawID: drawID });
-			// res.send("You've reached ["+drawID+"].");
 		} else {
 			send404(res);
 		}
@@ -85,7 +95,6 @@ function configureEndpoints(app) {
 
 function send404(res) {
 	res.status(404).render("404.html")
-	// res.status(404).sendFile(__dirname+"/public/404.html");
 }
 
 // Make a unique drawing ID by attempting to random generate one up to n times
@@ -112,6 +121,18 @@ function randomString(length) {
     return text;
 }
 
+// Override console.log so it gets output to a nice file, easier to check
+// The log files get emptied every restart
+function setupDebug() {
+	var debugFilepath = __dirname+"/debug.log"
+	var log_file = fs.createWriteStream(debugFilepath, {flags : "w"});
+	var log_stdout = process.stdout;
+	console.log = function(d) { //
+		log_file.write(util.format(d) + "\n");
+		log_stdout.write(util.format(d) + "\n");
+	};
+}
+
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.
 function AssocArray() {
 	this.values = {};
@@ -129,16 +150,40 @@ function AssocArray() {
 	}
 };
 
-// Override console.log so it gets output to a nice file, easier to check
-// The log files get emptied every restart
-function setupDebug() {
-	var debugFilepath = __dirname+"/debug.log"
-	var log_file = fs.createWriteStream(debugFilepath, {flags : "w"});
-	var log_stdout = process.stdout;
-	console.log = function(d) { //
-		log_file.write(util.format(d) + "\n");
-		log_stdout.write(util.format(d) + "\n");
+
+// class Timeline():
+
+// 	def __init__(self, name="Timeline"):
+// 		self.name = name
+// 		self.entries = []
+
+// 	def log(self, name):
+// 		self.entries.append(TimelineEntry(name))
+
+// 	def dump(self):
+// 		print("Timeline.dump() invoked")
+// 		for i in range(0, len(self.entries) - 1):
+// 			entry_a = self.entries[i]
+// 			entry_b = self.entries[i + 1]
+// 			t_diff = entry_b.time - entry_a.time;
+// 			print("["+self.name+"] ["+entry_a.name+"] => ["+entry_b.name+"]: "+str(t_diff));
+
+// 		t_tot = self.entries[len(self.entries) - 1].time - self.entries[0].time
+// 		print("[TOTAL]: "+str(t_tot)+"")
+
+function Timeline() {
+	this.entries = [];
+	this.log = function(name) {
+		this.entries.push({
+			name: name
+		});
 	};
+	this.dump = function() {
+		for (var i = 0; i < this.entries.length; i++) {
+			var entry = this.entries[i];
+			console.log(entry.name)
+		}
+	}
 }
 
 // get the party started
