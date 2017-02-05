@@ -61,7 +61,8 @@ function configureEndpoints(app) {
 		var drawID = req.params.id
 
 		if (drawings.get(drawID)) {
-			res.send("You've reached ["+drawID+"].");
+			res.render("drawing.html", { drawID: drawID });
+			// res.send("You've reached ["+drawID+"].");
 		} else {
 			send404(res);
 		}
