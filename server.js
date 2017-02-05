@@ -5,9 +5,9 @@ var util = require("util");
 
 const express = require("express");
 const nunjucks = require("nunjucks")
+const nano = require('nanoseconds');
 const sharp = require("sharp")
 const app = express();
-
 
 // Which port to expose to the outside world
 const PORT = 8080;
@@ -25,7 +25,7 @@ function main() {
 	nunjucks.configure("templates", {express: app});
 	configureEndpoints(app);
 	app.listen(PORT);
-	console.log("Running on http://localhost:" + PORT);
+	d("Running on http://localhost:" + PORT);
 }
 
 // Set up all the endpoints
@@ -40,7 +40,7 @@ function configureEndpoints(app) {
 		// 1. Find a unique drawing ID
 		var drawID = makeDrawID();
 		if (drawID == null) { // exceeded max tries
-			console.log("WARNING: Max tries exceeded")
+			d("WARNING: Max tries exceeded")
 			res.send("error");
 			return;
 		}
@@ -64,7 +64,7 @@ function configureEndpoints(app) {
 		// 3. Send the unique drawing ID to the client
 		res.send(drawID);
 
-		console.log("["+drawings.getLength()+"] total drawings.")
+		d("["+drawings.getLength()+"] total drawings.")
 	});
 
 	// Go to a drawing"s page
@@ -121,13 +121,13 @@ function randomString(length) {
     return text;
 }
 
-// Override console.log so it gets output to a nice file, easier to check
+// Override d so it gets output to a nice file, easier to check
 // The log files get emptied every restart
 function setupDebug() {
 	var debugFilepath = __dirname+"/debug.log"
 	var log_file = fs.createWriteStream(debugFilepath, {flags : "w"});
 	var log_stdout = process.stdout;
-	console.log = function(d) { //
+	d = function(d) { //
 		log_file.write(util.format(d) + "\n");
 		log_stdout.write(util.format(d) + "\n");
 	};
@@ -150,40 +150,33 @@ function AssocArray() {
 	}
 };
 
-
-// class Timeline():
-
-// 	def __init__(self, name="Timeline"):
-// 		self.name = name
-// 		self.entries = []
-
-// 	def log(self, name):
-// 		self.entries.append(TimelineEntry(name))
-
-// 	def dump(self):
-// 		print("Timeline.dump() invoked")
-// 		for i in range(0, len(self.entries) - 1):
-// 			entry_a = self.entries[i]
-// 			entry_b = self.entries[i + 1]
-// 			t_diff = entry_b.time - entry_a.time;
-// 			print("["+self.name+"] ["+entry_a.name+"] => ["+entry_b.name+"]: "+str(t_diff));
-
-// 		t_tot = self.entries[len(self.entries) - 1].time - self.entries[0].time
-// 		print("[TOTAL]: "+str(t_tot)+"")
-
 function Timeline() {
 	this.entries = [];
 	this.log = function(name) {
+		var ts = nano(process.hrtime())
 		this.entries.push({
-			name: name
+			name: name,
+			ts: ts
 		});
 	};
 	this.dump = function() {
+		d("Timeline.dump() invoked")
+		var currEntry;
+		var prevEntry = null;
 		for (var i = 0; i < this.entries.length; i++) {
-			var entry = this.entries[i];
-			console.log(entry.name)
+			var currEntry = this.entries[i];
+			if (prevEntry != null) {
+				// convert nanoseconds to milliseconds
+				var diffNs = (currEntry.ts - prevEntry.ts) / 1000000;
+				d("["+prevEntry.name+"] => ["+currEntry.name+"] "+diffNs+" ms")
+			}
+			prevEntry = currEntry;
 		}
 	}
+}
+
+function d(str) {
+	console.log(str)
 }
 
 // get the party started

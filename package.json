@@ -10,6 +10,7 @@
   "dependencies": {
     "express": "*",
     "nunjucks": "*",
-    "sharp": "*"
+    "sharp": "*",
+    "nanoseconds": "*"
   }
 }
