@@ -63,6 +63,11 @@ function configureEndpoints(app) {
 			send404(res);
 		}
 	});
+
+	// Default action - nothing to do so must send 404
+	app.use(function (req, res, next) {
+		send404(res);
+	})
 }
 
 function send404(res) {
@@ -93,12 +98,10 @@ function randomString(length) {
     return text;
 }
 
-// Define a nice java-like associative array wrapper with cleaner methods than plain JS.
+// Define a nice java-like associative array wrapper with cleaner access than plain JS.
 function AssocArray() {
 	this.values = {};
 	this.get = function(key) {
-
-		// this ugly check is the main thing we're interested in wrapping here.
 		if (typeof(this.values[key]) !== 'undefined') {
 			return this.values[key];
 		}
