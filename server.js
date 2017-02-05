@@ -8,12 +8,11 @@ const PORT = 8080;
 // The length of the ID string for drawings
 const ID_LEN = 16
 
-// Set up debugging to go to a file
+// Override console.log so it gets output to a nice file, easier to check
 var fs = require('fs');
 var util = require('util');
 var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
 var log_stdout = process.stdout;
-
 console.log = function(d) { //
 	log_file.write(util.format(d) + '\n');
 	log_stdout.write(util.format(d) + '\n');
@@ -32,6 +31,7 @@ app.get("/test", function (req, res) {
   res.send("This is not static.\n");
 });
 
+// Create a new drawing in memory, and return its unique ID to the client
 app.get("/create_drawing", function (req, res) {
 
 	// 1. Find a unique drawing ID
