@@ -32,7 +32,7 @@ function main() {
 	nunjucks.configure("templates", {express: app});
 	configureEndpoints(app);
 	app.listen(PORT);
-	d("Running on http://localhost:" + PORT);
+	console.log("Running on http://localhost:" + PORT);
 }
 
 // Set up all the endpoints
@@ -44,40 +44,40 @@ function configureEndpoints(app) {
 	// Create a new drawing in memory, and return its unique ID to the client
 	app.get("/create_drawing", function (req, res) {
 
+		var tl = new Timeline();
+		tl.log("a");
+
 		// 1. Find a unique drawing ID
 		var drawID = makeDrawID();
 		if (drawID == null) { // exceeded max tries
-			d("WARNING: Max tries exceeded")
+			console.log("WARNING: Max tries exceeded")
 			res.send("error");
 			return;
 		}
 
 		// 2. Set up the drawing
 		// Consider using a background queue to generate the empty image here
-		var tl = new Timeline();
-		tl.log("a");
-
 		var params = DRAWING_PARAMS;
 		var canvas = Buffer.alloc(
 			params.width * params.height * params.channels, 
 			params.rgbaPixel
 		);
-
+		var png = sharp(canvas).png();
 		drawings.set(drawID, {
-			image: canvas
+			id: drawID,
+			image: png
 		});
-
-		tl.log("b");
-		tl.dump();
 
 		// 3. Send the unique drawing ID to the client
 		res.send(drawID);
+		console.log("["+drawings.getLength()+"] total drawings.")
 
-		d("["+drawings.getLength()+"] total drawings.")
+		tl.log("b");
+		tl.dump();
 	});
 
-	// Go to a drawing"s page
-	app.get("/drawings/:id", function (req, res) {
+	// Go to a drawing's page
+	app.get("/drawings/:id", function(req, res) {
 		var drawID = req.params.id
 
 		if (drawings.get(drawID)) {
@@ -87,19 +87,32 @@ function configureEndpoints(app) {
 		}
 	});
 
-	// Tell it that index page should be rendered as a template
-	app.get("/", function(req, res) {
-		res.render("index.html");
+	// Fetch a drawing image and output to the buffer
+	app.get("/drawing_images/:id", function(req, res) {
+		var drawID = req.params.id;
+		var drawing = drawings.get(drawID)
+
+		if (drawing == null) { // drawing missing
+			send404(res)
+		} else { // drawing is present
+			console.log(drawing.image)
+			// res.send("meh")
+			drawing.image.toBuffer(function(err, buffer, info) {
+				console.log("png.toBuffer() invoked");
+				console.log("drawing.id: "+drawing.id)
+				console.log("buffer: "+buffer)
+				console.log(info)
+				console.log(err)
+				res.send(buffer);
+			});
+		}
 	});
+
+	// Tell it that index page should be rendered as a template
+	app.get("/", function(req, res) { res.render("index.html"); });
 
 	// Default action - nothing to do so must send 404
-	app.use(function (req, res, next) {
-		send404(res);
-	})
-
-	app.get("*",function(req,res){
-		res.send("default");
-	});
+	app.use(function(req, res, next) { send404(res); })
 }
 
 function send404(res) {
@@ -136,7 +149,7 @@ function setupDebug() {
 	var debugFilepath = __dirname+"/debug.log"
 	var log_file = fs.createWriteStream(debugFilepath, {flags : "w"});
 	var log_stdout = process.stdout;
-	d = function(d) { //
+	console.log = function(d) { //
 		log_file.write(util.format(d) + "\n");
 		log_stdout.write(util.format(d) + "\n");
 	};
@@ -169,7 +182,7 @@ function Timeline() {
 		});
 	};
 	this.dump = function() {
-		d("Timeline.dump() invoked")
+		console.log("Timeline.dump() invoked")
 		var currEntry;
 		var prevEntry = null;
 		for (var i = 0; i < this.entries.length; i++) {
@@ -177,15 +190,11 @@ function Timeline() {
 			if (prevEntry != null) {
 				// convert nanoseconds to milliseconds
 				var diffNs = (currEntry.ts - prevEntry.ts) / 1000000;
-				d("["+prevEntry.name+"] => ["+currEntry.name+"] "+diffNs+" ms")
+				console.log("["+prevEntry.name+"] => ["+currEntry.name+"] "+diffNs+" ms")
 			}
 			prevEntry = currEntry;
 		}
 	}
-}
-
-function d(str) {
-	console.log(str)
 }
 
 // get the party started
