@@ -18,41 +18,53 @@ console.log = function(d) { //
 	log_stdout.write(util.format(d) + '\n');
 };
 
-// App
+// Set up the app
 const app = express();
-
 var drawings = {}
-
-// Tell node to serve files from the "public" subdirectory
-app.use(express.static("public"))
-
-// Non-static example
-app.get("/test", function (req, res) {
-  res.send("This is not static.\n");
-});
-
-// Create a new drawing in memory, and return its unique ID to the client
-app.get("/create_drawing", function (req, res) {
-
-	// 1. Find a unique drawing ID
-	var drawID = makeDrawID();
-	if (drawID == null) { // exceeded max tries
-		console.log("WARNING: Max tries exceeded")
-		res.send("error");
-		return;
-	}
-
-	// 2. Set up the drawing
-	drawings[drawID] = {
-		test: "value"
-	}
-
-	// 3. Send the unique drawing ID to the client
-	res.send(drawID);
-});
-
+configureEndpoints(app)
 app.listen(PORT);
 console.log("Running on http://localhost:" + PORT);
+
+function configureEndpoints(app) {
+	// Tell node to serve files from the "public" subdirectory
+	app.use(express.static("public"))
+
+	// Non-static example
+	app.get("/test", function (req, res) {
+	  res.send("This is not static.\n");
+	});
+
+	// Create a new drawing in memory, and return its unique ID to the client
+	app.get("/create_drawing", function (req, res) {
+
+		// 1. Find a unique drawing ID
+		var drawID = makeDrawID();
+		if (drawID == null) { // exceeded max tries
+			console.log("WARNING: Max tries exceeded")
+			res.send("error");
+			return;
+		}
+
+		// 2. Set up the drawing
+		drawings[drawID] = {
+			test: "value"
+		}
+
+		// 3. Send the unique drawing ID to the client
+		res.send(drawID);
+	});
+
+	// Go to a drawing's page
+	app.get("/drawings/:id", function (req, res) {
+		var drawID = req.params.id
+
+		if (typeof(drawings[drawID]) !== 'undefined') {
+			res.send("You've reached ["+drawID+"].");
+		} else {
+			res.send("["+drawID+"] does not exist.");
+		}
+	});
+}
 
 // Make a unique drawing ID by attempting to random generate one up to n times
 function makeDrawID() {

@@ -6,15 +6,7 @@ function initSplash() {
 			url: "/create_drawing"
 
 		}).done(function(drawingID) {
-			alert(drawingID)
-			// // TODO sort out this mess
-			// $("#help").show()
-			// $("#search").hide()
-			// $("#d3nome").hide();
-			// $("#help").html(html);
-			// $("#transcript-data").empty();
-			// this.hideLoading();
-			// this.initHelpLinks();
+			window.location.href = "/drawings/"+drawingID
 		});
 	});
 }
