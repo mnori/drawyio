@@ -15,6 +15,13 @@ const PORT = 8080;
 // The length of the ID string for drawings
 const ID_LEN = 16
 
+const DRAWING_PARAMS = {
+	width: 1920,
+	height: 1080,
+	channels: 4,
+	rgbaPixel: 0x00000000
+}
+
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
 
@@ -47,17 +54,24 @@ function configureEndpoints(app) {
 
 		// 2. Set up the drawing
 		// Consider using a background queue to generate the empty image here
-		var width = 800;
-		var height = 600;
+		var width = 1920;
+		var height = 1080;
 		var channels = 4;
 		var rgbaPixel = 0x00000000;
-		var tl = new Timeline();
 
+		var tl = new Timeline();
 		tl.log("a");
-		var canvas = Buffer.alloc(width * height * channels, rgbaPixel);
+
+		var params = DRAWING_PARAMS;
+		var canvas = Buffer.alloc(
+			params.width * params.height * params.channels, 
+			params.rgbaPixel
+		);
+
 		drawings.set(drawID, {
 			image: canvas
 		});
+
 		tl.log("b");
 		tl.dump();
 
