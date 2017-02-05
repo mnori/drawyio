@@ -12,7 +12,7 @@
     <title>DrawCloud</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
     <style>
@@ -67,19 +67,7 @@
 
     <!-- Page Content -->
     <div class="container">
-
-        <div class="row">
-            <div class="col-lg-12 text-center">
-                <h1>Welcome to DrawCloud</h1><br />
-                <a id="create_drawing_btn" class="btn btn-lg btn-default" href="javascript:void(0)">Create new drawing</a>
-            </div>
-
-            {% if true %}
-                It is true
-            {% endif %}
-        </div>
-        <!-- /.row -->
-
+        {% block content %}{% endblock %}
     </div>
     <!-- /.container -->
 
@@ -92,9 +80,7 @@
     <!-- Our own front end code -->
     <script src="js/drawcloud.js"></script>
 
-    <script>
-    	initSplash();
-    </script>
+    {% block js %}{% endblock %}
 
 </body>
 

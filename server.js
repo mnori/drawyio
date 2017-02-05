@@ -22,9 +22,7 @@ function main() {
 	setupDebug();	
 	drawings = new AssocArray();
 	configureEndpoints(app);
-
 	nunjucks.configure("templates", {express: app});
-
 	app.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
@@ -71,7 +69,7 @@ function configureEndpoints(app) {
 
 	// Tell it that index page should be rendered as a template
 	app.get("/", function(req, res) {
-		res.render("wrapper.html");
+		res.render("index.html");
 	});
 
 	// Default action - nothing to do so must send 404
@@ -85,7 +83,8 @@ function configureEndpoints(app) {
 }
 
 function send404(res) {
-	res.status(404).sendFile(__dirname+"/public/404.html");
+	res.status(404).render("404.html")
+	// res.status(404).sendFile(__dirname+"/public/404.html");
 }
 
 // Make a unique drawing ID by attempting to random generate one up to n times
