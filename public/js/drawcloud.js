@@ -2,7 +2,7 @@
 
 function initSplash() {
 	$("#create_drawing_btn").click(function() {
-		// Send ajax request for new drawing ID
+		// Send ajax request to create new drawing
 		$.ajax({
 			url: "/create_drawing"
 
