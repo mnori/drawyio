@@ -90,10 +90,5 @@ function initDrawing() {
 		}, "image/png");
 	}
 
-	// Convert the blob to a data url - this will be used 
-	function blobToDataURL(blob, callback) {
-	    
-	}
-
 	setup();
 }
