@@ -49,14 +49,50 @@ function initDrawing() {
 	function drawLine(prevCoord, newCoord) {
 		ctx.moveTo(prevCoord.x, prevCoord.y);
 		ctx.lineTo(newCoord.x, newCoord.y);
-
-		console.log(prevCoord)
-		console.log(newCoord)
 		ctx.stroke()
 	}
 
 	function stopDrawing(ev) {
+		if (prevCoord != null) {
+			processCanvas(canvas[0])
+		}
 		prevCoord = null;
+	}
+
+	// Converts canvas to various useful things
+	function processCanvas(cv) {
+
+		// First generate a png blob
+		var blob = cv.toBlob(function(blob) {
+
+			// Generate data URL, to be displayed on the front end, from the blob
+			var fr = new FileReader();
+		    fr.onload = function(e) {
+
+		    	// Update the front end png stack
+		    	$("#drawing_main").attr("src", e.target.result)
+
+		    	// Clear the canvas
+		    	ctx.clearRect(0, 0, cv.width, cv.height)
+		    	ctx.beginPath()
+
+		    	// Now convert to base64 - this will be send back to the server
+				var fr = new window.FileReader();
+				fr.readAsDataURL(blob); 
+				fr.onloadend = function() {
+					var base64 = fr.result;
+					// console.log(base64)
+					// send back to server
+				}
+		    }
+		    fr.readAsDataURL(blob);
+
+		}, "image/png");
+	}
+
+	// Convert the blob to a data url - this will be used 
+	function blobToDataURL(blob, callback) {
+	    
 	}
 
 	setup();
