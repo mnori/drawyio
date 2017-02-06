@@ -1,3 +1,4 @@
-img #drawing_main {
-	border: 1px solid #f00;
+#drawing_main {
+	border: 1px solid #aaa;
+	box-shadow: 0px 0px 10px #bbb;
 }

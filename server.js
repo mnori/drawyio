@@ -16,8 +16,8 @@ const PORT = 8080;
 const ID_LEN = 16
 
 const DRAWING_PARAMS = {
-	width: 1920,
-	height: 1080,
+	width: 800,
+	height: 600,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }
@@ -56,30 +56,36 @@ function configureEndpoints(app) {
 		}
 
 		// 2. Set up the drawing
-		// Consider using a background queue to generate the empty image here
+		// Create empty image, convert to PNG, convert to buffer
 		var params = DRAWING_PARAMS;
 		var canvas = Buffer.alloc(
 			params.width * params.height * params.channels, 
 			params.rgbaPixel
 		);
-		var png = sharp(canvas).png();
-		drawings.set(drawID, {
-			id: drawID,
-			image: png
+		var png = sharp(canvas, {raw: {
+			width: params.width, 
+			height: params.height, 
+			channels: params.channels
+		}}).png();
+
+		png.toBuffer(function(err, buffer, info) {
+			drawings.set(drawID, {
+				id: drawID,
+				buffer: buffer
+			});
+
+			// 3. Send the unique drawing ID to the client
+			res.send(drawID);
+			console.log("["+drawings.getLength()+"] total drawings.")
+
+			tl.log("b");
+			tl.dump();
 		});
-
-		// 3. Send the unique drawing ID to the client
-		res.send(drawID);
-		console.log("["+drawings.getLength()+"] total drawings.")
-
-		tl.log("b");
-		tl.dump();
 	});
 
 	// Go to a drawing's page
 	app.get("/drawings/:id", function(req, res) {
 		var drawID = req.params.id
-
 		if (drawings.get(drawID)) {
 			res.render("drawing.html", { drawID: drawID });
 		} else {
@@ -89,22 +95,19 @@ function configureEndpoints(app) {
 
 	// Fetch a drawing image and output to the buffer
 	app.get("/drawing_images/:id", function(req, res) {
+		var tl = new Timeline();
+		tl.log("a");
+
 		var drawID = req.params.id;
 		var drawing = drawings.get(drawID)
 
 		if (drawing == null) { // drawing missing
 			send404(res)
 		} else { // drawing is present
-			console.log(drawing.image)
-			// res.send("meh")
-			drawing.image.toBuffer(function(err, buffer, info) {
-				console.log("png.toBuffer() invoked");
-				console.log("drawing.id: "+drawing.id)
-				console.log("buffer: "+buffer)
-				console.log(info)
-				console.log(err)
-				res.send(buffer);
-			});
+			res.send(drawing.buffer);
+
+			tl.log("b");
+			tl.dump()
 		}
 	});
 
