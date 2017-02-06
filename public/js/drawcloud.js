@@ -16,10 +16,10 @@ function initSplash() {
 
 // Initialise the drawing image
 function initDrawing() {
-	var canvasID = "drawing_canvas"
-	var canvas = $("#"+canvasID);
+	var canvas = $("#drawing_canvas");
 	var ctx = canvas[0].getContext('2d'); // used for drawing stuff
 	var prevCoord = null; // if this is null, it means we are not drawing
+	var socket = io.connect("/");
 
 	function setup() {
 		canvas.mousedown(function(ev) {
@@ -81,8 +81,13 @@ function initDrawing() {
 				fr.readAsDataURL(blob); 
 				fr.onloadend = function() {
 					var base64 = fr.result;
+
+
+
 					// console.log(base64)
 					// send back to server
+
+					// 
 				}
 		    }
 		    fr.readAsDataURL(blob);

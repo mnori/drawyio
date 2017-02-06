@@ -1,4 +1,5 @@
 #drawing_main, #drawing_canvas {
 	border: 1px solid #aaa;
 	box-shadow: 0px 0px 10px #bbb;
+	cursor: crosshair;
 }

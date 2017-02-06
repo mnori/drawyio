@@ -11,6 +11,10 @@ const sharp = require("sharp"); // Image processing library
 const nano = require('nanoseconds'); // For measuring performance
 const app = express();
 
+// socket.io stuff
+const server = require('http').Server(app)
+const io = require('socket.io')(server); 
+
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16 // The length of the ID string for drawings
 const DRAWING_PARAMS = { // Parameters for creating blank drawings

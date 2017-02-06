@@ -11,6 +11,8 @@
     "express": "*",
     "nunjucks": "*",
     "sharp": "*",
-    "nanoseconds": "*"
+    "nanoseconds": "*",
+    "socket.io": "*",
+    "http": "*"
   }
 }
