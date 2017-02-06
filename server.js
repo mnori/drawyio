@@ -10,10 +10,11 @@ const nunjucks = require("nunjucks"); // Template system
 const sharp = require("sharp"); // Image processing library
 const nano = require('nanoseconds'); // For measuring performance
 const app = express();
+const server = require("http").Server(app) // must get server from express object method
+const io = require("socket.io")(server)
 
 // socket.io stuff
-const server = require('http').Server(app)
-const io = require('socket.io')(server); 
+
 
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16 // The length of the ID string for drawings
@@ -24,21 +25,31 @@ const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	rgbaPixel: 0x00000000
 }
 
+// server.listen(PORT)
+
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
 
 // Set up the app
 function main() {
-	setupDebug();	
+	setupDebug();
 	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
-	app.listen(PORT);
+	server.listen(PORT);
+	// app.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
 
 // Set up all the endpoints
 function configureRoutes(app) {
+
+	// Link socket.io to the routes
+	app.use(function(req, res, next){
+		res.io = io;
+		next();
+	});
+
 	// Tell node to serve static files from the "public" subdirectory
 	app.use(express.static("public"))
 
