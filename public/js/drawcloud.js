@@ -81,8 +81,7 @@ function initDrawing() {
 				fr.readAsDataURL(blob); 
 				fr.onloadend = function() {
 					var base64 = fr.result;
-
-
+					socket.emit("test", {"hello": "world"});
 
 					// console.log(base64)
 					// send back to server
