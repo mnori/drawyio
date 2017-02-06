@@ -8,14 +8,10 @@ const nano = require('nanoseconds');
 const sharp = require("sharp")
 const app = express();
 
-// Which port to expose to the outside world
-const PORT = 8080;
 
-// The length of the ID string for drawings
-const ID_LEN = 16
-
-// Parameters for creating blank drawings
-const DRAWING_PARAMS = {
+const PORT = 8080; // Which port to expose to the outside world
+const ID_LEN = 16 // The length of the ID string for drawings
+const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 800,
 	height: 600,
 	channels: 4,
@@ -30,14 +26,14 @@ function main() {
 	setupDebug();	
 	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
-	configureEndpoints(app);
+	configureRoutes(app);
 	app.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
 
 // Set up all the endpoints
 // Probably shouldn"t put too much code in here
-function configureEndpoints(app) {
+function configureRoutes(app) {
 	// Tell node to serve static files from the "public" subdirectory
 	app.use(express.static("public"))
 
@@ -45,36 +41,41 @@ function configureEndpoints(app) {
 	app.get("/create_drawing", createDrawing);
 
 	// Go to a drawing's page
-	app.get("/drawings/:id", function(req, res) {
-		var drawID = req.params.id
-		if (drawings.get(drawID)) {
-			res.render("drawing.html", { drawID: drawID });
-		} else {
-			send404(res);
-		}
-	});
+	app.get("/drawings/:id", renderDrawingPage);
 
 	// Fetch a drawing image and output to the buffer
-	app.get("/drawing_images/:id", function(req, res) {
-		var drawID = req.params.id;
-		var drawing = drawings.get(drawID)
+	app.get("/drawing_images/:id", getDrawingImage);
 
-		if (drawing == null) { // drawing missing
-			send404(res)
-		} else { // drawing is present
-			res.send(drawing.buffer);
-		}
-	});
-
-	// Tell it that index page should be rendered as a template
+	// Index page, rendered as a template
 	app.get("/", function(req, res) { res.render("index.html"); });
 
-	// Default action - nothing to do so must send 404
+	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
 }
 
 function send404(res) {
 	res.status(404).render("404.html")
+}
+
+function renderDrawingPage(req, res) {
+	var drawID = req.params.id
+	if (drawings.get(drawID)) {
+		res.render("drawing.html", { drawID: drawID });
+	} else {
+		send404(res);
+	}
+}
+
+// Get the drawing image data as buffer
+function getDrawingImage(req, res) {
+	var drawID = req.params.id;
+	var drawing = drawings.get(drawID)
+
+	if (drawing == null) { // drawing missing
+		send404(res)
+	} else { // drawing is present
+		res.send(drawing.buffer);
+	}
 }
 
 function createDrawing(req, res) {
