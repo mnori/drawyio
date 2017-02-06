@@ -1,8 +1,7 @@
 "use strict";
 
-var fs = require("fs");
-var util = require("util");
-
+const fs = require("fs");
+const util = require("util");
 const express = require("express");
 const nunjucks = require("nunjucks")
 const nano = require('nanoseconds');
@@ -15,6 +14,7 @@ const PORT = 8080;
 // The length of the ID string for drawings
 const ID_LEN = 16
 
+// Parameters for creating blank drawings
 const DRAWING_PARAMS = {
 	width: 800,
 	height: 600,
@@ -42,46 +42,7 @@ function configureEndpoints(app) {
 	app.use(express.static("public"))
 
 	// Create a new drawing in memory, and return its unique ID to the client
-	app.get("/create_drawing", function (req, res) {
-
-		var tl = new Timeline();
-		tl.log("a");
-
-		// 1. Find a unique drawing ID
-		var drawID = makeDrawID();
-		if (drawID == null) { // exceeded max tries
-			console.log("WARNING: Max tries exceeded")
-			res.send("error");
-			return;
-		}
-
-		// 2. Set up the drawing
-		// Create empty image, convert to PNG, convert to buffer
-		var params = DRAWING_PARAMS;
-		var canvas = Buffer.alloc(
-			params.width * params.height * params.channels, 
-			params.rgbaPixel
-		);
-		var png = sharp(canvas, {raw: {
-			width: params.width, 
-			height: params.height, 
-			channels: params.channels
-		}}).png();
-
-		png.toBuffer(function(err, buffer, info) {
-			drawings.set(drawID, {
-				id: drawID,
-				buffer: buffer
-			});
-
-			// 3. Send the unique drawing ID to the client
-			res.send(drawID);
-			console.log("["+drawings.getLength()+"] total drawings.")
-
-			tl.log("b");
-			tl.dump();
-		});
-	});
+	app.get("/create_drawing", createDrawing);
 
 	// Go to a drawing's page
 	app.get("/drawings/:id", function(req, res) {
@@ -95,9 +56,6 @@ function configureEndpoints(app) {
 
 	// Fetch a drawing image and output to the buffer
 	app.get("/drawing_images/:id", function(req, res) {
-		var tl = new Timeline();
-		tl.log("a");
-
 		var drawID = req.params.id;
 		var drawing = drawings.get(drawID)
 
@@ -105,9 +63,6 @@ function configureEndpoints(app) {
 			send404(res)
 		} else { // drawing is present
 			res.send(drawing.buffer);
-
-			tl.log("b");
-			tl.dump()
 		}
 	});
 
@@ -120,6 +75,41 @@ function configureEndpoints(app) {
 
 function send404(res) {
 	res.status(404).render("404.html")
+}
+
+function createDrawing(req, res) {
+	// 1. Find a unique drawing ID
+	var drawID = makeDrawID();
+	if (drawID == null) { // exceeded max tries
+		console.log("WARNING: Max tries exceeded")
+		res.send("error");
+		return;
+	}
+
+	// 2. Set up the drawing
+	// Create empty image
+	var params = DRAWING_PARAMS;
+	var canvas = Buffer.alloc(
+		params.width * params.height * params.channels, 
+		params.rgbaPixel
+	);
+
+	// Specify that it's a PNG
+	var png = sharp(canvas, {raw: {
+		width: params.width, 
+		height: params.height, 
+		channels: params.channels
+	}}).png();
+
+	// Convert to buffer, store the buffer, send unique drawing ID to client
+	png.toBuffer(function(err, buffer, info) {
+		drawings.set(drawID, {
+			id: drawID,
+			buffer: buffer
+		});
+		res.send(drawID);
+		console.log("["+drawings.getLength()+"] total drawings.")
+	})
 }
 
 // Make a unique drawing ID by attempting to random generate one up to n times
