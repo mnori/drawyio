@@ -1,19 +1,21 @@
+// node.js server for DrawCloud
+// (c) Matthew Norris 2017
+
 "use strict";
 
 const fs = require("fs");
 const util = require("util");
-const express = require("express");
-const nunjucks = require("nunjucks")
-const nano = require('nanoseconds');
-const sharp = require("sharp")
+const express = require("express"); // Express is a node.js framework
+const nunjucks = require("nunjucks"); // Template system
+const sharp = require("sharp"); // Image processing library
+const nano = require('nanoseconds'); // For measuring performance
 const app = express();
-
 
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16 // The length of the ID string for drawings
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 800,
-	height: 600,
+	width: 400,
+	height: 400,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }
@@ -32,7 +34,6 @@ function main() {
 }
 
 // Set up all the endpoints
-// Probably shouldn"t put too much code in here
 function configureRoutes(app) {
 	// Tell node to serve static files from the "public" subdirectory
 	app.use(express.static("public"))
@@ -60,7 +61,11 @@ function send404(res) {
 function renderDrawingPage(req, res) {
 	var drawID = req.params.id
 	if (drawings.get(drawID)) {
-		res.render("drawing.html", { drawID: drawID });
+		res.render("drawing.html", { 
+			drawID: drawID,
+			width: DRAWING_PARAMS.width,
+			height: DRAWING_PARAMS.height
+		});
 	} else {
 		send404(res);
 	}
@@ -137,7 +142,7 @@ function randomString(length) {
     return text;
 }
 
-// Override d so it gets output to a nice file, easier to check
+// Override console.log so it gets output to a nice file, easier to check
 // The log files get emptied every restart
 function setupDebug() {
 	var debugFilepath = __dirname+"/debug.log"
@@ -166,6 +171,7 @@ function AssocArray() {
 	}
 };
 
+// For performance measurement
 function Timeline() {
 	this.entries = [];
 	this.log = function(name) {
@@ -191,5 +197,5 @@ function Timeline() {
 	}
 }
 
-// get the party started
+// Get the party started
 main();

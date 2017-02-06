@@ -3,10 +3,14 @@
 {% block content %}
 	<div class="row">
 	    <div class="col-lg-12 text-center">
-	        <h1>{{ drawID }}</h1>
-	        <img src="/drawing_images/{{ drawID }}" id="drawing_main" />
+	        <img id="drawing_main" src="/drawing_images/{{ drawID }}" />
+	        <canvas id="drawing_canvas" width="{{ width }}" height="{{ height }}">
+	        	Canvas not supported :(
+	        </canvas>
 	    </div>
 	</div>
 {% endblock %}
 
-{% block js %}{% endblock %}
+{% block js %}
+<script> initDrawing(); </script>
+{% endblock %}
