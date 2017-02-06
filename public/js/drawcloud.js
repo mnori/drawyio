@@ -16,21 +16,21 @@ function initSplash() {
 
 // Initialise the drawing image
 function initDrawing() {
-	var canvas = $("#drawing_canvas");
-	var prevCoord = null;
+	var canvasID = "drawing_canvas"
+	var canvas = $("#"+canvasID);
+	var ctx = canvas[0].getContext('2d'); // used for drawing stuff
+	var prevCoord = null; // if this is null, it means we are not drawing
 
 	function setup() {
 		canvas.mousedown(function(ev) {
-			var orig = ev.originalEvent
-			prevCoord = {x: orig.pageX, y:orig.pageY}
+			prevCoord = getMousePos(ev);
 		});
 
 		canvas.mousemove(function(ev) {
 			if (prevCoord != null) {
-				var newX = ev.originalEvent.pageX
-				var newY = ev.originalEvent.pageY
-				drawLine(prevCoord.x, prevCoord.y, newX, newY);
-				prevCoord = {x: newX, y: newY}
+				var newCoord = getMousePos(ev);
+				drawLine(prevCoord, newCoord);
+				prevCoord = newCoord
 			}
 		});
 
@@ -38,12 +38,24 @@ function initDrawing() {
 		canvas.mouseleave(stopDrawing);
 	}
 
-	function drawLine(fromX, fromY, toX, toY) {
-		console.log(fromX+", "+fromY+", "+toX+", "+toY);
+	function getMousePos(ev) {
+	    var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
+	    return {
+			x: ev.clientX - rect.left,
+			y: ev.clientY - rect.top
+	    };
+	}
+
+	function drawLine(prevCoord, newCoord) {
+		ctx.moveTo(prevCoord.x, prevCoord.y);
+		ctx.lineTo(newCoord.x, newCoord.y);
+
+		console.log(prevCoord)
+		console.log(newCoord)
+		ctx.stroke()
 	}
 
 	function stopDrawing(ev) {
-		console.log("Left!");
 		prevCoord = null;
 	}
 
