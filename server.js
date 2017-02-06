@@ -53,7 +53,7 @@ function configureRoutes(app) {
 	// Go to a drawing's page
 	app.get("/drawings/:id", renderDrawingPage);
 
-	// Fetch a drawing image and output to the buffer
+	// Fetch a drawing image and output the buffer
 	app.get("/drawing_images/:id", getDrawingImage);
 
 	// Index page, rendered as a template
@@ -63,21 +63,29 @@ function configureRoutes(app) {
 	app.use(function(req, res, next) { send404(res); })
 }
 
+// Set up all the socket actions
 function configureSocket() {
 	// Listen for incoming connections from clients
 	io.sockets.on('connection', function (socket) {
 
-		// Start listening for mouse move events
-		socket.on('test', function (data) {
-
-			console.log("test")
-			console.log(data)
-
-			// This line sends the event (broadcasts it)
-			// to everyone except the originating client.
-			// socket.broadcast.emit('moving', data);
-		});
+		// Receive new png draw data as base64 encoded string
+		socket.on('draw_data', processDrawData);
 	});
+}
+
+function processDrawData(data) {
+	var drawID = data.drawID;
+	var drawing = drawings.get(drawID);
+	if (drawing == null) {
+		console.log("WARNING: "+drawID+" does not exist!");
+	} else {
+		console.log("Found ["+drawID+"]")
+		var convertedData = data.base64.replace(/^data:image\/png;base64,/, "");
+		drawing.buffer = Buffer.from(convertedData, 'base64');
+	}
+	// This line sends the event (broadcasts it)
+	// to everyone except the originating client.
+	// socket.broadcast.emit('moving', data);
 }
 
 function send404(res) {
