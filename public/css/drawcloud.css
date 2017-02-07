@@ -1,5 +1,19 @@
-#drawing_main, #drawing_canvas {
+#drawing_layers {
 	border: 1px solid #aaa;
 	box-shadow: 0px 0px 10px #bbb;
 	cursor: crosshair;
+	position: relative;
+}
+
+#drawing_canvas {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 9007199254740991;
+}
+
+.drawing_layer {
+	position: absolute;
+	top: 0px;
+	left: 0px;
 }

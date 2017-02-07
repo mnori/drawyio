@@ -3,10 +3,11 @@
 {% block content %}
 	<div class="row">
 	    <div class="col-lg-12 text-center">
-	        <img id="drawing_main" src="/drawing_images/{{ drawID }}" />
-	        <canvas id="drawing_canvas" width="{{ width }}" height="{{ height }}">
-	        	Canvas not supported :(
-	        </canvas>
+	    	<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
+	    		<canvas id="drawing_canvas" width="{{ width }}" height="{{ height }}">
+		        	Canvas not supported :(
+		        </canvas>
+	    	</div>
 	    </div>
 	</div>
 {% endblock %}

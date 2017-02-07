@@ -21,6 +21,7 @@ function initDrawing(drawIdIn) {
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/");
 	var drawID = drawIdIn
+	var layerID = 1
 
 	function setup() {
 		canvas.mousedown(function(ev) {
@@ -71,7 +72,16 @@ function initDrawing(drawIdIn) {
 		    fr.onload = function(e) {
 
 		    	// Update the front end png stack
-		    	$("#drawing_main").attr("src", e.target.result)
+		    	var layersHtml = 
+		    		"<img class=\"drawing_layer\" "+
+		    		"src=\""+e.target.result+"\" "+
+		    		"style=\"z-index: "+layerID+"\" />";
+		    	console.log(layersHtml);
+		    	layerID++; // this lets us create a nice stack
+
+		    	$("#drawing_layers").prepend(layersHtml);
+
+		    	// attr("src", e.target.result)
 
 		    	// Clear the canvas
 		    	ctx.clearRect(0, 0, cv.width, cv.height)
@@ -86,11 +96,6 @@ function initDrawing(drawIdIn) {
 						"drawID": drawID,
 						"base64": base64
 					});
-
-					// console.log(base64)
-					// send back to server
-
-					// 
 				}
 		    }
 		    fr.readAsDataURL(blob);
