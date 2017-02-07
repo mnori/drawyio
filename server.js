@@ -79,13 +79,23 @@ function processDrawData(data) {
 	if (drawing == null) {
 		console.log("WARNING: "+drawID+" does not exist!");
 	} else {
-		console.log("Found ["+drawID+"]")
-		var convertedData = data.base64.replace(/^data:image\/png;base64,/, "");
-		drawing.buffer = Buffer.from(convertedData, 'base64');
+		// console.log("Found ["+drawID+"]")
+		// just store the raw base64 encoded string here since we'll have to transmit 
+		// multiple pics using JSON...
+		drawing.addLayer(data.base64)
+
+		// KEEP THIS - it converts base64 to a proper PNG image
+		
+
+		// drawing.addLayer(Buffer.from(convertedData, 'base64'));
+		// var convertedData = data.base64.replace(/^data:image\/png;base64,/, "");
+
+
+
+		// This line sends the event (broadcasts it)
+		// to everyone except the originating client.
+		// socket.broadcast.emit('moving', data);
 	}
-	// This line sends the event (broadcasts it)
-	// to everyone except the originating client.
-	// socket.broadcast.emit('moving', data);
 }
 
 function send404(res) {
@@ -105,7 +115,7 @@ function renderDrawingPage(req, res) {
 	}
 }
 
-// Get the drawing image data as buffer
+// Get the drawing image data as layered encoded JSON buffer
 function getDrawingImage(req, res) {
 	var drawID = req.params.id;
 	var drawing = drawings.get(drawID)
@@ -113,7 +123,7 @@ function getDrawingImage(req, res) {
 	if (drawing == null) { // drawing missing
 		send404(res)
 	} else { // drawing is present
-		res.send(drawing.buffer);
+		res.send(drawing.getJson());
 	}
 }
 
@@ -143,10 +153,7 @@ function createDrawing(req, res) {
 
 	// Convert to buffer, store the buffer, send unique drawing ID to client
 	png.toBuffer(function(err, buffer, info) {
-		drawings.set(drawID, {
-			id: drawID,
-			buffer: buffer
-		});
+		drawings.set(drawID, new Drawing(drawID, buffer));
 		res.send(drawID);
 		console.log("["+drawings.getLength()+"] total drawings.")
 	})
@@ -188,6 +195,24 @@ function setupDebug() {
 	};
 }
 
+function Drawing(idIn, startImage) {
+	this.id = idIn;
+	this.layers = new AssocArray();
+	this.nLayers = 0; // used to generate unique sequential layer IDs
+
+	this.addLayer = function(layer) {
+		this.nLayers++;
+		this.layers.set(this.nLayers, layer);
+		console.log("["+this.id+"] now has "+this.nLayers+ " layers");
+	}
+	this.getLayer = function(layerID) { // is this even needed?
+		return this.layers.get(layerID)
+	}
+	this.getJson = function() { this.layers.getJson(); }
+
+	this.addLayer(startImage)
+}
+
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.
 function AssocArray() {
 	this.values = {};
@@ -202,6 +227,9 @@ function AssocArray() {
 	}
 	this.getLength = function() {
 		return Object.keys(this.values).length;
+	}
+	this.getJson = function() {
+		return JSON.stringify(this.values);		
 	}
 };
 
