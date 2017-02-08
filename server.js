@@ -41,8 +41,9 @@ function main() {
 // Set up all the endpoints
 function configureRoutes(app) {
 
-	// Link socket.io to the routes
-	app.use(function(req, res, next) { res.io = io; next(); });
+	// // Link socket.io to the routes
+	// Not needed, apparently
+	// app.use(function(req, res, next) { res.io = io; next(); });
 
 	// Tell node to serve static files from the "public" subdirectory
 	app.use(express.static("public"))
@@ -67,6 +68,8 @@ function configureRoutes(app) {
 function configureSocket() {
 	// Listen for incoming connections from clients
 	io.sockets.on('connection', function (socket) {
+		// can proably happily send our init socket payload
+		console.log("Connection");
 
 		// Receive new png draw data as base64 encoded string
 		socket.on('draw_data', processDrawData);
