@@ -27,12 +27,6 @@ function initDrawing(drawIdIn) {
 
 	function setup() { 
 
-		// Listen for new drawing data
-		socket.on("drawing_update", function(data) {
-			console.log("New drawing data");
-			console.log(data)
-		});
-
 		// start drawing
 		canvas.mousedown(function(ev) {
 			prevCoord = getMousePos(ev);
@@ -51,19 +45,38 @@ function initDrawing(drawIdIn) {
 		canvas.mouseup(stopDrawing);
 		canvas.mouseleave(stopDrawing);
 
+		// Listen for new drawing data from the server
+		socket.on("update_drawing", receiveDrawing);
+
 		getDrawing();
 	}
 
+	// Ask the server for drawing data
 	function getDrawing() {
 		socket.emit("get_drawing", {"drawID": drawID});
 	}
 
+	// Update drawing with new draw data from the server
+	// This resets everything
+	function receiveDrawing(data) {
+		data = $.parseJSON(data);
+
+		// Lets start off simple and just show the data
+		// Remove all the old layers, if there are any
+		$(".drawing_layer").remove()
+
+		// Add the new layers
+		$.each(data, function(key, value) {
+			addLayer(parseInt(key), value);
+		});
+	}
+
 	function getMousePos(ev) {
-	    var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
-	    return {
+		var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
+		return {
 			x: ev.clientX - rect.left,
 			y: ev.clientY - rect.top
-	    };
+		};
 	}
 
 	function drawLine(prevCoord, newCoord) {
@@ -79,6 +92,17 @@ function initDrawing(drawIdIn) {
 		prevCoord = null;
 	}
 
+	function addLayer(layerIDIn, base64) {
+		var layersHtml = 
+			"<img class=\"drawing_layer\" "+
+			"src=\""+base64+"\" "+
+			"style=\"z-index: "+layerIDIn+"\" />";
+		$("#drawing_layers").prepend(layersHtml);
+		if (layerIDIn > layerID) {
+			layerID = layerIDIn;
+		}
+	}
+
 	// Converts canvas to various useful things
 	function processCanvas(cv) {
 
@@ -87,25 +111,19 @@ function initDrawing(drawIdIn) {
 
 			// Generate data URL, to be displayed on the front end, from the blob
 			var fr = new FileReader();
-		    fr.onload = function(e) {
+			fr.onload = function(e) {
+				addLayer(layerID, e.target.result)
 
-		    	// Update the front end png stack
-		    	var layersHtml = 
-		    		"<img class=\"drawing_layer\" "+
-		    		"src=\""+e.target.result+"\" "+
-		    		"style=\"z-index: "+layerID+"\" />";
-		    	console.log(layersHtml);
-		    	layerID++; // this lets us create a nice stack
+				// Update the front end png stack
+				layerID++; // this lets us create a nice stack
 
-		    	$("#drawing_layers").prepend(layersHtml);
+				// attr("src", e.target.result)
 
-		    	// attr("src", e.target.result)
+				// Clear the canvas
+				ctx.clearRect(0, 0, cv.width, cv.height)
+				ctx.beginPath()
 
-		    	// Clear the canvas
-		    	ctx.clearRect(0, 0, cv.width, cv.height)
-		    	ctx.beginPath()
-
-		    	// Now convert to base64 - this will be send back to the server
+				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
 				fr.readAsDataURL(blob); 
 				fr.onloadend = function() {
@@ -115,8 +133,8 @@ function initDrawing(drawIdIn) {
 						"base64": base64
 					});
 				}
-		    }
-		    fr.readAsDataURL(blob);
+			}
+			fr.readAsDataURL(blob);
 
 		}, "image/png");
 	}

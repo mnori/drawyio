@@ -74,7 +74,7 @@ function configureSocket() {
 		// so that we can pass the socket in as well
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
-		// Receive new png draw data as base64 encoded string
+		// Receive new png draw data as base64 encoded string and add to the stack
 		socket.on('draw_data', processDrawData);
 	});
 }
@@ -82,9 +82,7 @@ function configureSocket() {
 // we'll also want a broadcastDrawing() method for when the image is flattened
 function sendDrawing(data, socket) {
 	var drawID = data.drawID;
-	console.log(drawings.get(drawID).getJson());
-	socket.emit("drawing_update", drawings.get(drawID).getJson());
-	console.log("getDrawing() was called for drawID: "+drawID)
+	socket.emit("update_drawing", drawings.get(drawID).getJson());
 }
 
 function processDrawData(data) {
@@ -162,13 +160,16 @@ function createDrawing(req, res) {
 		channels: params.channels
 	}}).png();
 
+	// Convert to a base64 encoded string
+
 	// Convert to buffer, store the buffer, send unique drawing ID to client
 	// PNG conversion is slow
-	png.toBuffer(function(err, buffer, info) {
-		drawings.set(drawID, new Drawing(drawID, buffer));
+	// Note - this needs to be a base64 encoded string
+	png.toBuffer().then(function(buffer) {
+		var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
+		drawings.set(drawID, new Drawing(drawID, base64));
 		res.send(drawID);
-		console.log("["+drawings.getLength()+"] total drawings.")
-	})
+	});
 }
 
 // Make a unique drawing ID by attempting to random generate one up to n times
@@ -190,8 +191,9 @@ function makeDrawID() {
 function randomString(length) {
     var text = "";
     var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
-    for(var i = 0; i < length; i++)
+    for (var i = 0; i < length; i++) { 
         text += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
     return text;
 }
 
@@ -218,7 +220,6 @@ function Drawing(idIn, startImage) {
 	this.addLayer = function(layer) {
 		this.nLayers++;
 		this.layers.set(this.nLayers, layer);
-		console.log("["+this.id+"] had layer added. "+this.nLayers+ " layers total");
 	}
 	this.getLayer = function(layerID) { // is this even needed?
 		return this.layers.get(layerID)
