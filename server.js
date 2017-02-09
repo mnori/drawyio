@@ -1,11 +1,11 @@
-// node.js server for DrawCloud
+// node.js server for drawy.io
 // (c) Matthew Norris 2017
 
 "use strict";
 
 const fs = require("fs");
 const util = require("util");
-const express = require("express"); // Express is a node.js framework
+const express = require("express"); // A node.js framework
 const nunjucks = require("nunjucks"); // Template system
 const sharp = require("sharp"); // Image processing library
 const nano = require('nanoseconds'); // For measuring performance
@@ -68,12 +68,21 @@ function configureRoutes(app) {
 function configureSocket() {
 	// Listen for incoming connections from clients
 	io.sockets.on('connection', function (socket) {
-		// can proably happily send our init socket payload
-		console.log("Connection");
+		// This is where we should send drawing init data
+
+		// Returns the drawing data to the client. The callback method is placed here
+		// so that we can pass the socket in as well
+		socket.on("get_drawing", function(data) {
+			getDrawing(data, socket);
+		});
 
 		// Receive new png draw data as base64 encoded string
 		socket.on('draw_data', processDrawData);
 	});
+}
+
+function getDrawing(data, socket) {
+	console.log("getDrawing() invoked with "+data)
 }
 
 function processDrawData(data) {
@@ -88,12 +97,9 @@ function processDrawData(data) {
 		drawing.addLayer(data.base64)
 
 		// KEEP THIS - it converts base64 to a proper PNG image
-		
 
 		// drawing.addLayer(Buffer.from(convertedData, 'base64'));
 		// var convertedData = data.base64.replace(/^data:image\/png;base64,/, "");
-
-
 
 		// This line sends the event (broadcasts it)
 		// to everyone except the originating client.
@@ -155,6 +161,7 @@ function createDrawing(req, res) {
 	}}).png();
 
 	// Convert to buffer, store the buffer, send unique drawing ID to client
+	// PNG conversion is slow
 	png.toBuffer(function(err, buffer, info) {
 		drawings.set(drawID, new Drawing(drawID, buffer));
 		res.send(drawID);
@@ -201,12 +208,15 @@ function setupDebug() {
 function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
-	this.nLayers = 0; // used to generate unique sequential layer IDs
+
+	// used to generate unique sequential layer IDs
+	// Keeps going up, even after baking the image into a new single layer
+	this.nLayers = 0; 
 
 	this.addLayer = function(layer) {
 		this.nLayers++;
 		this.layers.set(this.nLayers, layer);
-		console.log("["+this.id+"] now has "+this.nLayers+ " layers");
+		console.log("["+this.id+"] had layer added. "+this.nLayers+ " layers total");
 	}
 	this.getLayer = function(layerID) { // is this even needed?
 		return this.layers.get(layerID)
@@ -232,7 +242,7 @@ function AssocArray() {
 		return Object.keys(this.values).length;
 	}
 	this.getJson = function() {
-		return JSON.stringify(this.values);		
+		return JSON.stringify(this.values);	
 	}
 };
 
