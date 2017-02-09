@@ -72,16 +72,18 @@ function configureSocket() {
 
 		// Returns the drawing data to the client. The callback method is placed here
 		// so that we can pass the socket in as well
-		socket.on("get_drawing", function(data) { getDrawing(data, socket); });
+		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
 		// Receive new png draw data as base64 encoded string
 		socket.on('draw_data', processDrawData);
 	});
 }
 
-function getDrawing(data, socket) {
+// we'll also want a broadcastDrawing() method for when the image is flattened
+function sendDrawing(data, socket) {
 	var drawID = data.drawID;
-	socket.emit(drawings.get(drawID).getJson());
+	console.log(drawings.get(drawID).getJson());
+	socket.emit("drawing_update", drawings.get(drawID).getJson());
 	console.log("getDrawing() was called for drawID: "+drawID)
 }
 
@@ -221,7 +223,7 @@ function Drawing(idIn, startImage) {
 	this.getLayer = function(layerID) { // is this even needed?
 		return this.layers.get(layerID)
 	}
-	this.getJson = function() { this.layers.getJson(); }
+	this.getJson = function() { return this.layers.getJson(); }
 
 	this.addLayer(startImage)
 }

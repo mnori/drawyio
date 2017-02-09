@@ -22,14 +22,16 @@ function initDrawing(drawIdIn) {
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/");
-	var drawID = drawIdIn
+	var drawID = drawIdIn;
 	var layerID = 1
 
 	function setup() { 
 
-		// Fetch the drawing data from the server
-		// TODO - Disallow drawing until the data comes in? Or not?
-		getDrawing(socket);
+		// Listen for new drawing data
+		socket.on("drawing_update", function(data) {
+			console.log("New drawing data");
+			console.log(data)
+		});
 
 		// start drawing
 		canvas.mousedown(function(ev) {
@@ -48,6 +50,8 @@ function initDrawing(drawIdIn) {
 		// stop drawing
 		canvas.mouseup(stopDrawing);
 		canvas.mouseleave(stopDrawing);
+
+		getDrawing();
 	}
 
 	function getDrawing() {
