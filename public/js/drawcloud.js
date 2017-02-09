@@ -1,4 +1,6 @@
 // drawcloud.js
+// The draw.io front end client
+// Copyright (C) 2017 draw.io
 
 // Intialise the splash screen
 function initSplash() {
@@ -17,27 +19,39 @@ function initSplash() {
 // Initialise the drawing image
 function initDrawing(drawIdIn) {
 	var canvas = $("#drawing_canvas");
-	var ctx = canvas[0].getContext('2d'); // used for drawing stuff
+	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/");
 	var drawID = drawIdIn
 	var layerID = 1
 
-	function setup() {
+	function setup() { 
+
+		// Fetch the drawing data from the server
+		// TODO - Disallow drawing until the data comes in? Or not?
+		getDrawing(socket);
+
+		// start drawing
 		canvas.mousedown(function(ev) {
 			prevCoord = getMousePos(ev);
 		});
 
-		canvas.mousemove(function(ev) {
+		// draw a stroke
+		canvas.mousemove(function(ev) { 
 			if (prevCoord != null) {
 				var newCoord = getMousePos(ev);
 				drawLine(prevCoord, newCoord);
-				prevCoord = newCoord
+				prevCoord = newCoord;
 			}
 		});
 
+		// stop drawing
 		canvas.mouseup(stopDrawing);
 		canvas.mouseleave(stopDrawing);
+	}
+
+	function getDrawing() {
+		socket.emit("get_drawing", {"drawID": drawID});
 	}
 
 	function getMousePos(ev) {

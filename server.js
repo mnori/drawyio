@@ -72,9 +72,7 @@ function configureSocket() {
 
 		// Returns the drawing data to the client. The callback method is placed here
 		// so that we can pass the socket in as well
-		socket.on("get_drawing", function(data) {
-			getDrawing(data, socket);
-		});
+		socket.on("get_drawing", function(data) { getDrawing(data, socket); });
 
 		// Receive new png draw data as base64 encoded string
 		socket.on('draw_data', processDrawData);
@@ -82,7 +80,9 @@ function configureSocket() {
 }
 
 function getDrawing(data, socket) {
-	console.log("getDrawing() invoked with "+data)
+	var drawID = data.drawID;
+	socket.emit(drawings.get(drawID).getJson());
+	console.log("getDrawing() was called for drawID: "+drawID)
 }
 
 function processDrawData(data) {
