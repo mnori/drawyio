@@ -210,6 +210,11 @@ function setupDebug() {
 	};
 }
 
+// Convert a base64 encoded PNG string into a Buffer object
+function base64ToBuffer(base64) {
+	return Buffer.from(base64, 'base64')
+}
+
 function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
@@ -220,9 +225,19 @@ function Drawing(idIn, startImage) {
 
 	// Merges the layers into a single image
 	this.flatten = function() {
-		console.log("flatten() invoked");
-		function flattenRecursive() {
+		function flattenRecursive(self) {
+			var bufBase = base64ToBuffer(self.getUnmergedLayer(0)); // base image
+			var bufNew = base64ToBuffer(self.getUnmergedLayer(1)); // overlay image
 
+			console.log(bufBase);
+			console.log(bufNew);
+
+			// var overlayed = sharp(bufBase).overlayWith(sharp(bufNew));
+
+
+			// vrarsharp(buf);
+
+			// console.log(buf)
 		}
 
 		// make sure there is stuff to do
@@ -234,11 +249,7 @@ function Drawing(idIn, startImage) {
 		}
 
 		// 1. convert the first image to a buffer
-		var baseLayer = this.getUnmergedLayer(0);
-		console.log(baseLayer);
-
-		// var buf = Buffer.from(b64string, 'base64'); // Ta-da
-		// console.log(buf)
+		flattenRecursive(this);
 
 		// 2. convert second image to buffer, or exit if none
 
