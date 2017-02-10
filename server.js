@@ -232,19 +232,26 @@ function Drawing(idIn, startImage) {
 			// get base image
 			var base = sharp(base64ToBuffer(self.getUnmergedLayer(ind))); // base image
 			while(true) {
-				console.log(ind);
+				// console.log(ind);
 				// get overlay image
 				var overlayBase64 = self.getUnmergedLayer(ind + 1);
-				console.log("OVERLAY: "+overlayBase64);
+				// console.log("OVERLAY: "+overlayBase64);
 				if (overlayBase64 == null) { // reached the end
-					console.log("REACHED END")
+					// console.log("REACHED END")
 					break;
 				}
 				base = base.overlayWith(base64ToBuffer(overlayBase64));
 				ind++;
 			}
 			var finalImage = base;
-			console.log(finalImage)
+
+			// now we must convert the finalImage to base 64 encoded string again
+			finalImage.png().toBuffer().then(function(buffer) {
+				var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
+				self.layers.empty();
+				self.layers.set(self.nLayers, base64);
+			});
+			// console.log(finalImage)
 		}
 
 		// make sure there is stuff to do
@@ -303,6 +310,9 @@ function AssocArray() {
 	}
 	this.getJson = function() {
 		return JSON.stringify(this.values);	
+	}
+	this.empty = function() {
+		this.values = {}
 	}
 };
 
