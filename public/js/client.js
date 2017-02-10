@@ -19,6 +19,7 @@ function initSplash() {
 // Initialise the drawing image
 function initDrawing(drawIdIn) {
 	var canvas = $("#drawing_canvas");
+	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/");
@@ -87,16 +88,19 @@ function initDrawing(drawIdIn) {
 
 	function stopDrawing(ev) {
 		if (prevCoord != null) {
-			processCanvas(canvas[0])
+			processCanvas(canvas[0], croppingCanvas[0])
 		}
 		prevCoord = null;
 	}
 
-	function addLayer(layerIDIn, base64) {
+	function addLayer(layerIDIn, cropCoords, base64) {
 		var layersHtml = 
 			"<img class=\"drawing_layer\" "+
 			"src=\""+base64+"\" "+
-			"style=\"z-index: "+layerIDIn+"\" />";
+			"style=\""+
+				"z-index: "+layerIDIn+";"+
+				"left: "+cropCoords.left+"px;"+
+				"top: "+cropCoords.top+"px;\"/>";
 		$("#drawing_layers").prepend(layersHtml);
 		if (layerIDIn > layerID) {
 			layerID = layerIDIn;
@@ -104,18 +108,16 @@ function initDrawing(drawIdIn) {
 	}
 
 	// Converts canvas to various useful things
-	function processCanvas(sourceCanvas) {
-
-		var croppedCanvas = $("#crop_canvas")[0];
-		cropCanvas(sourceCanvas, croppedCanvas);
+	function processCanvas(sourceCanvas, croppingCanvas) {
+		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas);
 
 		// First generate a png blob
-		var blob = sourceCanvas.toBlob(function(blob) {
+		var blob = croppingCanvas.toBlob(function(blob) {
 
 			// Generate data URL, to be displayed on the front end, from the blob
 			var fr = new FileReader();
 			fr.onload = function(e) {
-				addLayer(layerID, e.target.result)
+				addLayer(layerID, cropCoords, e.target.result)
 
 				// Update the front end png stack
 				layerID++; // this lets us create a nice stack
@@ -133,7 +135,8 @@ function initDrawing(drawIdIn) {
 					var base64 = fr.result;
 					socket.emit("add_layer", {
 						"drawID": drawID,
-						"base64": base64
+						"base64": base64,
+						"coords": cropCoords
 					});
 				}
 			}
@@ -196,9 +199,9 @@ function cropCanvas(sourceCanvas, destCanvas) {
         };
 
     var cropTop = scanY(true),
-        cropBottom = scanY(false),
+        cropBottom = scanY(false) + 1,
         cropLeft = scanX(true),
-        cropRight = scanX(false),
+        cropRight = scanX(false) + 1,
         cropWidth = cropRight - cropLeft,
         cropHeight = cropBottom - cropTop;
 
@@ -209,4 +212,6 @@ function cropCanvas(sourceCanvas, destCanvas) {
     destCanvas.getContext("2d").drawImage(sourceCanvas,
         cropLeft, cropTop, cropWidth, cropHeight,
         0, 0, cropWidth, cropHeight);
+
+    return {top: cropTop, right: cropRight, bottom: cropBottom, left: cropLeft};
 }
