@@ -226,32 +226,30 @@ function Drawing(idIn, startImage) {
 
 	// Merges the layers into a single image
 	this.flatten = function() {
-		function flattenRecursive(self) {
-			console.log("flattenRecursive() invoked");
-			var ind = 0;
+		function flattenRecursive(self, baseBuf, ind) {
+			console.log("flattenRecursive() invoked with ind: "+ind);
 			// get base image
-			var base = sharp(base64ToBuffer(self.getUnmergedLayer(ind))); // base image
-			while(true) {
-				// console.log(ind);
-				// get overlay image
-				var overlayBase64 = self.getUnmergedLayer(ind + 1);
-				// console.log("OVERLAY: "+overlayBase64);
-				if (overlayBase64 == null) { // reached the end
-					// console.log("REACHED END")
-					break;
-				}
-				base = base.overlayWith(base64ToBuffer(overlayBase64));
-				ind++;
-			}
-			var finalImage = base;
+			var overlayBase64 = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
-			// now we must convert the finalImage to base 64 encoded string again
-			finalImage.png().toBuffer().then(function(buffer) {
-				var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
-				self.layers.empty();
-				self.layers.set(self.nLayers, base64);
-			});
-			// console.log(finalImage)
+			// not reached the end yet - so overlay the image
+			if (overlayBase64 != null) { 
+				var overlayBuf = base64ToBuffer(overlayBase64);
+				sharp(baseBuf).overlayWith(overlayBuf).toBuffer().then(function(buffer) {
+					ind++;
+					flattenRecursive(self, buffer, ind);
+				});
+
+			} else { // reached the end
+				// now we must convert the finalImage to base 64 encoded string again
+				sharp(baseBuf).png().toBuffer().then(function(buffer) {
+					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
+
+					// reset the drawing using the new merged data
+					self.layers.empty(); 
+					self.layers.set(self.nLayers, base64);
+					console.log("Drawing has been flattened");
+				});
+			}
 		}
 
 		// make sure there is stuff to do
@@ -263,7 +261,8 @@ function Drawing(idIn, startImage) {
 		}
 
 		// 1. convert the first image to a buffer
-		flattenRecursive(this);
+		var baseBuf = base64ToBuffer(this.getUnmergedLayer(0)); // base image
+		flattenRecursive(this, baseBuf, 0);
 
 		// 2. convert second image to buffer, or exit if none
 
