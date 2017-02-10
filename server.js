@@ -17,7 +17,7 @@ const io = require("socket.io")(server)
 
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
-const MAX_LAYERS = 10; // Max number of layers to store before flattening the image
+const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 400,
 	height: 400,
@@ -34,7 +34,7 @@ function main() {
 	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
-	configureSocket()
+	configureSocket();
 	server.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
@@ -98,7 +98,7 @@ function addLayer(data) {
 		drawing.addLayer(data.base64)
 
 		if (drawing.getNStoredLayers() >= MAX_LAYERS) {
-			console.log("Max layers exceeded");
+			drawing.flatten();
 		}
 
 		// KEEP THIS - it converts base64 to a proper PNG image
@@ -201,7 +201,7 @@ function randomString(length) {
 // Override console.log so it gets output to a nice file, easier to check
 // The log files get emptied every restart
 function setupDebug() {
-	var debugFilepath = __dirname+"/debug.log"
+	var debugFilepath = __dirname+"/debug.log";
 	var log_file = fs.createWriteStream(debugFilepath, {flags : "w"});
 	var log_stdout = process.stdout;
 	console.log = function(d) { //
@@ -218,12 +218,47 @@ function Drawing(idIn, startImage) {
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0; 
 
+	// Merges the layers into a single image
+	this.flatten = function() {
+		console.log("flatten() invoked");
+		function flattenRecursive() {
+
+		}
+
+		// make sure there is stuff to do
+		var nLayers = this.getNStoredLayers();
+		if (nLayers <= 1) {
+			// This shouldn't happen, so log a warning
+			console.log("[WARNING] flatten() called with only "+nLayers+" stored layers");
+			return;
+		}
+
+		// 1. convert the first image to a buffer
+		var baseLayer = this.getUnmergedLayer(0);
+		console.log(baseLayer);
+
+		// var buf = Buffer.from(b64string, 'base64'); // Ta-da
+		// console.log(buf)
+
+		// 2. convert second image to buffer, or exit if none
+
+		// flattenRecursive();
+	}
+	// layer is a base64 encoded PNG string
 	this.addLayer = function(layer) {
 		this.nLayers++;
 		this.layers.set(this.nLayers, layer);
 	}
-	this.getLayer = function(layerID) { // is this even needed?
-		return this.layers.get(layerID)
+	// returns a base64 encoded PNG string
+	this.getLayer = function(layerID) {
+		return this.layers.get(layerID);
+	}
+	// instead of a layerID, return by position in the stored png stack
+	// Position 0 is the base image
+	this.getUnmergedLayer = function(position) {
+		var keys = this.layers.getKeys();
+		var offset = parseInt(keys[0]);
+		return this.layers.get(offset);
 	}
 	this.getNStoredLayers = function() { return this.layers.getLength(); }
 	this.getJson = function() { return this.layers.getJson(); }
@@ -243,7 +278,10 @@ function AssocArray() {
 		this.values[key] = value;
 	}
 	this.getLength = function() {
-		return Object.keys(this.values).length;
+		return this.getKeys().length;
+	}
+	this.getKeys = function() {
+		return Object.keys(this.values);
 	}
 	this.getJson = function() {
 		return JSON.stringify(this.values);	
@@ -254,7 +292,7 @@ function AssocArray() {
 function Timeline() {
 	this.entries = [];
 	this.log = function(name) {
-		var ts = nano(process.hrtime())
+		var ts = nano(process.hrtime());
 		this.entries.push({
 			name: name,
 			ts: ts
@@ -269,7 +307,7 @@ function Timeline() {
 			if (prevEntry != null) {
 				// convert nanoseconds to milliseconds
 				var diffNs = (currEntry.ts - prevEntry.ts) / 1000000;
-				console.log("["+prevEntry.name+"] => ["+currEntry.name+"] "+diffNs+" ms")
+				console.log("["+prevEntry.name+"] => ["+currEntry.name+"] "+diffNs+" ms");
 			}
 			prevEntry = currEntry;
 		}
