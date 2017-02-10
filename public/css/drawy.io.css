@@ -1,0 +1,38 @@
+#drawing_layers {
+	border: 1px solid #aaa;
+	box-shadow: 0px 0px 10px #bbb;
+	cursor: crosshair;
+	position: relative;
+}
+
+#drawing_canvas {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 9007199254740991;
+}
+
+.drawing_layer {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+@font-face {
+    font-family: LogoFont;
+    src: url(/fonts/UbuntuMono-B.ttf);
+}
+.logo {
+	font-family: LogoFont;
+	font-size: 40px;
+	text-shadow: 0px 0px 8px #666;
+}
+
+a.logo:link, a.logo:visited {
+	color: #d9d9d9;
+}
+a.logo:hover, a.logo:active {
+	color: #fff;
+	text-decoration: none;
+	text-shadow: 0px 0px 16px #000;
+}
