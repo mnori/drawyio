@@ -104,10 +104,13 @@ function initDrawing(drawIdIn) {
 	}
 
 	// Converts canvas to various useful things
-	function processCanvas(cv) {
+	function processCanvas(sourceCanvas) {
+
+		var croppedCanvas = $("#crop_canvas")[0];
+		cropCanvas(sourceCanvas, croppedCanvas);
 
 		// First generate a png blob
-		var blob = cv.toBlob(function(blob) {
+		var blob = sourceCanvas.toBlob(function(blob) {
 
 			// Generate data URL, to be displayed on the front end, from the blob
 			var fr = new FileReader();
@@ -120,7 +123,7 @@ function initDrawing(drawIdIn) {
 				// attr("src", e.target.result)
 
 				// Clear the canvas
-				ctx.clearRect(0, 0, cv.width, cv.height)
+				ctx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height)
 				ctx.beginPath()
 
 				// Now convert to base64 - this will be send back to the server
@@ -140,4 +143,70 @@ function initDrawing(drawIdIn) {
 	}
 
 	setup();
+}
+
+// Adapted from https://stackoverflow.com/questions/12175991/crop-image-white-space-automatically-using-jquery
+function cropCanvas(sourceCanvas, destCanvas) {
+    var context = sourceCanvas.getContext('2d');
+    // context.drawImage(imageObject, 0, 0);
+
+    var imgWidth = sourceCanvas.width, 
+    	imgHeight = sourceCanvas.height;
+
+    var imageData = context.getImageData(0, 0, imgWidth, imgHeight),
+        data = imageData.data,
+        hasData = function (x, y) {
+        	var offset = imgWidth * y + x;
+        	var value = data[offset * 4 + 3]; // this fetches the opacity value
+        	if (value != 0) { 
+        		return true;
+        	}
+        	return false;
+        },
+        scanY = function (fromTop) {
+            var offset = fromTop ? 1 : -1;
+
+            // loop through each row
+            for (var y = fromTop ? 0 : imgHeight - 1; fromTop ? (y < imgHeight) : (y > -1); y += offset) {
+
+                // loop through each column
+                for (var x = 0; x < imgWidth; x++) {
+                    if (hasData(x, y)) {
+                        return y;                        
+                    }
+                    
+                }
+            }
+            return null; // all image is transparent
+        },
+        scanX = function (fromLeft) {
+            var offset = fromLeft? 1 : -1;
+
+            // loop through each column
+            for (var x = fromLeft ? 0 : imgWidth - 1; fromLeft ? (x < imgWidth) : (x > -1); x += offset) {
+
+                // loop through each row
+                for (var y = 0; y < imgHeight; y++) {
+                    if (hasData(x, y)) {
+                        return x;                        
+                    }
+                }
+            }
+            return null; // all image is transparent
+        };
+
+    var cropTop = scanY(true),
+        cropBottom = scanY(false),
+        cropLeft = scanX(true),
+        cropRight = scanX(false),
+        cropWidth = cropRight - cropLeft,
+        cropHeight = cropBottom - cropTop;
+
+    destCanvas.setAttribute("width", cropWidth);
+    destCanvas.setAttribute("height", cropHeight);
+
+    // this is where the cropping happens
+    destCanvas.getContext("2d").drawImage(sourceCanvas,
+        cropLeft, cropTop, cropWidth, cropHeight,
+        0, 0, cropWidth, cropHeight);
 }
