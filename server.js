@@ -19,8 +19,8 @@ const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 400,
-	height: 400,
+	width: 800,
+	height: 600,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }
@@ -226,6 +226,10 @@ function Drawing(idIn, startImage) {
 
 	// Merges the layers into a single image
 	this.flatten = function() {
+
+		var tl = new Timeline();
+		tl.log("a");
+
 		function flattenRecursive(self, baseBuf, ind) {
 			console.log("flattenRecursive() invoked with ind: "+ind);
 			// get base image
@@ -240,7 +244,7 @@ function Drawing(idIn, startImage) {
 				});
 
 			} else { // reached the end
-				// now we must convert the finalImage to base 64 encoded string again
+				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
 					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
@@ -248,6 +252,9 @@ function Drawing(idIn, startImage) {
 					self.layers.empty(); 
 					self.layers.set(self.nLayers, base64);
 					console.log("Drawing has been flattened");
+
+					tl.log("b");
+					tl.dump();
 				});
 			}
 		}
