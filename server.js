@@ -16,7 +16,8 @@ const server = require("http").Server(app)
 const io = require("socket.io")(server)
 
 const PORT = 8080; // Which port to expose to the outside world
-const ID_LEN = 16 // The length of the ID string for drawings
+const ID_LEN = 16; // The length of the ID string for drawings
+const MAX_LAYERS = 10; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 400,
 	height: 400,
@@ -75,7 +76,7 @@ function configureSocket() {
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
 		// Receive new png draw data as base64 encoded string and add to the stack
-		socket.on('draw_data', processDrawData);
+		socket.on('add_layer', addLayer);
 	});
 }
 
@@ -85,7 +86,7 @@ function sendDrawing(data, socket) {
 	socket.emit("update_drawing", drawings.get(drawID).getJson());
 }
 
-function processDrawData(data) {
+function addLayer(data) {
 	var drawID = data.drawID;
 	var drawing = drawings.get(drawID);
 	if (drawing == null) {
@@ -96,11 +97,11 @@ function processDrawData(data) {
 		// multiple pics using JSON...
 		drawing.addLayer(data.base64)
 
+		if (drawing.getNStoredLayers() >= MAX_LAYERS) {
+			console.log("Max layers exceeded");
+		}
+
 		// KEEP THIS - it converts base64 to a proper PNG image
-
-		// drawing.addLayer(Buffer.from(convertedData, 'base64'));
-		// var convertedData = data.base64.replace(/^data:image\/png;base64,/, "");
-
 		// This line sends the event (broadcasts it)
 		// to everyone except the originating client.
 		// socket.broadcast.emit('moving', data);
@@ -224,8 +225,8 @@ function Drawing(idIn, startImage) {
 	this.getLayer = function(layerID) { // is this even needed?
 		return this.layers.get(layerID)
 	}
+	this.getNStoredLayers = function() { return this.layers.getLength(); }
 	this.getJson = function() { return this.layers.getJson(); }
-
 	this.addLayer(startImage)
 }
 

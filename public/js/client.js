@@ -128,7 +128,7 @@ function initDrawing(drawIdIn) {
 				fr.readAsDataURL(blob); 
 				fr.onloadend = function() {
 					var base64 = fr.result;
-					socket.emit("draw_data", {
+					socket.emit("add_layer", {
 						"drawID": drawID,
 						"base64": base64
 					});
