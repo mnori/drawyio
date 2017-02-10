@@ -220,12 +220,20 @@ function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
 
+	this.isFlattening = false;
+
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0; 
 
 	// Merges the layers into a single image
 	this.flatten = function() {
+
+		if (this.isFlattening) {
+			console.log("Already being flattened!");
+			return;
+		}
+		this.isFlattening = true;
 
 		var tl = new Timeline();
 		tl.log("a");
@@ -251,8 +259,9 @@ function Drawing(idIn, startImage) {
 					// reset the drawing using the new merged data
 					self.layers.empty(); 
 					self.layers.set(self.nLayers, base64);
-					console.log("Drawing has been flattened");
+					self.isFlattening = false;
 
+					console.log("Drawing has been flattened");
 					tl.log("b");
 					tl.dump();
 				});
