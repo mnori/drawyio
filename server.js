@@ -212,7 +212,8 @@ function setupDebug() {
 
 // Convert a base64 encoded PNG string into a Buffer object
 function base64ToBuffer(base64) {
-	return Buffer.from(base64, 'base64')
+	var str = base64.replace("data:image/png;base64,", "");
+	return Buffer.from(str, 'base64')
 }
 
 function Drawing(idIn, startImage) {
@@ -226,18 +227,24 @@ function Drawing(idIn, startImage) {
 	// Merges the layers into a single image
 	this.flatten = function() {
 		function flattenRecursive(self) {
-			var bufBase = base64ToBuffer(self.getUnmergedLayer(0)); // base image
-			var bufNew = base64ToBuffer(self.getUnmergedLayer(1)); // overlay image
-
-			console.log(bufBase);
-			console.log(bufNew);
-
-			// var overlayed = sharp(bufBase).overlayWith(sharp(bufNew));
-
-
-			// vrarsharp(buf);
-
-			// console.log(buf)
+			console.log("flattenRecursive() invoked");
+			var ind = 0;
+			// get base image
+			var base = sharp(base64ToBuffer(self.getUnmergedLayer(ind))); // base image
+			while(true) {
+				console.log(ind);
+				// get overlay image
+				var overlayBase64 = self.getUnmergedLayer(ind + 1);
+				console.log("OVERLAY: "+overlayBase64);
+				if (overlayBase64 == null) { // reached the end
+					console.log("REACHED END")
+					break;
+				}
+				base = base.overlayWith(base64ToBuffer(overlayBase64));
+				ind++;
+			}
+			var finalImage = base;
+			console.log(finalImage)
 		}
 
 		// make sure there is stuff to do
@@ -269,7 +276,7 @@ function Drawing(idIn, startImage) {
 	this.getUnmergedLayer = function(position) {
 		var keys = this.layers.getKeys();
 		var offset = parseInt(keys[0]);
-		return this.layers.get(offset);
+		return this.layers.get(offset + position);
 	}
 	this.getNStoredLayers = function() { return this.layers.getLength(); }
 	this.getJson = function() { return this.layers.getJson(); }
