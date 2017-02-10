@@ -228,7 +228,6 @@ function Drawing(idIn, startImage) {
 
 	// Merges the layers into a single image
 	this.flatten = function() {
-
 		if (this.isFlattening) {
 			console.log("Already being flattened!");
 			return;
@@ -243,8 +242,8 @@ function Drawing(idIn, startImage) {
 			// get base image
 			var overlayBase64 = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
-			// not reached the end yet - so overlay the image
 			if (overlayBase64 != null) { 
+				// not reached the end yet - so overlay the image
 				var overlayBuf = base64ToBuffer(overlayBase64);
 				sharp(baseBuf).overlayWith(overlayBuf).toBuffer().then(function(buffer) {
 					ind++;
@@ -276,13 +275,8 @@ function Drawing(idIn, startImage) {
 			return;
 		}
 
-		// 1. convert the first image to a buffer
 		var baseBuf = base64ToBuffer(this.getUnmergedLayer(0)); // base image
 		flattenRecursive(this, baseBuf, 0);
-
-		// 2. convert second image to buffer, or exit if none
-
-		// flattenRecursive();
 	}
 	// layer is a base64 encoded PNG string
 	this.addLayer = function(layer) {
