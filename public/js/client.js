@@ -67,9 +67,10 @@ function initDrawing(drawIdIn) {
 		// Remove all the old layers, if there are any
 		$(".drawing_layer").remove();
 
+		console.log("receiveDrawing()");
 		// Add the new layers
 		$.each(data, function(key, value) {
-			// console.log(value.coords);
+			console.log("Entry:");
 			console.log(value);
 			addLayer(parseInt(key), value.offsets, value.base64);
 		});
@@ -140,7 +141,7 @@ function initDrawing(drawIdIn) {
 					socket.emit("add_layer", {
 						"drawID": drawID,
 						"base64": base64,
-						"coords": cropCoords
+						"offsets": cropCoords
 					});
 				}
 			}
