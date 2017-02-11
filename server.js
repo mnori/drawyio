@@ -21,8 +21,8 @@ const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 800,
-	height: 600,
+	width: 640,
+	height: 480,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }
@@ -67,27 +67,7 @@ function configureRoutes(app) {
 	app.use(function(req, res, next) { send404(res); })
 }
 
-// // Set up all the socket actions
-// function configureSocket() {
-// 	// Listen for incoming connections from clients
-
-// 	var nsp = io.of('/global');
-// 	nsp.on('connection', function (socket) {
-// 		// This is where we should send drawing init data
-
-// 		// Returns the drawing data to the client. The callback method is placed here
-// 		// so that we can pass the socket in as well
-// 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
-
-// 		// Receive new png draw data as base64 encoded string and add to the Drawing
-// 		socket.on("add_layer", addLayer);
-
-// 		socket.on("disconnect", function() {
-// 			console.log("disconnect");
-// 		});
-// 	});
-// }
-
+// Set up drawing-specific event handlers
 function configureDrawingSocket(drawing) {
 
 	// add the socket namespace to the drawing
@@ -251,12 +231,56 @@ function base64ToBuffer(base64) {
 function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
-	this.socketNS = null;
+	this.socketNS = null; // contains all the sockets attached to this drawing
 	this.isFlattening = false;
 
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0; 
+
+	// Broadcast all drawing data to all sockets
+	this.broadcast = function() {
+		var self = this;
+		this.socketNS.emit("update_drawing", self.getJson());
+		console.log("Broadcast drawing "+this.id+" to "+this.getNSockets()+" sockets");
+	}
+
+	// Broadcast a single layer to all sockets
+	this.broadcastLayer = function(layerID, layer) {
+		var obj = {id: layerID, layer: layer};
+		var json = JSON.stringify(obj);
+		this.socketNS.emit("add_layer", json);
+		console.log("Broadcast layer for "+this.id+", "+layerID+" to "+this.getNSockets()+" sockets");
+	}
+
+	// Returns the number of connected sockets
+	this.getNSockets = function() {
+		return Object.keys(this.socketNS.connected).length;
+	}
+
+	// A socket namespace contains a collection of sockets, which will be broadcast to
+	this.addSocketNS = function(socketNS) {
+		this.socketNS = socketNS;
+	}
+
+	// layer is a base64 encoded PNG string
+	this.addLayer = function(layerObj) {
+		this.layers.set(++this.nLayers, layerObj);
+		return this.nLayers;
+	}
+	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
+	this.getLayer = function(layerID) {
+		return this.layers.get(layerID);
+	}
+	// instead of a layerID, return by position in the stored png stack
+	// Position 0 is the base image
+	this.getUnmergedLayer = function(position) {
+		var keys = this.layers.getKeys();
+		var offset = parseInt(keys[0]);
+		return this.layers.get(offset + position);
+	}
+	this.getNStoredLayers = function() { return this.layers.getLength(); }
+	this.getJson = function() { return this.layers.getJson(); }
 
 	// Merges the layers into a single image. This is a pretty expensive operation.
 	this.flatten = function() {
@@ -282,7 +306,8 @@ function Drawing(idIn, startImage) {
 				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
 					function(buffer) {
 						flattenRecursive(self, buffer, ++ind);
-					});
+					}
+				);
 
 			} else { // reached the end
 				// now we must convert the image to base 64 encoded string again
@@ -317,51 +342,6 @@ function Drawing(idIn, startImage) {
 		flattenRecursive(this, baseBuf, 0);
 	}
 
-	// Broadcast all drawing data to all sockets
-	this.broadcast = function() {
-		var self = this;
-		this.sockets.forEach(function(drawingSocket) {
-			drawingSocket.emit("update_drawing", self.getJson());
-		});
-		console.log("Broadcast drawing to "+this.sockets.size+" sockets");
-	}
-
-	// Broadcast a single layer to all sockets
-	this.broadcastLayer = function(layerID, layer) {
-		var obj = {id: layerID, layer: layer};
-		var json = JSON.stringify(obj);
-		this.socketNS.emit("add_layer", json);
-		console.log("Broadcast layer for "+this.id+", "+layerID);
-	}
-
-	this.addSocketNS = function(socketNS) {
-		this.socketNS = socketNS;
-	}
-
-	// this.addSocket = function(socket) {
-	// 	this.sockets.add(socket);
-	// 	console.log("Added socket");
-	// 	console.log(this.sockets.size);
-	// }
-
-	// layer is a base64 encoded PNG string
-	this.addLayer = function(layerObj) {
-		this.layers.set(++this.nLayers, layerObj);
-		return this.nLayers;
-	}
-	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
-	this.getLayer = function(layerID) {
-		return this.layers.get(layerID);
-	}
-	// instead of a layerID, return by position in the stored png stack
-	// Position 0 is the base image
-	this.getUnmergedLayer = function(position) {
-		var keys = this.layers.getKeys();
-		var offset = parseInt(keys[0]);
-		return this.layers.get(offset + position);
-	}
-	this.getNStoredLayers = function() { return this.layers.getLength(); }
-	this.getJson = function() { return this.layers.getJson(); }
 	this.addLayer({base64: startImage, offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 }
 
