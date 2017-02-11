@@ -21,6 +21,10 @@ function initDrawing(drawIdIn) {
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
+
+	ctx.lineJoin = "round";
+  	ctx.lineWidth = 10;
+
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;

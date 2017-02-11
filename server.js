@@ -77,8 +77,6 @@ function configureDrawingSocket(drawing) {
 	// set up the event handlers
 	drawingNS.on('connection', function(socket) {
 
-		// This is where we should send drawing init data
-
 		// Returns the drawing data to the client. The callback method is placed here
 		// so that we can pass the socket in as well
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
@@ -86,8 +84,10 @@ function configureDrawingSocket(drawing) {
 		// Receive new png draw data as base64 encoded string and add to the Drawing
 		socket.on("add_layer", addLayer);
 
+		// disconnect a socket
 		socket.on("disconnect", function() {
-			console.log("disconnect");
+			console.log("disconnect from "+drawing.id);
+			// nothing to do
 		});
 	});
 }
@@ -182,6 +182,7 @@ function createDrawing(req, res) {
 		drawings.set(drawID, drawing);
 		configureDrawingSocket(drawing);
 		res.send(drawID);
+		console.log("Drawing "+drawID+" created.");
 	});
 }
 
