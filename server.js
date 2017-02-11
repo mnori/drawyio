@@ -84,12 +84,19 @@ function configureDrawingSocket(drawing) {
 		// Receive new png draw data as base64 encoded string and add to the Drawing
 		socket.on("add_layer", addLayer);
 
+		socket.on("mousemove", mouseMove);
+
 		// disconnect a socket
 		socket.on("disconnect", function() {
-			console.log("disconnect from "+drawing.id);
+			console.log("Disconnect from "+drawing.id);
 			// nothing to do
 		});
 	});
+}
+
+function mouseMove(data, socket) {
+	console.log("mouseMove() invoked");
+	console.log(data);
 }
 
 // we'll also want a broadcastDrawing() method for when the image is flattened
@@ -170,11 +177,8 @@ function createDrawing(req, res) {
 		channels: params.channels
 	}}).png();
 
-	// Convert to a base64 encoded string
-
 	// Convert to buffer, store the buffer, send unique drawing ID to client
-	// PNG conversion is slow
-	// Note - this needs to be a base64 encoded string
+	// Sends a base64 encoded string
 	png.toBuffer().then(function(buffer) {
 		var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 		var drawing = new Drawing(drawID, base64);

@@ -25,21 +25,26 @@ function initDrawing(drawIdIn) {
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
 	var layerID = 1
+	var lastEmit = $.now();
 
 	function setup() { 
 
 		// start drawing
 		canvas.mousedown(function(ev) {
 			prevCoord = getMousePos(ev);
+			emitMousePos(prevCoord);
 		});
+
+		
 
 		// draw a stroke
 		canvas.mousemove(function(ev) { 
+			var newCoord = getMousePos(ev);
 			if (prevCoord != null) {
-				var newCoord = getMousePos(ev);
 				drawLine(prevCoord, newCoord);
 				prevCoord = newCoord;
 			}
+			emitMousePos(newCoord);
 		});
 
 		// stop drawing
@@ -48,10 +53,16 @@ function initDrawing(drawIdIn) {
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
-
 		socket.on("add_layer", receiveLayer);
 
 		getDrawing();
+	}
+
+	function emitMousePos(mouseCoords) {
+		if($.now() - lastEmit > 30) { // send mouse position data to the server
+			socket.emit('mousemove', mouseCoords);
+			lastEmit = $.now();
+		}
 	}
 
 	// Ask the server for drawing data
