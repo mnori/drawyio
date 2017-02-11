@@ -19,8 +19,8 @@ const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 800,
-	height: 600,
+	width: 500,
+	height: 300,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }
@@ -75,7 +75,7 @@ function configureSocket() {
 		// so that we can pass the socket in as well
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
-		// Receive new png draw data as base64 encoded string and add to the stack
+		// Receive new png draw data as base64 encoded string and add to the Drawing
 		socket.on('add_layer', addLayer);
 	});
 }
@@ -83,28 +83,21 @@ function configureSocket() {
 // we'll also want a broadcastDrawing() method for when the image is flattened
 function sendDrawing(data, socket) {
 	var drawID = data.drawID;
+	var output = drawings.get(drawID).getJson();
 	socket.emit("update_drawing", drawings.get(drawID).getJson());
 }
 
+// Adds a layer from raw data coming from the socket
 function addLayer(data) {
 	var drawID = data.drawID;
 	var drawing = drawings.get(drawID);
 	if (drawing == null) {
 		console.log("WARNING: "+drawID+" does not exist!");
 	} else {
-		// console.log("Found ["+drawID+"]")
-		// just store the raw base64 encoded string here since we'll have to transmit 
-		// multiple pics using JSON...
-		drawing.addLayer(data.base64)
-
+		drawing.addLayer({base64: data.base64, offsets: data.offsets});
 		if (drawing.getNStoredLayers() >= MAX_LAYERS) {
 			drawing.flatten();
 		}
-
-		// KEEP THIS - it converts base64 to a proper PNG image
-		// This line sends the event (broadcasts it)
-		// to everyone except the originating client.
-		// socket.broadcast.emit('moving', data);
 	}
 }
 
@@ -219,7 +212,6 @@ function base64ToBuffer(base64) {
 function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
-
 	this.isFlattening = false;
 
 	// used to generate unique sequential layer IDs
@@ -240,14 +232,14 @@ function Drawing(idIn, startImage) {
 		function flattenRecursive(self, baseBuf, ind) {
 			console.log("flattenRecursive() invoked with ind: "+ind);
 			// get base image
-			var overlayBase64 = self.getUnmergedLayer(ind + 1); // overlay base 64 
+			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
-			if (overlayBase64 != null) { 
+			if (overlay != null) { 
 				// not reached the end yet - so overlay the image
-				var overlayBuf = base64ToBuffer(overlayBase64);
+				// This is where we need to use the coordinate data
+				var overlayBuf = base64ToBuffer(overlay.base64);
 				sharp(baseBuf).overlayWith(overlayBuf).toBuffer().then(function(buffer) {
-					ind++;
-					flattenRecursive(self, buffer, ind);
+					flattenRecursive(self, buffer, ++ind);
 				});
 
 			} else { // reached the end
@@ -257,7 +249,8 @@ function Drawing(idIn, startImage) {
 
 					// reset the drawing using the new merged data
 					self.layers.empty(); 
-					self.layers.set(self.nLayers, base64);
+					self.layers.set(self.nLayers, {base64: base64, 
+						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 					self.isFlattening = false;
 
 					console.log("Drawing has been flattened");
@@ -275,15 +268,15 @@ function Drawing(idIn, startImage) {
 			return;
 		}
 
-		var baseBuf = base64ToBuffer(this.getUnmergedLayer(0)); // base image
+		var baseBuf = base64ToBuffer(this.getUnmergedLayer(0).base64); // base image
 		flattenRecursive(this, baseBuf, 0);
 	}
 	// layer is a base64 encoded PNG string
-	this.addLayer = function(layer) {
+	this.addLayer = function(layerObj) {
 		this.nLayers++;
-		this.layers.set(this.nLayers, layer);
+		this.layers.set(this.nLayers, layerObj);
 	}
-	// returns a base64 encoded PNG string
+	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
 	this.getLayer = function(layerID) {
 		return this.layers.get(layerID);
 	}
@@ -296,7 +289,7 @@ function Drawing(idIn, startImage) {
 	}
 	this.getNStoredLayers = function() { return this.layers.getLength(); }
 	this.getJson = function() { return this.layers.getJson(); }
-	this.addLayer(startImage)
+	this.addLayer({base64: startImage, offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 }
 
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.

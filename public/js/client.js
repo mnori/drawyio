@@ -54,21 +54,24 @@ function initDrawing(drawIdIn) {
 
 	// Ask the server for drawing data
 	function getDrawing() {
+		console.log("drawID: "+drawID);
 		socket.emit("get_drawing", {"drawID": drawID});
 	}
 
 	// Update drawing with new draw data from the server
-	// This resets everything
+	// This resets the layers
 	function receiveDrawing(data) {
 		data = $.parseJSON(data);
 
 		// Lets start off simple and just show the data
 		// Remove all the old layers, if there are any
-		$(".drawing_layer").remove()
+		$(".drawing_layer").remove();
 
 		// Add the new layers
 		$.each(data, function(key, value) {
-			addLayer(parseInt(key), value);
+			// console.log(value.coords);
+			console.log(value);
+			addLayer(parseInt(key), value.offsets, value.base64);
 		});
 	}
 
@@ -93,6 +96,7 @@ function initDrawing(drawIdIn) {
 		prevCoord = null;
 	}
 
+	// TODO squash cropCoords and base64 into an object?
 	function addLayer(layerIDIn, cropCoords, base64) {
 		var layersHtml = 
 			"<img class=\"drawing_layer\" "+
@@ -148,6 +152,7 @@ function initDrawing(drawIdIn) {
 	setup();
 }
 
+// Crop a sourceCanvas by alpha=0. Results are written to destCanvas.
 // Adapted from https://stackoverflow.com/questions/12175991/crop-image-white-space-automatically-using-jquery
 function cropCanvas(sourceCanvas, destCanvas) {
     var context = sourceCanvas.getContext('2d');
@@ -171,13 +176,10 @@ function cropCanvas(sourceCanvas, destCanvas) {
 
             // loop through each row
             for (var y = fromTop ? 0 : imgHeight - 1; fromTop ? (y < imgHeight) : (y > -1); y += offset) {
-
-                // loop through each column
-                for (var x = 0; x < imgWidth; x++) {
+                for (var x = 0; x < imgWidth; x++) { // loop through each column
                     if (hasData(x, y)) {
                         return y;                        
                     }
-                    
                 }
             }
             return null; // all image is transparent
@@ -187,9 +189,7 @@ function cropCanvas(sourceCanvas, destCanvas) {
 
             // loop through each column
             for (var x = fromLeft ? 0 : imgWidth - 1; fromLeft ? (x < imgWidth) : (x > -1); x += offset) {
-
-                // loop through each row
-                for (var y = 0; y < imgHeight; y++) {
+                for (var y = 0; y < imgHeight; y++) { // loop through each row
                     if (hasData(x, y)) {
                         return x;                        
                     }
