@@ -21,10 +21,6 @@ function initDrawing(drawIdIn) {
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
-
-	ctx.lineJoin = "round";
-  	ctx.lineWidth = 10;
-
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
@@ -102,9 +98,15 @@ function initDrawing(drawIdIn) {
 	}
 
 	function drawLine(prevCoord, newCoord) {
+		ctx.beginPath();
 		ctx.moveTo(prevCoord.x, prevCoord.y);
 		ctx.lineTo(newCoord.x, newCoord.y);
+		ctx.strokeStyle = "black";
+		ctx.lineCap = "round";
+		ctx.lineJoin = "round";
+	  	ctx.lineWidth = 5;
 		ctx.stroke()
+		ctx.closePath();
 	}
 
 	function stopDrawing(ev) {
@@ -153,7 +155,6 @@ function initDrawing(drawIdIn) {
 
 				// Clear the canvas
 				ctx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height)
-				ctx.beginPath()
 
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
@@ -178,7 +179,7 @@ function initDrawing(drawIdIn) {
 // Crop a sourceCanvas by alpha=0. Results are written to destCanvas.
 // Adapted from https://stackoverflow.com/questions/12175991/crop-image-white-space-automatically-using-jquery
 function cropCanvas(sourceCanvas, destCanvas) {
-    var context = sourceCanvas.getContext('2d');
+    var context = sourceCanvas.getContext("2d");
     // context.drawImage(imageObject, 0, 0);
 
     var imgWidth = sourceCanvas.width, 
