@@ -19,8 +19,8 @@ const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 500,
-	height: 300,
+	width: 800,
+	height: 600,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }
@@ -96,9 +96,12 @@ function addLayer(data) {
 	if (drawing == null) {
 		console.log("WARNING: "+drawID+" does not exist!");
 	} else {
-		drawing.addLayer({base64: data.base64, offsets: data.offsets});
+		var layer = {base64: data.base64, offsets: data.offsets}
+		var layerID = drawing.addLayer(layer);
 		if (drawing.getNStoredLayers() > MAX_LAYERS) {
 			drawing.flatten();
+		} else {
+			drawing.broadcastLayer(layerID, layer);
 		}
 	}
 }
@@ -280,13 +283,23 @@ function Drawing(idIn, startImage) {
 		flattenRecursive(this, baseBuf, 0);
 	}
 
-	// Broadcast drawing data to all sockets
+	// Broadcast all drawing data to all sockets
 	this.broadcast = function() {
 		var self = this;
 		this.sockets.forEach(function(drawingSocket) {
 			drawingSocket.emit("update_drawing", self.getJson());
 		});
-		console.log("Broadcast to "+this.sockets.size+" sockets");
+		console.log("Broadcast drawing to "+this.sockets.size+" sockets");
+	}
+
+	// Broadcast a single layer to all sockets
+	this.broadcastLayer = function(layerID, layer) {
+		var obj = {id: layerID, layer: layer};
+		var json = JSON.stringify(obj);
+		this.sockets.forEach(function(drawingSocket) {
+			drawingSocket.emit("add_layer", json);
+		});
+		console.log("Broadcast layer to "+this.sockets.size+" sockets");	
 	}
 
 	this.addSocket = function(socket) {
@@ -297,8 +310,8 @@ function Drawing(idIn, startImage) {
 
 	// layer is a base64 encoded PNG string
 	this.addLayer = function(layerObj) {
-		this.nLayers++;
-		this.layers.set(this.nLayers, layerObj);
+		this.layers.set(++this.nLayers, layerObj);
+		return this.nLayers;
 	}
 	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
 	this.getLayer = function(layerID) {

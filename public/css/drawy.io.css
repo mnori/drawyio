@@ -1,3 +1,16 @@
+@font-face {font-family: ubuntuMonoBold; src: url(/fonts/UbuntuMono-B.ttf);}
+@font-face {font-family: ubuntuMono; src: url(/fonts/UbuntuMono-R.ttf);}
+
+.logo {
+	font-family: ubuntuMonoBold;
+	font-size: 40px;
+	text-shadow: 0px 0px 8px #666;
+}
+body {
+  font-family: ubuntuMono, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+
 #drawing_layers {
 	border: 1px solid #aaa;
 	box-shadow: 0px 0px 10px #bbb;
@@ -20,16 +33,6 @@
 	position: absolute;
 	top: 0px;
 	left: 0px;
-}
-
-@font-face {
-    font-family: LogoFont;
-    src: url(/fonts/UbuntuMono-B.ttf);
-}
-.logo {
-	font-family: LogoFont;
-	font-size: 40px;
-	text-shadow: 0px 0px 8px #666;
 }
 
 a.logo:link, a.logo:visited {

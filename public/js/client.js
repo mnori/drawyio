@@ -49,6 +49,8 @@ function initDrawing(drawIdIn) {
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
 
+		socket.on("add_layer", receiveLayer);
+
 		getDrawing();
 	}
 
@@ -62,16 +64,14 @@ function initDrawing(drawIdIn) {
 	function receiveDrawing(data) {
 		data = $.parseJSON(data);
 
-		console.log("receiveDrawing()");
 		// Add the new layers
-
 		var minKey = null;
 		$.each(data, function(key, value) {
 			var keyInt = parseInt(key);
 			if (minKey == null || key < minKey) {
 				minKey = key;
 			}
-			addLayer(keyInt, value.offsets, value.base64);
+			addLayer(keyInt, value);
 		});
 
 		// remove the older layers - those with z-index less than minKey
@@ -83,6 +83,11 @@ function initDrawing(drawIdIn) {
 			}
 		});
 	}
+
+	function receiveLayer(data) {
+		data = $.parseJSON(data);
+		addLayer(data.id, data.layer);
+	}	
 
 	function getMousePos(ev) {
 		var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
@@ -106,16 +111,23 @@ function initDrawing(drawIdIn) {
 	}
 
 	// TODO squash cropCoords and base64 into an object?
-	function addLayer(layerIDIn, cropCoords, base64) {
+	function addLayer(layerIDIn, layer) {
+				
+		var existingLayer = $("#drawing_layer_"+layerIDIn);
 		var layersHtml = 
-			"<img class=\"drawing_layer\" "+
-			"src=\""+base64+"\" "+
+			"<img class=\"drawing_layer\" id=\"drawing_layer_"+layerIDIn+"\""+
+			"src=\""+layer.base64+"\" "+
 			"style=\""+
 				"z-index: "+layerIDIn+";"+
-				"left: "+cropCoords.left+"px;"+
-				"top: "+cropCoords.top+"px;\"/>";
-		$("#drawing_layers").prepend(layersHtml);
-		if (layerIDIn > layerID) {
+				"left: "+layer.offsets.left+"px;"+
+				"top: "+layer.offsets.top+"px;\"/>";
+
+		if (existingLayer.length != 0) { // avoid a duplicate element
+			existingLayer.remove();
+		}
+		$("#drawing_layers").append(layersHtml);
+
+		if (layerIDIn > layerID) { // only add if it's a new layer
 			layerID = layerIDIn;
 		}
 	}
@@ -130,11 +142,9 @@ function initDrawing(drawIdIn) {
 			// Generate data URL, to be displayed on the front end, from the blob
 			var fr = new FileReader();
 			fr.onload = function(e) {
-				addLayer(layerID, cropCoords, e.target.result)
+				addLayer(layerID + 1, {base64: e.target.result, offsets: cropCoords});
 
 				// Update the front end png stack
-				layerID++; // this lets us create a nice stack
-
 				// attr("src", e.target.result)
 
 				// Clear the canvas
