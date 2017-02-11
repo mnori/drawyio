@@ -76,7 +76,11 @@ function configureSocket() {
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
 		// Receive new png draw data as base64 encoded string and add to the Drawing
-		socket.on('add_layer', addLayer);
+		socket.on("add_layer", addLayer);
+
+		socket.on("disconnect", function() {
+			console.log("disconnect");
+		});
 	});
 }
 
@@ -86,6 +90,7 @@ function sendDrawing(data, socket) {
 	var drawing = drawings.get(drawID); 
 	drawing.addSocket(socket);
 	var output = drawing.getJson();
+	socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
 	socket.emit("update_drawing", drawings.get(drawID).getJson());
 }
 
