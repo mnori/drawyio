@@ -238,9 +238,11 @@ function Drawing(idIn, startImage) {
 				// not reached the end yet - so overlay the image
 				// This is where we need to use the coordinate data
 				var overlayBuf = base64ToBuffer(overlay.base64);
-				sharp(baseBuf).overlayWith(overlayBuf).toBuffer().then(function(buffer) {
-					flattenRecursive(self, buffer, ++ind);
-				});
+				var overlayParams = {top: overlay.offsets.top, left: overlay.offsets.left};
+				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
+					function(buffer) {
+						flattenRecursive(self, buffer, ++ind);
+					});
 
 			} else { // reached the end
 				// now we must convert the image to base 64 encoded string again
