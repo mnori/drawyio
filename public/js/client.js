@@ -1,6 +1,6 @@
 // drawcloud.js
 // The draw.io front end client
-// Copyright (C) 2017 draw.io
+// Copyright (C) 2017 drawy.io
 
 // Intialise the splash screen
 function initSplash() {
@@ -22,7 +22,7 @@ function initDrawing(drawIdIn) {
 	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var prevCoord = null; // if this is null, it means we are not drawing
-	var socket = io.connect("/");
+	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
 	var layerID = 1
 

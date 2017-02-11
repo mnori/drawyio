@@ -1,8 +1,9 @@
 // node.js server for drawy.io
-// (c) Matthew Norris 2017
+// (C) drawy.io
 
 "use strict";
 
+// IMPORTS
 const fs = require("fs");
 const util = require("util");
 const express = require("express"); // A node.js framework
@@ -11,10 +12,11 @@ const sharp = require("sharp"); // Image processing library
 const nano = require('nanoseconds'); // For measuring performance
 const app = express();
 
-// for socket.io
-const server = require("http").Server(app)
-const io = require("socket.io")(server)
 
+const server = require("http").Server(app) // set up socket.io
+const io = require("socket.io")(server)    //
+
+// Define global constants
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
@@ -34,7 +36,7 @@ function main() {
 	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
-	configureSocket();
+	// configureSocket();
 	server.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
@@ -65,10 +67,36 @@ function configureRoutes(app) {
 	app.use(function(req, res, next) { send404(res); })
 }
 
-// Set up all the socket actions
-function configureSocket() {
-	// Listen for incoming connections from clients
-	io.sockets.on('connection', function (socket) {
+// // Set up all the socket actions
+// function configureSocket() {
+// 	// Listen for incoming connections from clients
+
+// 	var nsp = io.of('/global');
+// 	nsp.on('connection', function (socket) {
+// 		// This is where we should send drawing init data
+
+// 		// Returns the drawing data to the client. The callback method is placed here
+// 		// so that we can pass the socket in as well
+// 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
+
+// 		// Receive new png draw data as base64 encoded string and add to the Drawing
+// 		socket.on("add_layer", addLayer);
+
+// 		socket.on("disconnect", function() {
+// 			console.log("disconnect");
+// 		});
+// 	});
+// }
+
+function configureDrawingSocket(drawing) {
+
+	// add the socket namespace to the drawing
+	var drawingNS = io.of("/drawing_socket_"+drawing.id);
+	drawing.addSocketNS(drawingNS);
+
+	// set up the event handlers
+	drawingNS.on('connection', function(socket) {
+
 		// This is where we should send drawing init data
 
 		// Returns the drawing data to the client. The callback method is placed here
@@ -88,7 +116,6 @@ function configureSocket() {
 function sendDrawing(data, socket) {
 	var drawID = data.drawID;
 	var drawing = drawings.get(drawID); 
-	drawing.addSocket(socket);
 	var output = drawing.getJson();
 	socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
 	socket.emit("update_drawing", drawings.get(drawID).getJson());
@@ -171,7 +198,9 @@ function createDrawing(req, res) {
 	// Note - this needs to be a base64 encoded string
 	png.toBuffer().then(function(buffer) {
 		var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
-		drawings.set(drawID, new Drawing(drawID, base64));
+		var drawing = new Drawing(drawID, base64);
+		drawings.set(drawID, drawing);
+		configureDrawingSocket(drawing);
 		res.send(drawID);
 	});
 }
@@ -222,14 +251,14 @@ function base64ToBuffer(base64) {
 function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
-	this.sockets = new Set([]);
+	this.socketNS = null;
 	this.isFlattening = false;
 
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0; 
 
-	// Merges the layers into a single image
+	// Merges the layers into a single image. This is a pretty expensive operation.
 	this.flatten = function() {
 		if (this.isFlattening) {
 			console.log("Already being flattened!");
@@ -301,17 +330,19 @@ function Drawing(idIn, startImage) {
 	this.broadcastLayer = function(layerID, layer) {
 		var obj = {id: layerID, layer: layer};
 		var json = JSON.stringify(obj);
-		this.sockets.forEach(function(drawingSocket) {
-			drawingSocket.emit("add_layer", json);
-		});
-		console.log("Broadcast layer to "+this.sockets.size+" sockets");	
+		this.socketNS.emit("add_layer", json);
+		console.log("Broadcast layer for "+this.id+", "+layerID);
 	}
 
-	this.addSocket = function(socket) {
-		this.sockets.add(socket);
-		console.log("Added socket");
-		console.log(this.sockets.size);
+	this.addSocketNS = function(socketNS) {
+		this.socketNS = socketNS;
 	}
+
+	// this.addSocket = function(socket) {
+	// 	this.sockets.add(socket);
+	// 	console.log("Added socket");
+	// 	console.log(this.sockets.size);
+	// }
 
 	// layer is a base64 encoded PNG string
 	this.addLayer = function(layerObj) {
