@@ -110,10 +110,9 @@ function addLayer(data) {
 	} else {
 		var layer = {base64: data.base64, offsets: data.offsets}
 		var layerID = drawing.addLayer(layer);
+		drawing.broadcastLayer(layerID, layer);
 		if (drawing.getNStoredLayers() > MAX_LAYERS) {
 			drawing.flatten();
-		} else {
-			drawing.broadcastLayer(layerID, layer);
 		}
 	}
 }
