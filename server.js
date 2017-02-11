@@ -83,7 +83,9 @@ function configureSocket() {
 // we'll also want a broadcastDrawing() method for when the image is flattened
 function sendDrawing(data, socket) {
 	var drawID = data.drawID;
-	var output = drawings.get(drawID).getJson();
+	var drawing = drawings.get(drawID); 
+	drawing.addSocket(socket);
+	var output = drawing.getJson();
 	socket.emit("update_drawing", drawings.get(drawID).getJson());
 }
 
@@ -95,7 +97,7 @@ function addLayer(data) {
 		console.log("WARNING: "+drawID+" does not exist!");
 	} else {
 		drawing.addLayer({base64: data.base64, offsets: data.offsets});
-		if (drawing.getNStoredLayers() >= MAX_LAYERS) {
+		if (drawing.getNStoredLayers() > MAX_LAYERS) {
 			drawing.flatten();
 		}
 	}
@@ -212,6 +214,7 @@ function base64ToBuffer(base64) {
 function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
+	this.sockets = new Set([]);
 	this.isFlattening = false;
 
 	// used to generate unique sequential layer IDs
@@ -255,9 +258,12 @@ function Drawing(idIn, startImage) {
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 					self.isFlattening = false;
 
+					// now we must update each client
 					console.log("Drawing has been flattened");
 					tl.log("b");
 					tl.dump();
+
+					self.broadcast();
 				});
 			}
 		}
@@ -273,6 +279,22 @@ function Drawing(idIn, startImage) {
 		var baseBuf = base64ToBuffer(this.getUnmergedLayer(0).base64); // base image
 		flattenRecursive(this, baseBuf, 0);
 	}
+
+	// Broadcast drawing data to all sockets
+	this.broadcast = function() {
+		var self = this;
+		this.sockets.forEach(function(drawingSocket) {
+			drawingSocket.emit("update_drawing", self.getJson());
+		});
+		console.log("Broadcast to "+this.sockets.size+" sockets");
+	}
+
+	this.addSocket = function(socket) {
+		this.sockets.add(socket);
+		console.log("Added socket");
+		console.log(this.sockets.size);
+	}
+
 	// layer is a base64 encoded PNG string
 	this.addLayer = function(layerObj) {
 		this.nLayers++;

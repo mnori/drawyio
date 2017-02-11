@@ -54,7 +54,6 @@ function initDrawing(drawIdIn) {
 
 	// Ask the server for drawing data
 	function getDrawing() {
-		console.log("drawID: "+drawID);
 		socket.emit("get_drawing", {"drawID": drawID});
 	}
 
@@ -63,16 +62,25 @@ function initDrawing(drawIdIn) {
 	function receiveDrawing(data) {
 		data = $.parseJSON(data);
 
-		// Lets start off simple and just show the data
-		// Remove all the old layers, if there are any
-		$(".drawing_layer").remove();
-
 		console.log("receiveDrawing()");
 		// Add the new layers
+
+		var minKey = null;
 		$.each(data, function(key, value) {
-			console.log("Entry:");
-			console.log(value);
-			addLayer(parseInt(key), value.offsets, value.base64);
+			var keyInt = parseInt(key);
+			if (minKey == null || key < minKey) {
+				minKey = key;
+			}
+			addLayer(keyInt, value.offsets, value.base64);
+		});
+
+		// remove the older layers - those with z-index less than minKey
+		$(".drawing_layer").each(function() {
+			var element = $(this);
+			var index = element.css("z-index");
+			if (index < minKey) { // this is an old layer
+				element.remove();
+			}
 		});
 	}
 
