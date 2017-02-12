@@ -44,7 +44,7 @@ function initDrawing(drawIdIn) {
 		body.mousemove(function(ev) { 
 			var newCoord = getMousePos(ev);
 			if (newCoord == null) {
-				emitMouseCoords(prevCoord, null);
+				emitMouseCoords(prevCoord, null); // fell off edge of screen
 				stopDrawing();
 				return;
 			}
@@ -86,6 +86,7 @@ function initDrawing(drawIdIn) {
 		var sockID = data.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
 		if (data.newCoord == null) {
+			// also fades out when the mouse is not drawing
 			pointerElement.fadeOut(labelFadeOutMs, function() {
 				pointerElement.remove();
 			});
@@ -186,8 +187,6 @@ function initDrawing(drawIdIn) {
 		if (prevCoord != null) {
 			processCanvas(canvas[0], croppingCanvas[0])
 		}
-		// indicate to everyone else that we have stopped drawing
-		emitMouseCoords(prevCoord, null); 
 		prevCoord = null;
 	}
 
