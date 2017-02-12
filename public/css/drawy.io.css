@@ -1,5 +1,7 @@
 @font-face {font-family: ubuntuMonoBold; src: url(/fonts/UbuntuMono-B.ttf);}
 @font-face {font-family: ubuntuMono; src: url(/fonts/UbuntuMono-R.ttf);}
+@font-face {font-family: ubuntuRegular; src: url(/fonts/Ubuntu-R.ttf);}
+@font-face {font-family: ubuntuBold; src: url(/fonts/Ubuntu-B.ttf);}
 
 .logo {
 	font-family: ubuntuMonoBold;
@@ -7,21 +9,38 @@
 	text-shadow: 0px 0px 8px #666;
 }
 body {
-  font-family: ubuntuMono, Helvetica, Arial, sans-serif;
-  font-size: 26px;
+	font-family: ubuntuRegular, Helvetica, Arial, sans-serif;
+	font-size: 22px;
 }
 
 .drawing_pointer {
 	position: absolute;
-	width: 5px;
-	height: 5px;
-	background-color: #f00;
 	z-index: 9007199254740990; /* just behind the canvas */
+}
+
+.pointer_dot {
+	position: absolute;
+	top: -3px;
+	right: -3px;
+	width: 6px;
+	height: 6px;
+	border-radius: 3px;
+	box-shadow: 0px 0px 6px 3px rgba(255,255,255,1);
+	background-color: #000;
 }
 
 .pointer_label {
 	position: absolute;
 	left: 10px;
+	top: -15px;
+	color: #fff;
+	font-size: 18px;
+	line-height: 18px;
+	border-radius: 10px;
+	padding: 4px;
+    background-color: rgba(0, 0, 0, 0.8);
+	white-space: nowrap;
+	font-family: ubuntuBold;
 }
 
 #drawing_layers {

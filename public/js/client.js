@@ -75,6 +75,7 @@ function initDrawing(drawIdIn) {
 		if (pointerElement.length == 0) { // avoid a duplicate element
 			var divBuf = 
 				"<div id=\"drawing_pointer_"+sockID+"\" class=\"drawing_pointer\">"+
+					"<div class=\"pointer_dot\"></div>"+
 					"<div id=\"drawing_pointer_label_"+sockID+"\" class=\"pointer_label\"></div>"+
 				"</div>";
 			$("#drawing_layers").append(divBuf)
@@ -86,7 +87,8 @@ function initDrawing(drawIdIn) {
 			top: data.mouseCoords.y+"px"
 		});
 		console.log(data)
-		$("#drawing_pointer_label_"+sockID).text(data.nickname);
+		var nick = !data.nickname ? "Anonymous" : data.nickname;
+		$("#drawing_pointer_label_"+sockID).text(nick);
 		// TODO make it fade out
 	}
 
