@@ -147,15 +147,16 @@ function initDrawing(drawIdIn) {
 				addLayer(keyInt, value);
 			});
 
-			$(".drawing_layer").each(function() {
-				var element = $(this);
-				var index = parseInt(element.css("z-index"));
+			// $(".drawing_layer").each(function() {
+			// 	var element = $(this);
+			// 	var index = parseInt(element.css("z-index"));
 
-				// layer is replaced by the new data
-				if (index >= minNew && index < maxNew) { 
-					element.remove();
-				}
-			});
+			// 	// layer is replaced by the new data
+			// 	if (index >= minNew && index < maxNew) { 
+			// 		element.remove();
+			// 	}
+			// });
+
 		}, 1000);
 	}
 
