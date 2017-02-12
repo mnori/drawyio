@@ -12,14 +12,13 @@ const sharp = require("sharp"); // Image processing library
 const nano = require('nanoseconds'); // For measuring performance
 const app = express();
 
-
 const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
 
 // Define global constants
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
-const MAX_LAYERS = 10; // Max number of layers to store before flattening the image
+const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 640,
 	height: 480,
@@ -82,10 +81,10 @@ function configureDrawingSocket(drawing) {
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
 		// Update drawing with mouse cursor info
-		socket.on("mousemove", function(data) { mouseMove(data, socket); });
+		socket.on("mousemove", function(data) { receiveMouseMove(data, socket); });
 
 		// Receive new png draw data as base64 encoded string and add to the Drawing
-		socket.on("add_layer", addLayer);
+		socket.on("add_layer", receiveLayer);
 
 		// disconnect a socket
 		socket.on("disconnect", function() {
@@ -95,7 +94,7 @@ function configureDrawingSocket(drawing) {
 	});
 }
 
-function mouseMove(data, socket) {
+function receiveMouseMove(data, socket) {
 	var drawing = drawings.get(socket.drawID);
 	drawing.broadcastMouseCoords(data, socket);
 }
@@ -110,7 +109,7 @@ function sendDrawing(data, socket) {
 }
 
 // Adds a layer from raw data coming from the socket
-function addLayer(data) {
+function receiveLayer(data) {
 	var drawID = data.drawID;
 	var drawing = drawings.get(drawID);
 	if (drawing == null) {
@@ -258,6 +257,7 @@ function Drawing(idIn, startImage) {
 		console.log("Broadcast layer for "+this.id+", "+layerID+" to "+this.getNSockets()+" sockets");
 	}
 
+	// Broadcast mousecoords to all sockets except the originator
 	this.broadcastMouseCoords = function(data, socket) {
 		var socketID = socket.id.split("#").pop();
 		data.socketID = socketID; // we need the socket id to keep track of things

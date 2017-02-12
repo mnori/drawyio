@@ -167,7 +167,6 @@ function initDrawing(drawIdIn) {
 				mousePos.y < 0 || mousePos.y >= rect.height) {
 			return null
 		}
-		console.log(mousePos);
 		return mousePos;
 	}
 
