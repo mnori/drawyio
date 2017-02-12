@@ -11,11 +11,12 @@
 body {
 	font-family: ubuntuRegular, Helvetica, Arial, sans-serif;
 	font-size: 22px;
+	background-color: #fff;
 }
 
 .drawing_pointer {
 	position: absolute;
-	z-index: 9007199254740990; /* just behind the canvas */
+	z-index: 9007199254740989; /* just behind the canvas */
 }
 
 .pointer_dot {
@@ -27,6 +28,7 @@ body {
 	border-radius: 3px;
 	box-shadow: 0px 0px 6px 3px rgba(255,255,255,1);
 	background-color: #000;
+	z-index: 9007199254740990;
 }
 
 .pointer_label {
@@ -37,10 +39,16 @@ body {
 	font-size: 18px;
 	line-height: 18px;
 	border-radius: 10px;
+	text-shadow:
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000,
+          1px 1px 0 #000;
 	padding: 4px;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.7);
 	white-space: nowrap;
 	font-family: ubuntuBold;
+	z-index: 9007199254740990;
 }
 
 #drawing_layers {
@@ -48,6 +56,7 @@ body {
 	box-shadow: 0px 0px 10px #bbb;
 	cursor: crosshair;
 	position: relative;
+	user-select: none;
 }
 
 #drawing_canvas {

@@ -1,5 +1,5 @@
 // node.js server for drawy.io
-// (C) drawy.io
+// (C) 2017 drawy.io
 
 "use strict";
 
@@ -19,7 +19,7 @@ const io = require("socket.io")(server)    //
 // Define global constants
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
-const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
+const MAX_LAYERS = 10; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 640,
 	height: 480,
@@ -70,7 +70,7 @@ function configureRoutes(app) {
 // Set up drawing-specific event handlers
 function configureDrawingSocket(drawing) {
 
-	// add the socket namespace to the drawing
+	// link the socket namespace to the drawing
 	var drawingNS = io.of("/drawing_socket_"+drawing.id);
 	drawing.addSocketNS(drawingNS);
 
@@ -277,7 +277,8 @@ function Drawing(idIn, startImage) {
 
 	// layer is a base64 encoded PNG string
 	this.addLayer = function(layerObj) {
-		this.layers.set(++this.nLayers, layerObj);
+		this.nLayers++;
+		this.layers.set(this.nLayers, layerObj);
 		return this.nLayers;
 	}
 	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
@@ -330,14 +331,13 @@ function Drawing(idIn, startImage) {
 					self.layers.empty(); 
 					self.layers.set(self.nLayers, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
-					self.isFlattening = false;
-
 					// now we must update each client
 					console.log("Drawing has been flattened");
 					tl.log("b");
-					tl.dump();
-
 					self.broadcast();
+					self.isFlattening = false;
+					tl.log("c");
+					tl.dump();
 				});
 			}
 		}

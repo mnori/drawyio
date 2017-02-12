@@ -1,6 +1,5 @@
-// drawcloud.js
 // The draw.io front end client
-// Copyright (C) 2017 drawy.io
+// (C) 2017 drawy.io
 
 // Intialise the splash screen
 function initSplash() {
@@ -30,31 +29,41 @@ function initDrawing(drawIdIn) {
 	var drawID = drawIdIn;
 	var layerID = 1
 	var lastEmit = $.now();
+	var labelFadeOutMs = 120;
+	var labelFadeInMs = 500;
 
 	function setup() { 
 
 		// start drawing
-		canvas.mousedown(function(ev) {
+		var body = $("body");
+		body.mousedown(function(ev) {
 			prevCoord = getMousePos(ev);
-			emitMouseCoords(prevCoord);
 		});
 
 		// draw a stroke. Sync with the tick so coords send are the same used for drawing
-		canvas.mousemove(function(ev) { 
+		body.mousemove(function(ev) { 
+			var newCoord = getMousePos(ev);
+			if (newCoord == null) {
+				emitMouseCoords(prevCoord, null);
+				stopDrawing();
+				return;
+			}
 			if($.now() - lastEmit > mouseEmitInterval) { 
-				var newCoord = getMousePos(ev);
 				if (prevCoord != null) {
 					drawLine(prevCoord, newCoord);
+					emitMouseCoords(prevCoord, newCoord);
 					prevCoord = newCoord;
+				} else {
+					// this indicates that we are not drawing.
+					emitMouseCoords(null, newCoord);
 				}
-				emitMouseCoords(newCoord);
 				lastEmit = $.now();
 			}
 		});
 
 		// stop drawing
-		canvas.mouseup(stopDrawing);
-		canvas.mouseleave(stopDrawing);
+		body.mouseup(stopDrawing);
+		body.mouseleave(stopDrawing);
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
@@ -64,19 +73,26 @@ function initDrawing(drawIdIn) {
 		getDrawing();
 	}
 
-	function emitMouseCoords(mouseCoords) {
+	function emitMouseCoords(prevCoord, newCoord) {
 		// send mouse position data to the server
 		socket.emit('mousemove', {
 			nickname: $("#nickname").val(),
-			mouseCoords: mouseCoords
+			prevCoord: prevCoord,
+			newCoord: newCoord
 		});
 	}
 
 	function receiveMouseCoords(data) {
-		// data = $.parseJSON(data);
 		var sockID = data.socketID;
-
 		var pointerElement = $("#drawing_pointer_"+sockID);
+		if (data.newCoord == null) {
+			pointerElement.fadeOut(labelFadeOutMs, function() {
+				pointerElement.remove();
+			});
+			return;
+		}
+
+		// data = $.parseJSON(data);
 		if (pointerElement.length == 0) { // avoid a duplicate element
 			var divBuf = 
 				"<div id=\"drawing_pointer_"+sockID+"\" class=\"drawing_pointer\">"+
@@ -87,14 +103,13 @@ function initDrawing(drawIdIn) {
 			pointerElement = $("#drawing_pointer_"+sockID);
 			// position the pointer element
 		}
-
 		pointerElement.css({ // did try animate but it didn't work particularly well
-			left: data.mouseCoords.x+"px",
-			top: data.mouseCoords.y+"px"
+			left: data.newCoord.x+"px",
+			top: data.newCoord.y+"px"
 		});
 		var nick = !data.nickname ? "Anonymous" : data.nickname;
 		$("#drawing_pointer_label_"+sockID).text(nick);
-		// TODO make it fade out
+		pointerElement.fadeIn(labelFadeInMs);
 	}
 
 	// Ask the server for drawing data
@@ -132,12 +147,27 @@ function initDrawing(drawIdIn) {
 		addLayer(data.id, data.layer);
 	}	
 
+	// get the mouse position inside the canvas
+	// returns null if the mouse is outside the canvas
 	function getMousePos(ev) {
 		var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
-		return {
-			x: ev.clientX - rect.left,
-			y: ev.clientY - rect.top
+		var mousePos = {
+			x: Math.floor(ev.clientX - rect.left),
+			y: Math.floor(ev.clientY - rect.top)
 		};
+
+		// attempt to wrap edges
+		// if (mousePos.x < 0) mousePos.x = 0;
+		// if (mousePos.y < 0) mousePos.y = 0;
+		// if (mousePos.x >= rect.width) mousePos.x = rect.width;
+		// if (mousePos.y >= rect.height) mousePos.y = rect.height;
+		
+		if (	mousePos.x < 0 || mousePos.x >= rect.width ||
+				mousePos.y < 0 || mousePos.y >= rect.height) {
+			return null
+		}
+		console.log(mousePos);
+		return mousePos;
 	}
 
 	function drawLine(prevCoord, newCoord) {
@@ -156,6 +186,8 @@ function initDrawing(drawIdIn) {
 		if (prevCoord != null) {
 			processCanvas(canvas[0], croppingCanvas[0])
 		}
+		// indicate to everyone else that we have stopped drawing
+		emitMouseCoords(prevCoord, null); 
 		prevCoord = null;
 	}
 
