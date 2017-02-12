@@ -18,7 +18,10 @@ function initSplash() {
 
 // Initialise the drawing image
 function initDrawing(drawIdIn) {
-	var mouseEmitInterval = 30;
+	// gives around 60fps
+	// used for both drawing and sending drawing data
+	var mouseEmitInterval = 16; 
+
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
@@ -36,14 +39,17 @@ function initDrawing(drawIdIn) {
 			emitMouseCoords(prevCoord);
 		});
 
-		// draw a stroke
+		// draw a stroke. Sync with the tick so coords send are the same used for drawing
 		canvas.mousemove(function(ev) { 
-			var newCoord = getMousePos(ev);
-			if (prevCoord != null) {
-				drawLine(prevCoord, newCoord);
-				prevCoord = newCoord;
+			if($.now() - lastEmit > mouseEmitInterval) { 
+				var newCoord = getMousePos(ev);
+				if (prevCoord != null) {
+					drawLine(prevCoord, newCoord);
+					prevCoord = newCoord;
+				}
+				emitMouseCoords(newCoord);
+				lastEmit = $.now();
 			}
-			emitMouseCoords(newCoord);
 		});
 
 		// stop drawing
@@ -59,14 +65,11 @@ function initDrawing(drawIdIn) {
 	}
 
 	function emitMouseCoords(mouseCoords) {
-		if($.now() - lastEmit > mouseEmitInterval) { 
-			// send mouse position data to the server
-			socket.emit('mousemove', {
-				nickname: $("#nickname").val(),
-				mouseCoords: mouseCoords
-			});
-			lastEmit = $.now();
-		}
+		// send mouse position data to the server
+		socket.emit('mousemove', {
+			nickname: $("#nickname").val(),
+			mouseCoords: mouseCoords
+		});
 	}
 
 	function receiveMouseCoords(data) {
@@ -82,13 +85,13 @@ function initDrawing(drawIdIn) {
 				"</div>";
 			$("#drawing_layers").append(divBuf)
 			pointerElement = $("#drawing_pointer_"+sockID);
+			// position the pointer element
 		}
-		// position the pointer element
-		pointerElement.css({
+
+		pointerElement.css({ // did try animate but it didn't work particularly well
 			left: data.mouseCoords.x+"px",
 			top: data.mouseCoords.y+"px"
 		});
-		console.log(data)
 		var nick = !data.nickname ? "Anonymous" : data.nickname;
 		$("#drawing_pointer_label_"+sockID).text(nick);
 		// TODO make it fade out
