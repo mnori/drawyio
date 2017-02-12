@@ -32,10 +32,8 @@ function initDrawing(drawIdIn) {
 		// start drawing
 		canvas.mousedown(function(ev) {
 			prevCoord = getMousePos(ev);
-			emitMousePos(prevCoord);
+			emitMouseCoords(prevCoord);
 		});
-
-		
 
 		// draw a stroke
 		canvas.mousemove(function(ev) { 
@@ -44,7 +42,7 @@ function initDrawing(drawIdIn) {
 				drawLine(prevCoord, newCoord);
 				prevCoord = newCoord;
 			}
-			emitMousePos(newCoord);
+			emitMouseCoords(newCoord);
 		});
 
 		// stop drawing
@@ -54,15 +52,42 @@ function initDrawing(drawIdIn) {
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
 		socket.on("add_layer", receiveLayer);
+		socket.on("receive_mouse_coords", receiveMouseCoords);
 
 		getDrawing();
 	}
 
-	function emitMousePos(mouseCoords) {
+	function emitMouseCoords(mouseCoords) {
 		if($.now() - lastEmit > 30) { // send mouse position data to the server
-			socket.emit('mousemove', mouseCoords);
+			socket.emit('mousemove', {
+				nickname: $("#nickname").val(),
+				mouseCoords: mouseCoords
+			});
 			lastEmit = $.now();
 		}
+	}
+
+	function receiveMouseCoords(data) {
+		// data = $.parseJSON(data);
+		var sockID = data.socketID;
+
+		var pointerElement = $("#drawing_pointer_"+sockID);
+		if (pointerElement.length == 0) { // avoid a duplicate element
+			var divBuf = 
+				"<div id=\"drawing_pointer_"+sockID+"\" class=\"drawing_pointer\">"+
+					"<div id=\"drawing_pointer_label_"+sockID+"\" class=\"pointer_label\"></div>"+
+				"</div>";
+			$("#drawing_layers").append(divBuf)
+			pointerElement = $("#drawing_pointer_"+sockID);
+		}
+		// position the pointer element
+		pointerElement.css({
+			left: data.mouseCoords.x+"px",
+			top: data.mouseCoords.y+"px"
+		});
+		console.log(data)
+		$("#drawing_pointer_label_"+sockID).text(data.nickname);
+		// TODO make it fade out
 	}
 
 	// Ask the server for drawing data

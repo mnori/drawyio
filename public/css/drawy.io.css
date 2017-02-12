@@ -8,7 +8,20 @@
 }
 body {
   font-family: ubuntuMono, Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-size: 26px;
+}
+
+.drawing_pointer {
+	position: absolute;
+	width: 5px;
+	height: 5px;
+	background-color: #f00;
+	z-index: 9007199254740990; /* just behind the canvas */
+}
+
+.pointer_label {
+	position: absolute;
+	left: 10px;
 }
 
 #drawing_layers {

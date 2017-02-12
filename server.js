@@ -81,10 +81,11 @@ function configureDrawingSocket(drawing) {
 		// so that we can pass the socket in as well
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
+		// Update drawing with mouse cursor info
+		socket.on("mousemove", function(data) { mouseMove(data, socket); });
+
 		// Receive new png draw data as base64 encoded string and add to the Drawing
 		socket.on("add_layer", addLayer);
-
-		socket.on("mousemove", mouseMove);
 
 		// disconnect a socket
 		socket.on("disconnect", function() {
@@ -95,8 +96,8 @@ function configureDrawingSocket(drawing) {
 }
 
 function mouseMove(data, socket) {
-	console.log("mouseMove() invoked");
-	console.log(data);
+	var drawing = drawings.get(socket.drawID);
+	drawing.broadcastMouseCoords(data, socket);
 }
 
 // we'll also want a broadcastDrawing() method for when the image is flattened
@@ -255,6 +256,13 @@ function Drawing(idIn, startImage) {
 		var json = JSON.stringify(obj);
 		this.socketNS.emit("add_layer", json);
 		console.log("Broadcast layer for "+this.id+", "+layerID+" to "+this.getNSockets()+" sockets");
+	}
+
+	this.broadcastMouseCoords = function(data, socket) {
+		var socketID = socket.id.split("#").pop();
+		data.socketID = socketID; // we need the socket id to keep track of things
+		// socket.broadcast sends to everything in namespace except originating socket
+		socket.broadcast.emit("receive_mouse_coords", data);
 	}
 
 	// Returns the number of connected sockets
