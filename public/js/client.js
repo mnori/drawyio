@@ -18,6 +18,7 @@ function initSplash() {
 
 // Initialise the drawing image
 function initDrawing(drawIdIn) {
+	var mouseEmitInterval = 30;
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
@@ -58,7 +59,8 @@ function initDrawing(drawIdIn) {
 	}
 
 	function emitMouseCoords(mouseCoords) {
-		if($.now() - lastEmit > 30) { // send mouse position data to the server
+		if($.now() - lastEmit > mouseEmitInterval) { 
+			// send mouse position data to the server
 			socket.emit('mousemove', {
 				nickname: $("#nickname").val(),
 				mouseCoords: mouseCoords
