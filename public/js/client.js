@@ -15,7 +15,7 @@ function initSplash() {
 	});
 }
 
-// Initialise the drawing image
+// Initialise the drawing image UI
 function initDrawing(drawIdIn) {
 	// gives around 60fps
 	// used for both drawing and sending drawing data
@@ -93,7 +93,6 @@ function initDrawing(drawIdIn) {
 			return;
 		}
 
-		// data = $.parseJSON(data);
 		if (pointerElement.length == 0) { // avoid a duplicate element
 			var divBuf = 
 				"<div id=\"drawing_pointer_"+sockID+"\" class=\"drawing_pointer\">"+
@@ -121,26 +120,43 @@ function initDrawing(drawIdIn) {
 	// Update drawing with new draw data from the server
 	// This resets the layers
 	function receiveDrawing(data) {
-		data = $.parseJSON(data);
+		setTimeout(function() {
+			data = $.parseJSON(data);
 
-		// Add the new layers
-		var minKey = null;
-		$.each(data, function(key, value) {
-			var keyInt = parseInt(key);
-			if (minKey == null || key < minKey) {
-				minKey = key;
-			}
-			addLayer(keyInt, value);
-		});
+			// // Find the most recently added layer
+			// var maxOld = null;
+			// $(".drawing_layer").each(function() {
+			// 	var element = $(this);
+			// 	var index = element.css("z-index");
+			// 	if (maxOld == null || index > maxOld) {
 
-		// remove the older layers - those with z-index less than minKey
-		$(".drawing_layer").each(function() {
-			var element = $(this);
-			var index = element.css("z-index");
-			if (index < minKey) { // this is an old layer
-				element.remove();
-			}
-		});
+			// 	}
+			// });
+
+			// Add the new layers
+			var maxNew = null;
+			var minNew = null;
+			$.each(data, function(key, value) {
+				var keyInt = parseInt(key);
+				if (maxNew == null || key > maxNew) {
+					maxNew = key;
+				}
+				if (minNew == null || key < maxNew) {
+					minNew = key;
+				}
+				addLayer(keyInt, value);
+			});
+
+			$(".drawing_layer").each(function() {
+				var element = $(this);
+				var index = parseInt(element.css("z-index"));
+
+				// layer is replaced by the new data
+				if (index >= minNew && index < maxNew) { 
+					element.remove();
+				}
+			});
+		}, 1000);
 	}
 
 	function receiveLayer(data) {
@@ -194,12 +210,12 @@ function initDrawing(drawIdIn) {
 				
 		var existingLayer = $("#drawing_layer_"+layerIDIn);
 		var layersHtml = 
-			"<img class=\"drawing_layer\" id=\"drawing_layer_"+layerIDIn+"\""+
-			"src=\""+layer.base64+"\" "+
-			"style=\""+
-				"z-index: "+layerIDIn+";"+
-				"left: "+layer.offsets.left+"px;"+
-				"top: "+layer.offsets.top+"px;\"/>";
+			"<img id=\"drawing_layer_"+layerIDIn+"\" class=\"drawing_layer\" "+
+				"src=\""+layer.base64+"\" "+
+				"style=\""+
+					"z-index: "+layerIDIn+";"+
+					"left: "+layer.offsets.left+"px;"+
+					"top: "+layer.offsets.top+"px;\"/>";
 
 		if (existingLayer.length != 0) { // avoid a duplicate element
 			existingLayer.remove();
@@ -311,4 +327,9 @@ function cropCanvas(sourceCanvas, destCanvas) {
         0, 0, cropWidth, cropHeight);
 
     return {top: cropTop, right: cropRight, bottom: cropBottom, left: cropLeft};
+}
+
+// just for debugging, see http://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }
