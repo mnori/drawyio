@@ -20,8 +20,8 @@ const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 1024,
-	height: 768,
+	width: 640,
+	height: 480,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }

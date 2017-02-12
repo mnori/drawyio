@@ -150,7 +150,7 @@ function initDrawing(drawIdIn) {
 				// if (maxNew == null || keyInt > maxNew) {
 				// 	maxNew = keyInt;
 				// }
-				if (minNew == null || keyInt < maxNew) {
+				if (minNew == null || keyInt < minNew) {
 					minNew = keyInt;
 				}
 				addLayer(keyInt, value);
