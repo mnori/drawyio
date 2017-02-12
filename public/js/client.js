@@ -133,29 +133,39 @@ function initDrawing(drawIdIn) {
 			// 	}
 			// });
 
+			// var maxOld = null;
+			// $(".drawing_layer").each(function() {
+			// 	var element = $(this);
+			// 	var index = parseInt(element.css("z-index"));
+			// 	if (maxOld == null || index > maxOld) {
+			// 		maxOld = index;
+			// 	}
+			// });
+
 			// Add the new layers
-			var maxNew = null;
+			// var maxNew = null;
 			var minNew = null;
 			$.each(data, function(key, value) {
 				var keyInt = parseInt(key);
-				if (maxNew == null || key > maxNew) {
-					maxNew = key;
-				}
-				if (minNew == null || key < maxNew) {
-					minNew = key;
+				// if (maxNew == null || keyInt > maxNew) {
+				// 	maxNew = keyInt;
+				// }
+				if (minNew == null || keyInt < maxNew) {
+					minNew = keyInt;
 				}
 				addLayer(keyInt, value);
 			});
 
-			// $(".drawing_layer").each(function() {
-			// 	var element = $(this);
-			// 	var index = parseInt(element.css("z-index"));
+			$(".drawing_layer").each(function() {
+				var element = $(this);
+				var index = parseInt(element.css("z-index"));
 
-			// 	// layer is replaced by the new data
-			// 	if (index >= minNew && index < maxNew) { 
-			// 		element.remove();
-			// 	}
-			// });
+				// Remove old elements covered by the data. Do not remove elements
+				// that were added by the user since the data was received
+				if (index < minNew) { 
+					element.remove();
+				}
+			});
 
 		}, 1000);
 	}
