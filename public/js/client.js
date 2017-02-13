@@ -216,6 +216,7 @@ function initDrawing(drawIdIn) {
 		prevCoord = null;
 	}
 
+	// add layer data to the dom
 	// TODO squash cropCoords and base64 into an object?
 	function addLayer(layerIDIn, layer) {
 				

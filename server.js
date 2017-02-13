@@ -249,13 +249,13 @@ function Drawing(idIn, startImage) {
 		console.log("Broadcast drawing "+this.id+" to "+this.getNSockets()+" sockets");
 	}
 
-	// Broadcast a single layer to all sockets
+	// Broadcast a single layer to all sockets except originator
 	this.broadcastLayer = function(layerID, layer, socket) {
 		var obj = {id: layerID, layer: layer};
 		var json = JSON.stringify(obj);
 		// socket.broadcast sends to everything in namespace except originating socket
 		socket.broadcast.emit("add_layer", json);
-		console.log("Broadcast layer for "+this.id+", "+layerID+" to "+this.getNSockets()+" sockets");
+		// console.log("["+layerID+"] Broadcast layer for "+this.id+" to "+(this.getNSockets() - 1)+" sockets");
 	}
 
 	// Broadcast mousecoords to all sockets except the originator
@@ -275,9 +275,10 @@ function Drawing(idIn, startImage) {
 		this.socketNS = socketNS;
 	}
 
-	// layer is a base64 encoded PNG string
+	// layer is a base64 encoded PNG string from the client
 	this.addLayer = function(layerObj) {
 		this.nLayers++;
+		console.log("["+this.nLayers+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		return this.nLayers;
 	}
@@ -301,13 +302,17 @@ function Drawing(idIn, startImage) {
 			console.log("Already being flattened!");
 			return;
 		}
+		console.log("Started flattening");
 		this.isFlattening = true;
+		// must increment at the beginning to avoid new layers getting overwritten
+		this.nLayers++; 
+		var flattenLayer = this.nLayers;
 
 		var tl = new Timeline();
 		tl.log("a");
 
 		function flattenRecursive(self, baseBuf, ind) {
-			console.log("flattenRecursive() invoked with ind: "+ind);
+			// console.log("flattenRecursive() invoked with ind: "+ind);
 			// get base image
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
@@ -329,15 +334,15 @@ function Drawing(idIn, startImage) {
 
 					// reset the drawing using the new merged data
 					self.layers.empty(); 
-					self.layers.set(++self.nLayers, {base64: base64, 
+					self.layers.set(flattenLayer, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 					// now we must update each client
-					console.log("Drawing has been flattened, "+ind+" layers total");
+					console.log("["+flattenLayer+"] Drawing has been flattened, "+ind+" layers total");
 					tl.log("b");
 					self.broadcast();
 					self.isFlattening = false;
 					tl.log("c");
-					tl.dump();
+					// tl.dump();
 				});
 			}
 		}
