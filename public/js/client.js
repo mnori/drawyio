@@ -229,6 +229,7 @@ function initDrawing(drawIdIn) {
 					"top: "+layer.offsets.top+"px;\"/>";
 
 		if (existingLayer.length != 0) { // avoid a duplicate element
+			console.log("Found existingLayer!"); // could this be the source of the bug?
 			existingLayer.remove();
 		}
 		$("#drawing_layers").append(layersHtml);
@@ -236,6 +237,7 @@ function initDrawing(drawIdIn) {
 		if (layerIDIn > layerID) { // only add if it's a new layer
 			layerID = layerIDIn;
 		}
+		console.log("There are now "+$(".drawing_layer").length+" layers");
 	}
 
 	// Converts canvas to various useful things

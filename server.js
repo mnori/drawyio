@@ -84,7 +84,7 @@ function configureDrawingSocket(drawing) {
 		socket.on("mousemove", function(data) { receiveMouseMove(data, socket); });
 
 		// Receive new png draw data as base64 encoded string and add to the Drawing
-		socket.on("add_layer", receiveLayer);
+		socket.on("add_layer", function(data) { receiveLayer(data, socket); });
 
 		// disconnect a socket
 		socket.on("disconnect", function() {
@@ -109,7 +109,7 @@ function sendDrawing(data, socket) {
 }
 
 // Adds a layer from raw data coming from the socket
-function receiveLayer(data) {
+function receiveLayer(data, socket) {
 	var drawID = data.drawID;
 	var drawing = drawings.get(drawID);
 	if (drawing == null) {
@@ -117,7 +117,7 @@ function receiveLayer(data) {
 	} else {
 		var layer = {base64: data.base64, offsets: data.offsets}
 		var layerID = drawing.addLayer(layer);
-		drawing.broadcastLayer(layerID, layer);
+		drawing.broadcastLayer(layerID, layer, socket);
 		if (drawing.getNStoredLayers() > MAX_LAYERS) {
 			drawing.flatten();
 		}
@@ -250,10 +250,11 @@ function Drawing(idIn, startImage) {
 	}
 
 	// Broadcast a single layer to all sockets
-	this.broadcastLayer = function(layerID, layer) {
+	this.broadcastLayer = function(layerID, layer, socket) {
 		var obj = {id: layerID, layer: layer};
 		var json = JSON.stringify(obj);
-		this.socketNS.emit("add_layer", json);
+		// socket.broadcast sends to everything in namespace except originating socket
+		socket.broadcast.emit("add_layer", json);
 		console.log("Broadcast layer for "+this.id+", "+layerID+" to "+this.getNSockets()+" sockets");
 	}
 
@@ -261,7 +262,6 @@ function Drawing(idIn, startImage) {
 	this.broadcastMouseCoords = function(data, socket) {
 		var socketID = socket.id.split("#").pop();
 		data.socketID = socketID; // we need the socket id to keep track of things
-		// socket.broadcast sends to everything in namespace except originating socket
 		socket.broadcast.emit("receive_mouse_coords", data);
 	}
 
@@ -329,10 +329,10 @@ function Drawing(idIn, startImage) {
 
 					// reset the drawing using the new merged data
 					self.layers.empty(); 
-					self.layers.set(self.nLayers, {base64: base64, 
+					self.layers.set(++self.nLayers, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 					// now we must update each client
-					console.log("Drawing has been flattened");
+					console.log("Drawing has been flattened, "+ind+" layers total");
 					tl.log("b");
 					self.broadcast();
 					self.isFlattening = false;
