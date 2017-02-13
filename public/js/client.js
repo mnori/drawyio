@@ -228,8 +228,10 @@ function initDrawing(drawIdIn) {
 					"left: "+layer.offsets.left+"px;"+
 					"top: "+layer.offsets.top+"px;\"/>";
 
-		if (existingLayer.length != 0) { // avoid a duplicate element
-			console.log("Found existingLayer!"); // could this be the source of the bug?
+		if (existingLayer.length > 0) { // avoid a duplicate element
+			// this gets fired off when the bug happens
+			// most likely called from receiveDrawing
+			console.log("Found existingLayer!"); 
 			existingLayer.remove();
 		}
 		$("#drawing_layers").append(layersHtml);
@@ -237,7 +239,24 @@ function initDrawing(drawIdIn) {
 		if (layerIDIn > layerID) { // only add if it's a new layer
 			layerID = layerIDIn;
 		}
-		console.log("There are now "+$(".drawing_layer").length+" layers");
+		// console.log("There are now "+$(".drawing_layer").length+" layers");
+	}
+
+	// Make room for a layer, typically the layer is from the server
+	// This doesn't work
+	function bumpLayer(layer) {
+		// bump element up the stack, to make way for new data
+		var oldLayerID = parseInt(layer.css("z-index"));
+		var bumpedLayerID = oldLayerID + 1;
+
+		// is there a layer above this one?
+		var higherLayer = $("#drawing_layer_"+bumpedLayerID);
+		if (higherLayer.length > 0) {
+			// if there is, also bump that layer
+			bumpLayer(higherLayer);
+		}
+		layer.css("z-index", bumpedLayerID);
+		layer.attr("id", "drawing_layer_"+bumpedLayerID);
 	}
 
 	// Converts canvas to various useful things
