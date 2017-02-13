@@ -246,7 +246,7 @@ function Drawing(idIn, startImage) {
 	this.broadcast = function() {
 		var self = this;
 		this.socketNS.emit("update_drawing", self.getJson());
-		console.log("Broadcast drawing "+this.id+" to "+this.getNSockets()+" sockets");
+		// console.log("Broadcast drawing "+this.id+" to "+this.getNSockets()+" sockets");
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -305,8 +305,6 @@ function Drawing(idIn, startImage) {
 		console.log("Started flattening");
 		this.isFlattening = true;
 		// must increment at the beginning to avoid new layers getting overwritten
-		this.nLayers++; 
-		var flattenLayer = this.nLayers;
 
 		var tl = new Timeline();
 		tl.log("a");
@@ -334,10 +332,12 @@ function Drawing(idIn, startImage) {
 
 					// reset the drawing using the new merged data
 					self.layers.empty(); 
-					self.layers.set(flattenLayer, {base64: base64, 
+					self.layers.set(self.nLayers + 1, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
+					self.nLayers++;	
+
 					// now we must update each client
-					console.log("["+flattenLayer+"] Drawing has been flattened, "+ind+" layers total");
+					console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
 					tl.log("b");
 					self.broadcast();
 					self.isFlattening = false;
@@ -372,6 +372,9 @@ function AssocArray() {
 		return null;
 	}
 	this.set = function(key, value) {
+		if (this.get(key)) {
+			console.log("Replacing existing layer!");
+		}
 		this.values[key] = value;
 	}
 	this.getLength = function() {
