@@ -70,7 +70,7 @@ function configureRoutes(app) {
 // Set up drawing-specific event handlers
 function configureDrawingSocket(drawing) {
 
-	// link the socket namespace to the drawing
+	// set up the drawing's socket namespace
 	var drawingNS = io.of("/drawing_socket_"+drawing.id);
 	drawing.addSocketNS(drawingNS);
 

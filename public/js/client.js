@@ -38,6 +38,7 @@ function initDrawing(drawIdIn) {
 		var body = $("body");
 		body.mousedown(function(ev) {
 			prevCoord = getMousePos(ev);
+			drawLine(prevCoord, prevCoord);
 		});
 
 		// draw a stroke. Sync with the tick so coords send are the same used for drawing
