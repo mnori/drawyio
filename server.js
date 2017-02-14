@@ -321,17 +321,22 @@ function Drawing(idIn, startImage) {
 			console.log("IND: "+ind+" > "+MAX_LAYERS);
 
 			if (ind > MAX_LAYERS || overlay == null) {
-				console.log("BEGINNING OF THE END");
+
+				console.log("baseBuf")
+				console.log(baseBuf);
+
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
+				console.log("1");
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
+					console.log("2");
 					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
 					// reset the drawing using the new merged data
 					self.layers.empty(); 
-					self.layers.set(finalLayer, {base64: base64, 
+					self.layers.set(flattenedLayer, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
-					self.nLayers++;	
+					// self.nLayers++;	
 
 					// now we must update each client
 					console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
