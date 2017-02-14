@@ -17,8 +17,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn) {
-	// gives around 60fps
-	// used for both drawing and sending drawing data
+	// gives around 60fps. Is used for both drawing and sending drawing data
 	var mouseEmitInterval = 16; 
 
 	var canvas = $("#drawing_canvas");
@@ -134,18 +133,6 @@ function initDrawing(drawIdIn) {
 				}
 				addLayer(keyInt, value, false);
 			});
-
-			// $(".drawing_layer").each(function() {
-			// 	var element = $(this);
-			// 	var index = parseInt(element.attr("id").split("_").pop());
-
-			// 	// Remove old elements covered by the data. Do not remove elements
-			// 	// that were added by the user since the data was received
-			// 	if (index < minNew) { 
-			// 		element.remove();
-			// 	}
-			// });
-
 		}, 1000);
 	}
 
@@ -198,7 +185,6 @@ function initDrawing(drawIdIn) {
 	function removeLayerByCode(code) {
 		var existingLayer = $("#drawing_layer_"+code);
 		if (existingLayer.length > 0) { // avoid a duplicate element
-			console.log("Found existingLayer!"); 
 			existingLayer.remove();
 		}
 	}
@@ -212,7 +198,6 @@ function initDrawing(drawIdIn) {
 
 		// If this is a flatten layer, removes the components
 		if (typeof(layer["components"]) !== "undefined") {
-			console.log("Flatten layer!");
 			var codes = layer["components"]
 			for (var i = 0; i < codes.length; i++) {
 				removeLayerByCode(codes[i]);
@@ -249,13 +234,13 @@ function initDrawing(drawIdIn) {
 				// create a random identifier for this layer
 				var code = randomString(layerCodeLen);
 
-				// true will bump the layer z-index since it's temporary
 				var layer = {
 					drawID: drawID,
 					base64: e.target.result, 
 					offsets: cropCoords,
 					code: code
 				}
+				// true will bump the layer z-index since it's temporary
 				addLayer(highestLayerID + 1, layer, true);
 
 				// Clear the canvas

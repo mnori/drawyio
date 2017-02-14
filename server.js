@@ -18,8 +18,8 @@ const io = require("socket.io")(server)    //
 // Define global constants
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
+const LAYER_CODE_LEN = 32; // Length of layer codes
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
-const LAYER_CODE_LEN = 32;
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 640,
 	height: 480,
