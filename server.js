@@ -308,7 +308,7 @@ function Drawing(idIn, startImage) {
 
 		// make room for the flattened image
 		this.nLayers++; 
-		var flattenedLayer = this.nLayers;
+		var flattenedLayerID = this.nLayers;
 
 		var tl = new Timeline();
 		tl.log("a");
@@ -320,10 +320,7 @@ function Drawing(idIn, startImage) {
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 			console.log("IND: "+ind+" > "+MAX_LAYERS);
 
-			if (ind > MAX_LAYERS || overlay == null) {
-
-				console.log("baseBuf")
-				console.log(baseBuf);
+			if (ind >= MAX_LAYERS || overlay == null) {
 
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
@@ -333,8 +330,13 @@ function Drawing(idIn, startImage) {
 					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
 					// reset the drawing using the new merged data
+
+					// do not do this! 
 					self.layers.empty(); 
-					self.layers.set(flattenedLayer, {base64: base64, 
+
+
+					
+					self.layers.set(flattenedLayerID, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 					// self.nLayers++;	
 
