@@ -1,17 +1,17 @@
 {% extends "wrapper.html" %}
 
 {% block content %}
-	<div class="row">
-		Nickname <input type="text" id="nickname" />
-	    <div class="col-lg-12 text-center">
-	    	<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
-	    		<canvas id="drawing_canvas" width="{{ width }}" height="{{ height }}">
-		        	Canvas not supported :(
-		        </canvas>
-	    	</div>
-	    	<canvas id="crop_canvas" style="display: none;"></canvas>
-	    </div>
-	</div>
+	
+	Nickname <input type="text" id="nickname" />
+    <div class="col-lg-12 text-center">
+    	<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
+    		<canvas id="drawing_canvas" width="{{ width }}" height="{{ height }}">
+	        	Canvas not supported :(
+	        </canvas>
+    	</div>
+    	<canvas id="crop_canvas" style="display: none;"></canvas>
+    </div>
+		
 {% endblock %}
 
 {% block js %}

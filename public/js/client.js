@@ -34,10 +34,18 @@ function initDrawing(drawIdIn) {
 
 	function setup() { 
 
+		// PLAN HERE
+		// - Each mouse event should generate a draw command struct
+		// - Send the struct to a handler
+		// - Tackle each handler method one a time
+
 		// start drawing
 		var body = $("body");
 		body.mousedown(function(ev) {
 			prevCoord = getMousePos(ev);
+			if (prevCoord == null) { // click occured outside of canvas
+				return;
+			}
 			drawLine(prevCoord, prevCoord);
 		});
 
@@ -121,20 +129,18 @@ function initDrawing(drawIdIn) {
 	// Update drawing with new draw data from the server
 	// This resets the layers
 	function receiveDrawing(data) {
-		setTimeout(function() { // just for testing
-			data = $.parseJSON(data);
+		data = $.parseJSON(data);
 
-			// Add the new layers
-			// var maxNew = null;
-			var minNew = null;
-			$.each(data, function(key, value) {
-				var keyInt = parseInt(key);
-				if (minNew == null || keyInt < minNew) {
-					minNew = keyInt;
-				}
-				addLayer(keyInt, value, false);
-			});
-		}, 1000);
+		// Add the new layers
+		// var maxNew = null;
+		var minNew = null;
+		$.each(data, function(key, value) {
+			var keyInt = parseInt(key);
+			if (minNew == null || keyInt < minNew) {
+				minNew = keyInt;
+			}
+			addLayer(keyInt, value, false);
+		});
 	}
 
 	function receiveLayer(data) {
