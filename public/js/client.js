@@ -27,7 +27,8 @@ function initDrawing(drawIdIn) {
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
-	var layerID = 1
+	var layerCodeLen = 16
+	var highestLayerID = 1
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
 	var labelFadeInMs = 500;
@@ -120,34 +121,37 @@ function initDrawing(drawIdIn) {
 	// Update drawing with new draw data from the server
 	// This resets the layers
 	function receiveDrawing(data) {
-		data = $.parseJSON(data);
+		setTimeout(function() { // just for testing
+			data = $.parseJSON(data);
 
-		// Add the new layers
-		// var maxNew = null;
-		var minNew = null;
-		$.each(data, function(key, value) {
-			var keyInt = parseInt(key);
-			if (minNew == null || keyInt < minNew) {
-				minNew = keyInt;
-			}
-			addLayer(keyInt, value);
-		});
+			// Add the new layers
+			// var maxNew = null;
+			var minNew = null;
+			$.each(data, function(key, value) {
+				var keyInt = parseInt(key);
+				if (minNew == null || keyInt < minNew) {
+					minNew = keyInt;
+				}
+				addLayer(keyInt, value, false);
+			});
 
-		$(".drawing_layer").each(function() {
-			var element = $(this);
-			var index = parseInt(element.css("z-index"));
+			$(".drawing_layer").each(function() {
+				var element = $(this);
+				var index = parseInt(element.attr("id").split("_").pop());
 
-			// Remove old elements covered by the data. Do not remove elements
-			// that were added by the user since the data was received
-			if (index < minNew) { 
-				element.remove();
-			}
-		});
+				// Remove old elements covered by the data. Do not remove elements
+				// that were added by the user since the data was received
+				if (index < minNew) { 
+					element.remove();
+				}
+			});
+
+		}, 1000);
 	}
 
 	function receiveLayer(data) {
 		data = $.parseJSON(data);
-		addLayer(data.id, data.layer);
+		addLayer(data.id, data.layer, false);
 	}	
 
 	// get the mouse position inside the canvas
@@ -160,11 +164,15 @@ function initDrawing(drawIdIn) {
 		};
 
 		// attempt to wrap edges
-		if (mousePos.x < 0) mousePos.x = 0;
-		if (mousePos.y < 0) mousePos.y = 0;
-		if (mousePos.x >= rect.width) mousePos.x = rect.width - 1;
-		if (mousePos.y >= rect.height) mousePos.y = rect.height - 1;
+		// if (mousePos.x < 0) mousePos.x = 0;
+		// if (mousePos.y < 0) mousePos.y = 0;
+		// if (mousePos.x >= rect.width) mousePos.x = rect.width - 1;
+		// if (mousePos.y >= rect.height) mousePos.y = rect.height - 1;
 		
+		if (	mousePos.x < 0 || mousePos.x >= rect.width ||
+				mousePos.y < 0 || mousePos.y >= rect.height) {
+			return null
+		}
 		return mousePos;
 	}
 
@@ -186,49 +194,32 @@ function initDrawing(drawIdIn) {
 		}
 		prevCoord = null;
 	}
-
-	// add layer data to the dom
 	// TODO squash cropCoords and base64 into an object?
-	function addLayer(layerIDIn, layer) {
+	// add layer data to the dom
+	// isTemp: whether this is a temporary layer created by the client
+	function addLayer(layerIDIn, layer, isTemp) {
 				
 		var existingLayer = $("#drawing_layer_"+layerIDIn);
-		var layersHtml = 
-			"<img id=\"drawing_layer_"+layerIDIn+"\" class=\"drawing_layer\" "+
-				"src=\""+layer.base64+"\" "+
-				"style=\""+
-					"z-index: "+layerIDIn+";"+
-					"left: "+layer.offsets.left+"px;"+
-					"top: "+layer.offsets.top+"px;\"/>";
-
 		if (existingLayer.length > 0) { // avoid a duplicate element
 			// this gets fired off when the bug happens
 			// most likely called from receiveDrawing
 			console.log("Found existingLayer!"); 
 			existingLayer.remove();
 		}
+
+		var bump = (isTemp) ? 1000 : 0; // temporary layers always above the rest
+		var layersHtml = 
+			"<img id=\"drawing_layer_"+layerIDIn+"\" class=\"drawing_layer\" "+
+				"src=\""+layer.base64+"\" "+
+				"style=\""+
+					"z-index: "+(layerIDIn + bump)+";"+
+					"left: "+layer.offsets.left+"px;"+
+					"top: "+layer.offsets.top+"px;\"/>";
 		$("#drawing_layers").append(layersHtml);
 
-		if (layerIDIn > layerID) { // only add if it's a new layer
-			layerID = layerIDIn;
+		if (layerIDIn > highestLayerID) { // only add if it's a new layer
+			highestLayerID = layerIDIn;
 		}
-		// console.log("There are now "+$(".drawing_layer").length+" layers");
-	}
-
-	// Make room for a layer, typically the layer is from the server
-	// This doesn't work
-	function bumpLayer(layer) {
-		// bump element up the stack, to make way for new data
-		var oldLayerID = parseInt(layer.css("z-index"));
-		var bumpedLayerID = oldLayerID + 1;
-
-		// is there a layer above this one?
-		var higherLayer = $("#drawing_layer_"+bumpedLayerID);
-		if (higherLayer.length > 0) {
-			// if there is, also bump that layer
-			bumpLayer(higherLayer);
-		}
-		layer.css("z-index", bumpedLayerID);
-		layer.attr("id", "drawing_layer_"+bumpedLayerID);
 	}
 
 	// Converts canvas to various useful things
@@ -241,10 +232,19 @@ function initDrawing(drawIdIn) {
 			// Generate data URL, to be displayed on the front end, from the blob
 			var fr = new FileReader();
 			fr.onload = function(e) {
-				addLayer(layerID + 1, {base64: e.target.result, offsets: cropCoords});
+				
+				// create a random identifier for this layer
+				var code = randomString(layerCodeLen);
+				console.log(code);
 
-				// Update the front end png stack
-				// attr("src", e.target.result)
+				// true will bump the layer z-index since it's temporary
+				var layer = {
+					drawID: drawID,
+					base64: e.target.result, 
+					offsets: cropCoords,
+					code: code
+				}
+				addLayer(highestLayerID, layer, true);
 
 				// Clear the canvas
 				ctx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height)
@@ -336,4 +336,13 @@ function cropCanvas(sourceCanvas, destCanvas) {
 // just for debugging, see http://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function randomString(length) {
+    var text = "";
+    var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < length; i++) { 
+        text += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return text;
 }
