@@ -212,7 +212,7 @@ function initDrawing(drawIdIn) {
 			"<img id=\"drawing_layer_"+layerIDIn+"\" class=\"drawing_layer\" "+
 				"src=\""+layer.base64+"\" "+
 				"style=\""+
-					"z-index: "+(layerIDIn + bump)+";"+
+					"z-index: "+(layerIDIn)+";"+
 					"left: "+layer.offsets.left+"px;"+
 					"top: "+layer.offsets.top+"px;\"/>";
 		$("#drawing_layers").append(layersHtml);
