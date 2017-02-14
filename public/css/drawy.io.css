@@ -76,7 +76,6 @@ body {
 }
 
 .drawing_layer {
-	border: 1px solid #f00;
 	position: absolute;
 	top: 0px;
 	left: 0px;

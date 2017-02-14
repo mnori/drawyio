@@ -384,7 +384,9 @@ function Drawing(idIn, startLayer) {
 			return;
 		}
 
-		var baseBuf = base64ToBuffer(this.getUnmergedLayer(0).base64); // base image
+		var baseLayer = this.getUnmergedLayer(0);
+		var baseBuf = base64ToBuffer(baseLayer.base64); // base image
+		componentCodes.push(baseLayer.code);
 		flattenRecursive(this, baseBuf, 0);
 	}
 	this.addLayer(startLayer);
