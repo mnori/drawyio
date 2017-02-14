@@ -306,33 +306,30 @@ function Drawing(idIn, startImage) {
 		this.isFlattening = true;
 		// must increment at the beginning to avoid new layers getting overwritten
 
+		// make room for the flattened image
+		this.nLayers++; 
+		var flattenedLayer = this.nLayers;
+
 		var tl = new Timeline();
 		tl.log("a");
 
 		function flattenRecursive(self, baseBuf, ind) {
 			// console.log("flattenRecursive() invoked with ind: "+ind);
 			// get base image
+
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
-			if (overlay != null) { 
-				// not reached the end yet - so overlay the image
-				// This is where we need to use the coordinate data
-				var overlayBuf = base64ToBuffer(overlay.base64);
-				var overlayParams = {top: overlay.offsets.top, left: overlay.offsets.left};
-				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
-					function(buffer) {
-						flattenRecursive(self, buffer, ++ind);
-					}
-				);
+			console.log("IND: "+ind);
 
-			} else { // reached the end
+			if (ind >= MAX_LAYERS || overlay == null) {
+				// reached the end
 				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
 					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
 					// reset the drawing using the new merged data
 					self.layers.empty(); 
-					self.layers.set(self.nLayers + 1, {base64: base64, 
+					self.layers.set(finalLayer, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 					self.nLayers++;	
 
@@ -344,6 +341,17 @@ function Drawing(idIn, startImage) {
 					tl.log("c");
 					// tl.dump();
 				});
+				return;
+			} else { // overlay is not null
+				// not reached the end yet - so overlay the image
+				// This is where we need to use the coordinate data
+				var overlayBuf = base64ToBuffer(overlay.base64);
+				var overlayParams = {top: overlay.offsets.top, left: overlay.offsets.left};
+				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
+					function(buffer) {
+						flattenRecursive(self, buffer, ++ind);
+					}
+				);
 			}
 		}
 
