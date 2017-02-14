@@ -331,11 +331,19 @@ function Drawing(idIn, startImage) {
 
 					// reset the drawing using the new merged data
 
-					// do not do this! 
-					self.layers.empty(); 
-
-
 					
+					// self.layers.empty(); // do not do this! 
+	
+					// Remove old layers but not new ones					
+					var keys = self.layers.getKeys();
+					for (var i = 0; i < keys.length; i++) {
+						var key = keys[i];
+						console.log(key)
+						if (parseInt(key) < flattenedLayerID) {
+							self.layers.delete(key);
+						}
+					}
+
 					self.layers.set(flattenedLayerID, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
 					// self.nLayers++;	
@@ -402,6 +410,11 @@ function AssocArray() {
 	}
 	this.empty = function() {
 		this.values = {}
+	}
+	this.delete = function(key) {
+		console.log("delete() invoked with "+this.getLength());
+		delete this.values[""+key]
+		console.log("length is now "+this.getLength());
 	}
 };
 
