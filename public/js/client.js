@@ -27,8 +27,8 @@ function initDrawing(drawIdIn) {
 	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
-	var layerCodeLen = 16
-	var highestLayerID = 1
+	var layerCodeLen = 32;
+	var highestLayerID = 1;
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
 	var labelFadeInMs = 500;
@@ -135,16 +135,16 @@ function initDrawing(drawIdIn) {
 				addLayer(keyInt, value, false);
 			});
 
-			$(".drawing_layer").each(function() {
-				var element = $(this);
-				var index = parseInt(element.attr("id").split("_").pop());
+			// $(".drawing_layer").each(function() {
+			// 	var element = $(this);
+			// 	var index = parseInt(element.attr("id").split("_").pop());
 
-				// Remove old elements covered by the data. Do not remove elements
-				// that were added by the user since the data was received
-				if (index < minNew) { 
-					element.remove();
-				}
-			});
+			// 	// Remove old elements covered by the data. Do not remove elements
+			// 	// that were added by the user since the data was received
+			// 	if (index < minNew) { 
+			// 		element.remove();
+			// 	}
+			// });
 
 		}, 1000);
 	}
@@ -194,25 +194,38 @@ function initDrawing(drawIdIn) {
 		}
 		prevCoord = null;
 	}
-	// TODO squash cropCoords and base64 into an object?
-	// add layer data to the dom
-	// isTemp: whether this is a temporary layer created by the client
-	function addLayer(layerIDIn, layer, isTemp) {
-				
-		var existingLayer = $("#drawing_layer_"+layerIDIn);
+
+	function removeLayerByCode(code) {
+		var existingLayer = $("#drawing_layer_"+code);
 		if (existingLayer.length > 0) { // avoid a duplicate element
-			// this gets fired off when the bug happens
-			// most likely called from receiveDrawing
 			console.log("Found existingLayer!"); 
 			existingLayer.remove();
 		}
+	}
+	
+	// add layer data to the dom
+	// isTemp: whether this is a temporary layer created by the client
+	function addLayer(layerIDIn, layer, isTemp) {
 
+		// Remove duplicate layer with same ID as this one
+		removeLayerByCode(layer.code)
+
+		// If this is a flatten layer, removes the components
+		if (typeof(layer["components"]) !== "undefined") {
+			console.log("Flatten layer!");
+			var codes = layer["components"]
+			for (var i = 0; i < codes.length; i++) {
+				removeLayerByCode(codes[i]);
+			}
+		}
+
+		// check if there are any component layers to remove from a flattened image
 		var bump = (isTemp) ? 1000 : 0; // temporary layers always above the rest
 		var layersHtml = 
-			"<img id=\"drawing_layer_"+layerIDIn+"\" class=\"drawing_layer\" "+
+			"<img id=\"drawing_layer_"+layer.code+"\" class=\"drawing_layer\" "+
 				"src=\""+layer.base64+"\" "+
 				"style=\""+
-					"z-index: "+(layerIDIn)+";"+
+					"z-index: "+(layerIDIn + bump)+";"+
 					"left: "+layer.offsets.left+"px;"+
 					"top: "+layer.offsets.top+"px;\"/>";
 		$("#drawing_layers").append(layersHtml);
@@ -235,7 +248,6 @@ function initDrawing(drawIdIn) {
 				
 				// create a random identifier for this layer
 				var code = randomString(layerCodeLen);
-				console.log(code);
 
 				// true will bump the layer z-index since it's temporary
 				var layer = {
@@ -244,7 +256,7 @@ function initDrawing(drawIdIn) {
 					offsets: cropCoords,
 					code: code
 				}
-				addLayer(highestLayerID, layer, true);
+				addLayer(highestLayerID + 1, layer, true);
 
 				// Clear the canvas
 				ctx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height)
@@ -254,11 +266,7 @@ function initDrawing(drawIdIn) {
 				fr.readAsDataURL(blob); 
 				fr.onloadend = function() {
 					var base64 = fr.result;
-					socket.emit("add_layer", {
-						"drawID": drawID,
-						"base64": base64,
-						"offsets": cropCoords
-					});
+					socket.emit("add_layer", layer);
 				}
 			}
 			fr.readAsDataURL(blob);

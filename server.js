@@ -19,6 +19,7 @@ const io = require("socket.io")(server)    //
 const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
+const LAYER_CODE_LEN = 32;
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 640,
 	height: 480,
@@ -115,7 +116,7 @@ function receiveLayer(data, socket) {
 	if (drawing == null) {
 		console.log("WARNING: "+drawID+" does not exist!");
 	} else {
-		var layer = {base64: data.base64, offsets: data.offsets}
+		var layer = data;
 		var layerID = drawing.addLayer(layer);
 		drawing.broadcastLayer(layerID, layer, socket);
 		if (drawing.getNStoredLayers() > MAX_LAYERS) {
@@ -181,7 +182,13 @@ function createDrawing(req, res) {
 	// Sends a base64 encoded string
 	png.toBuffer().then(function(buffer) {
 		var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
-		var drawing = new Drawing(drawID, base64);
+		var layer = {
+			drawID: drawID,
+			base64: base64, 
+			offsets: {top: 0, right: 0, bottom: 0, left: 0},
+			code: randomString(LAYER_CODE_LEN)
+		};
+		var drawing = new Drawing(drawID, layer);
 		drawings.set(drawID, drawing);
 		configureDrawingSocket(drawing);
 		res.send(drawID);
@@ -233,7 +240,7 @@ function base64ToBuffer(base64) {
 }
 
 // Stores the data for a drawing
-function Drawing(idIn, startImage) {
+function Drawing(idIn, startLayer) {
 	this.id = idIn;
 	this.layers = new AssocArray();
 	this.socketNS = null; // contains all the sockets attached to this drawing
@@ -309,6 +316,9 @@ function Drawing(idIn, startImage) {
 		this.nLayers++; 
 		var flattenedLayerID = this.nLayers;
 
+		// String codes of the component layers of the flatten
+		var componentCodes = []
+
 		var tl = new Timeline();
 		tl.log("a");
 
@@ -317,8 +327,20 @@ function Drawing(idIn, startImage) {
 			// get base image
 
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
-			if (ind >= MAX_LAYERS || overlay == null) {
 
+			if (ind < MAX_LAYERS && overlay != null) {
+				// not reached the end yet - so overlay the image
+				// This is where we need to use the coordinate data
+				componentCodes.push(overlay.code);
+				var overlayBuf = base64ToBuffer(overlay.base64);
+				var overlayParams = {top: overlay.offsets.top, left: overlay.offsets.left};
+				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
+					function(buffer) {
+						flattenRecursive(self, buffer, ++ind);
+					}
+				);
+
+			} else { // overlay is not null
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
@@ -334,8 +356,13 @@ function Drawing(idIn, startImage) {
 					}
 
 					// Add the new flattened layer
-					self.layers.set(flattenedLayerID, {base64: base64, 
-						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
+					self.layers.set(flattenedLayerID, {
+						id: flattenedLayerID,
+						base64: base64, 
+						offsets: {top: 0, right: 0, bottom: 0, left: 0},
+						code: randomString(LAYER_CODE_LEN),
+						components: componentCodes
+					});
 
 					console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
 					tl.log("b");
@@ -346,16 +373,6 @@ function Drawing(idIn, startImage) {
 					tl.log("c");
 					// tl.dump();
 				});
-			} else { // overlay is not null
-				// not reached the end yet - so overlay the image
-				// This is where we need to use the coordinate data
-				var overlayBuf = base64ToBuffer(overlay.base64);
-				var overlayParams = {top: overlay.offsets.top, left: overlay.offsets.left};
-				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
-					function(buffer) {
-						flattenRecursive(self, buffer, ++ind);
-					}
-				);
 			}
 		}
 
@@ -370,8 +387,7 @@ function Drawing(idIn, startImage) {
 		var baseBuf = base64ToBuffer(this.getUnmergedLayer(0).base64); // base image
 		flattenRecursive(this, baseBuf, 0);
 	}
-
-	this.addLayer({base64: startImage, offsets: {top: 0, right: 0, bottom: 0, left: 0}});
+	this.addLayer(startLayer);
 }
 
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.
