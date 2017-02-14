@@ -318,10 +318,10 @@ function Drawing(idIn, startImage) {
 			// get base image
 
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
+			console.log("IND: "+ind+" > "+MAX_LAYERS);
 
-			console.log("IND: "+ind);
-
-			if (ind >= MAX_LAYERS || overlay == null) {
+			if (ind > MAX_LAYERS || overlay == null) {
+				console.log("BEGINNING OF THE END");
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
@@ -341,7 +341,6 @@ function Drawing(idIn, startImage) {
 					tl.log("c");
 					// tl.dump();
 				});
-				return;
 			} else { // overlay is not null
 				// not reached the end yet - so overlay the image
 				// This is where we need to use the coordinate data
