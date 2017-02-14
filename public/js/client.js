@@ -120,54 +120,29 @@ function initDrawing(drawIdIn) {
 	// Update drawing with new draw data from the server
 	// This resets the layers
 	function receiveDrawing(data) {
-		setTimeout(function() {
-			data = $.parseJSON(data);
+		data = $.parseJSON(data);
 
-			// // Find the most recently added layer
-			// var maxOld = null;
-			// $(".drawing_layer").each(function() {
-			// 	var element = $(this);
-			// 	var index = element.css("z-index");
-			// 	if (maxOld == null || index > maxOld) {
+		// Add the new layers
+		// var maxNew = null;
+		var minNew = null;
+		$.each(data, function(key, value) {
+			var keyInt = parseInt(key);
+			if (minNew == null || keyInt < minNew) {
+				minNew = keyInt;
+			}
+			addLayer(keyInt, value);
+		});
 
-			// 	}
-			// });
+		$(".drawing_layer").each(function() {
+			var element = $(this);
+			var index = parseInt(element.css("z-index"));
 
-			// var maxOld = null;
-			// $(".drawing_layer").each(function() {
-			// 	var element = $(this);
-			// 	var index = parseInt(element.css("z-index"));
-			// 	if (maxOld == null || index > maxOld) {
-			// 		maxOld = index;
-			// 	}
-			// });
-
-			// Add the new layers
-			// var maxNew = null;
-			var minNew = null;
-			$.each(data, function(key, value) {
-				var keyInt = parseInt(key);
-				// if (maxNew == null || keyInt > maxNew) {
-				// 	maxNew = keyInt;
-				// }
-				if (minNew == null || keyInt < minNew) {
-					minNew = keyInt;
-				}
-				addLayer(keyInt, value);
-			});
-
-			$(".drawing_layer").each(function() {
-				var element = $(this);
-				var index = parseInt(element.css("z-index"));
-
-				// Remove old elements covered by the data. Do not remove elements
-				// that were added by the user since the data was received
-				if (index < minNew) { 
-					element.remove();
-				}
-			});
-
-		}, 1000);
+			// Remove old elements covered by the data. Do not remove elements
+			// that were added by the user since the data was received
+			if (index < minNew) { 
+				element.remove();
+			}
+		});
 	}
 
 	function receiveLayer(data) {
@@ -185,15 +160,11 @@ function initDrawing(drawIdIn) {
 		};
 
 		// attempt to wrap edges
-		// if (mousePos.x < 0) mousePos.x = 0;
-		// if (mousePos.y < 0) mousePos.y = 0;
-		// if (mousePos.x >= rect.width) mousePos.x = rect.width;
-		// if (mousePos.y >= rect.height) mousePos.y = rect.height;
+		if (mousePos.x < 0) mousePos.x = 0;
+		if (mousePos.y < 0) mousePos.y = 0;
+		if (mousePos.x >= rect.width) mousePos.x = rect.width - 1;
+		if (mousePos.y >= rect.height) mousePos.y = rect.height - 1;
 		
-		if (	mousePos.x < 0 || mousePos.x >= rect.width ||
-				mousePos.y < 0 || mousePos.y >= rect.height) {
-			return null
-		}
 		return mousePos;
 	}
 

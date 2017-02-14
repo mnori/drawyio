@@ -232,6 +232,7 @@ function base64ToBuffer(base64) {
 	return Buffer.from(str, 'base64')
 }
 
+// Stores the data for a drawing
 function Drawing(idIn, startImage) {
 	this.id = idIn;
 	this.layers = new AssocArray();
@@ -246,7 +247,6 @@ function Drawing(idIn, startImage) {
 	this.broadcast = function() {
 		var self = this;
 		this.socketNS.emit("update_drawing", self.getJson());
-		// console.log("Broadcast drawing "+this.id+" to "+this.getNSockets()+" sockets");
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -255,7 +255,6 @@ function Drawing(idIn, startImage) {
 		var json = JSON.stringify(obj);
 		// socket.broadcast sends to everything in namespace except originating socket
 		socket.broadcast.emit("add_layer", json);
-		// console.log("["+layerID+"] Broadcast layer for "+this.id+" to "+(this.getNSockets() - 1)+" sockets");
 	}
 
 	// Broadcast mousecoords to all sockets except the originator
@@ -318,39 +317,30 @@ function Drawing(idIn, startImage) {
 			// get base image
 
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
-			console.log("IND: "+ind+" > "+MAX_LAYERS);
-
 			if (ind >= MAX_LAYERS || overlay == null) {
 
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
-				console.log("1");
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
-					console.log("2");
 					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
-					// reset the drawing using the new merged data
-
-					
-					// self.layers.empty(); // do not do this! 
-	
 					// Remove old layers but not new ones					
 					var keys = self.layers.getKeys();
 					for (var i = 0; i < keys.length; i++) {
 						var key = keys[i];
-						console.log(key)
 						if (parseInt(key) < flattenedLayerID) {
 							self.layers.delete(key);
 						}
 					}
 
+					// Add the new flattened layer
 					self.layers.set(flattenedLayerID, {base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0}});
-					// self.nLayers++;	
 
-					// now we must update each client
 					console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
 					tl.log("b");
+
+					// now we must update each client
 					self.broadcast();
 					self.isFlattening = false;
 					tl.log("c");
@@ -412,9 +402,7 @@ function AssocArray() {
 		this.values = {}
 	}
 	this.delete = function(key) {
-		console.log("delete() invoked with "+this.getLength());
 		delete this.values[""+key]
-		console.log("length is now "+this.getLength());
 	}
 };
 
