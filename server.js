@@ -21,8 +21,8 @@ const ID_LEN = 16; // The length of the ID string for drawings
 const LAYER_CODE_LEN = 32; // Length of layer codes
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 640,
-	height: 480,
+	width: 600,
+	height: 400,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }
@@ -36,7 +36,6 @@ function main() {
 	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
-	// configureSocket();
 	server.listen(PORT);
 	console.log("Running on http://localhost:" + PORT);
 }
@@ -144,6 +143,7 @@ function renderDrawingPage(req, res) {
 
 // Get the drawing image data as layered encoded JSON buffer
 function getDrawingImage(req, res) {
+	console.log("Is this ever called?");
 	var drawID = req.params.id;
 	var drawing = drawings.get(drawID)
 
