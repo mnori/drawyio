@@ -13,6 +13,7 @@
     "sharp": "*",
     "nanoseconds": "*",
     "socket.io": "*",
-    "http": "*"
+    "http": "*",
+    "time-ago": "*"
   }
 }

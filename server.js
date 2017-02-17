@@ -11,7 +11,7 @@ const nunjucks = require("nunjucks"); // Template system
 const sharp = require("sharp"); // Image processing library
 const nano = require('nanoseconds'); // For measuring performance
 const app = express();
-
+const ta = require('time-ago')(); // set up time-ago human readable dates library
 const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
 
@@ -33,7 +33,7 @@ var drawings;
 
 // Set up the app
 function main() {
-	setupDebug();
+	setupDebug()
 	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
@@ -45,7 +45,7 @@ function main() {
 function configureRoutes(app) {
 
 	// Tell node to serve static files from the "public" subdirectory
-	app.use(express.static("public"))
+	app.use(express.static("public"));
 
 	// Create a new drawing in memory, and return its unique ID to the client
 	app.get("/create_drawing", createDrawing);
@@ -58,13 +58,11 @@ function configureRoutes(app) {
 	});
 
 	// The splash page
-	app.get("/", function(req, res) { res.render("index.html", {drawIDs: getGallery()}); });
+	app.get("/", function(req, res) { res.render("index.html", { gallery: getGallery() }); });
 
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
 }
-
-function getGallery() { return drawings.getKeys(); }
 
 // Set up drawing-specific event handlers
 function configureDrawingSocket(drawing) {
@@ -92,6 +90,33 @@ function configureDrawingSocket(drawing) {
 			// nothing to do
 		});
 	});
+}
+
+function getGallery() {
+
+	// build some gallery objects
+	var out = []
+	var ids = drawings.getKeys();
+	for (var i = 0; i < ids.length; i++) {
+		var drawing = drawings.get(ids[i]);
+
+		console.log("Empty image");
+		console.log(drawing.emptyImage);
+		if (!drawing.emptyImage) { // skip blank images
+			out.push({ drawing: drawing, ago: drawing.getLastEditedStr()});
+		}
+	}
+
+	// sort by most recent first
+	out.sort(function(a, b) {
+		if (a.drawing.lastEdited > b.drawing.lastEdited) {
+			return -1;
+		} else if (a.drawing.lastEdited < b.drawing.lastEdited) {
+			return 1;
+		}
+		return 0;
+	})
+	return out;
 }
 
 function receiveMouseMove(data, socket) {
@@ -259,10 +284,11 @@ function Drawing(idIn, startLayer) {
 	this.socketNS = null; // contains all the sockets attached to this drawing
 	this.isFlattening = false;
 	this.timeout = null;
+	this.emptyImage = true; // whether the PNG is empty
 
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
-	this.nLayers = 0; 
+	this.nLayers = 0;
 
 	// Broadcast all drawing data to all sockets
 	this.broadcast = function() {
@@ -300,6 +326,7 @@ function Drawing(idIn, startLayer) {
 		this.nLayers++;
 		console.log("["+this.nLayers+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
+		this.updateEdited();
 		return this.nLayers;
 	}
 	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
@@ -315,6 +342,21 @@ function Drawing(idIn, startLayer) {
 	}
 	this.getNStoredLayers = function() { return this.layers.getLength(); }
 	this.getJson = function() { return this.layers.getJson(); }
+
+	// store timestamp of the most recent edit
+	this.updateEdited = function() {
+		console.log("updateEdited() invoked");
+		this.lastEdited = new Date();
+	}
+
+	this.getLastEditedStr = function() {
+		var diff = new Date() - this.lastEdited;
+		if (diff < 1000) { // less than 1 second = a moment ago
+			return "A moment ago";
+		}
+		// otherwise use the string from the library
+		return ta.ago(this.lastEdited);
+	}
 
 	// Merges the layers into a single image. This is a pretty expensive operation.
 	this.flatten = function() {
@@ -381,6 +423,7 @@ function Drawing(idIn, startLayer) {
 					// now we must update each client
 					self.broadcast();
 					self.isFlattening = false;
+					self.emptyImage = false;
 					tl.log("c");
 					// tl.dump();
 				});

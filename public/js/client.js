@@ -280,7 +280,6 @@ function initDrawing(drawIdIn) {
 // Adapted from https://stackoverflow.com/questions/12175991/crop-image-white-space-automatically-using-jquery
 function cropCanvas(sourceCanvas, destCanvas) {
     var context = sourceCanvas.getContext("2d");
-    // context.drawImage(imageObject, 0, 0);
 
     var imgWidth = sourceCanvas.width, 
     	imgHeight = sourceCanvas.height;
