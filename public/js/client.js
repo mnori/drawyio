@@ -4,7 +4,7 @@
 // Intialise the splash screen
 function initSplash() {
 	$("#create_drawing_btn").click(function() {
-		// Send ajax request to create new drawing
+		// "New drawing" button AJAX
 		$.ajax({
 			url: "/create_drawing"
 

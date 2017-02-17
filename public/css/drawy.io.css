@@ -4,7 +4,7 @@
 @font-face {font-family: ubuntuBold; src: url(/fonts/Ubuntu-B.ttf);}
 
 .logo {
-	font-family: ubuntuMonoBold;
+	font-family: ubuntuRegular;
 	font-size: 40px;
 	text-shadow: 0px 0px 8px #666;
 }
