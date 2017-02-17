@@ -10,7 +10,7 @@ function initSplash() {
 
 		}).done(function(drawingID) {
 			// Redirect to the drawing's page
-			window.location.href = "/drawings/"+drawingID
+			window.location.href = "/d/"+drawingID
 		});
 	});
 }

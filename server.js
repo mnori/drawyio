@@ -53,27 +53,23 @@ function configureRoutes(app) {
 	// Create a new drawing in memory, and return its unique ID to the client
 	app.get("/create_drawing", createDrawing);
 
-	// Go to a drawing's page
-	app.get("/drawings/:id", renderDrawingPage);
+	// Go to a drawing's page or its image
+	app.get("/d/:id", function(req, res) {
+		console.log(req);
+		req.params.id.includes(".png") ? getDrawingImage(req, res) : renderDrawingPage(req, res);
+	});
 
-	// Fetch a drawing image and output the buffer
-	app.get("/drawing_images/:id", getDrawingImage);
+	// // Fetch a drawing image and output the buffer
+	// app.get("/drawing_images/:id", getDrawingImage);
 
 	// Index page, rendered as a template
-	app.get("/", function(req, res) { res.render("index.html", getGallery()); });
+	app.get("/", function(req, res) { res.render("index.html", {drawIDs: getGallery()}); });
 
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
 }
 
-function getGallery() {
-	var out = []
-	var drawIDs = drawings.getKeys();
-	for (var i = 0; i < drawIDs.length; i++) {
-		var drawing = drawings[i];
-		console.log(drawing);
-	}
-}
+function getGallery() { return drawings.getKeys(); }
 
 // Set up drawing-specific event handlers
 function configureDrawingSocket(drawing) {

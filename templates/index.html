@@ -3,6 +3,11 @@
 {% block content %}
     <h1>Welcome to Drawy.io</h1>
     {{ foo }}
+    before [
+	{% for drawID in drawIDs %}
+		{{ drawID }}<br />
+	{% endfor %}
+	] after
 {% endblock %}
 
 {% block js %}<script>initSplash();</script>{% endblock %}
