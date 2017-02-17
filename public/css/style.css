@@ -22,21 +22,22 @@ body {
 	margin: 0px;
 }
 
+h1 {
+	font-weight: normal;
+}
+
 #navbar {
 	background-color: #333;
+	border-bottom: 2px solid #000;
 	padding: 20px;
+	position: relative;
 }
 
 #navbar .button {
-	border: 1px solid #000;
-	/*position: absolute;
-	right: 10px;
-	bottom: 10px;*/
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
 	float: right;
-	margin-top: 15px;
-	margin-right: 0px;
-	margin-bottom: 0px;
-	margin-left: -1px;
 	vertical-align: bottom;	
 	z-index: 9001;
 	font-weight: normal;
@@ -129,29 +130,31 @@ a.logo:hover, a.logo:active {
 /*** BUTTONS ***/
 
 .button {
-	margin: 5px;
 	padding: 7px 10px;
-	border: 1px solid #888;
-	color: #000;
-	font-size: 16px;
-	line-height: 15px;
+	color: #fff;
+	font-size: 20px;
+	line-height: 25px;
 	text-decoration: none;
-	background-color: #f0f0f0;
-	text-shadow: none;
+	text-shadow:
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000,
+          1px 1px 0 #000;
+	border: 1px solid #333;
 }
 
-.button:active {
-	border: 1px solid #666;
-	padding: 9px 10px 5px 10px;
-	background-color: #fff;
-	box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.5);
+.button:active, .button:hover {
+	border: 1px solid #000;
 }
 
 .button:hover {
-	color: #000;
-	background-color: #fff;
-	border: 1px solid #666;
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(210, 210, 210, 1) 100%);
+	border: 1px solid #000;
+	box-shadow: 0px 0px 8px 4px rgba(255, 255, 255, 0.3);
+}
+
+.button:active {
+	padding: 9px 10px 5px 10px;
+	box-shadow: inset 0px 5px 10px rgba(0, 0, 0, 0.8), 0px 0px 8px 4px rgba(255, 255, 255, 0.3);
 }
 
 .thumb {
