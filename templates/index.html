@@ -1,13 +1,12 @@
 {% extends "wrapper.html" %}
 
 {% block content %}
-    <h1>Welcome to Drawy.io</h1>
-    {{ foo }}
-    before [
+    <h1>Welcome</h1>
 	{% for drawID in drawIDs %}
-		{{ drawID }}<br />
+		<a href="/d/{{ drawID }}">
+			<img src="/d/{{ drawID }}.png" class="thumb" />
+		</a>
 	{% endfor %}
-	] after
 {% endblock %}
 
 {% block js %}<script>initSplash();</script>{% endblock %}
