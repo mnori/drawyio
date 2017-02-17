@@ -99,9 +99,6 @@ function getGallery() {
 	var ids = drawings.getKeys();
 	for (var i = 0; i < ids.length; i++) {
 		var drawing = drawings.get(ids[i]);
-
-		console.log("Empty image");
-		console.log(drawing.emptyImage);
 		if (!drawing.emptyImage) { // skip blank images
 			out.push({ drawing: drawing, ago: drawing.getLastEditedStr()});
 		}
