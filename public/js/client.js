@@ -31,6 +31,7 @@ function initDrawing(drawIdIn) {
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
 	var labelFadeInMs = 500;
+	var toolData = {mousedown: false}
 
 	function setup() { 
 
@@ -46,7 +47,10 @@ function initDrawing(drawIdIn) {
 			if (prevCoord == null) { // click occured outside of canvas
 				return;
 			}
-			drawLine(prevCoord, prevCoord);
+			toolData.prevCoord = prevCoord;
+			toolData.newCoord = prevCoord;
+			toolData.mouseDown = true;
+			handleAction(toolData);
 		});
 
 		// draw a stroke. Sync with the tick so coords send are the same used for drawing
@@ -80,6 +84,13 @@ function initDrawing(drawIdIn) {
 		socket.on("receive_mouse_coords", receiveMouseCoords);
 
 		getDrawing();
+	}
+
+	function handleAction(toolData) {
+		if (toolData.mouseDown) {
+			drawLine(toolData.prevCoord, toolData.newCoord);
+			emitMouseCoords(toolData.prevCoord, toolData.newCoord);
+		}
 	}
 
 	function emitMouseCoords(prevCoord, newCoord) {
