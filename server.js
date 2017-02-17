@@ -20,6 +20,7 @@ const PORT = 8080; // Which port to expose to the outside world
 const ID_LEN = 16; // The length of the ID string for drawings
 const LAYER_CODE_LEN = 32; // Length of layer codes
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
+const FLATTEN_TIMEOUT = 1000; // after n ms since last edit, flatten the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 600,
 	height: 400,
@@ -43,26 +44,20 @@ function main() {
 // Set up all the endpoints
 function configureRoutes(app) {
 
-	// // Link socket.io to the routes
-	// Not needed, apparently
-	// app.use(function(req, res, next) { res.io = io; next(); });
-
 	// Tell node to serve static files from the "public" subdirectory
 	app.use(express.static("public"))
 
 	// Create a new drawing in memory, and return its unique ID to the client
 	app.get("/create_drawing", createDrawing);
 
-	// Go to a drawing's page or its image
+	// Render a drawing's page or its image
 	app.get("/d/:id", function(req, res) {
-		console.log(req);
-		req.params.id.includes(".png") ? getDrawingImage(req, res) : renderDrawingPage(req, res);
+		req.params.id.includes(".png") ? 
+			getDrawingImage(req, res) : 
+			renderDrawingPage(req, res);
 	});
 
-	// // Fetch a drawing image and output the buffer
-	// app.get("/drawing_images/:id", getDrawingImage);
-
-	// Index page, rendered as a template
+	// The splash page
 	app.get("/", function(req, res) { res.render("index.html", {drawIDs: getGallery()}); });
 
 	// Default action if nothing else matched - 404
@@ -125,6 +120,16 @@ function receiveLayer(data, socket) {
 		drawing.broadcastLayer(layerID, layer, socket);
 		if (drawing.getNStoredLayers() > MAX_LAYERS) {
 			drawing.flatten();
+			if (drawing.timeout != null) {
+				cancelTimeout(drawing.timeout)
+				drawing.timeout = null;
+			}
+		} else {
+			drawing.timeout = setTimeout(function() {
+				console.log("Timeout triggered");
+				drawing.flatten();
+				drawing.timeout = null;
+			}, 1);
 		}
 	}
 }
@@ -148,7 +153,6 @@ function renderDrawingPage(req, res) {
 
 // Return png image as buffer
 function getDrawingImage(req, res) {
-	console.log("Is this ever called?");
 	var drawID = req.params.id.replace(".png", "");
 	var drawing = drawings.get(drawID)
 	if (drawing == null) { // drawing missing
@@ -255,6 +259,7 @@ function Drawing(idIn, startLayer) {
 	this.layers = new AssocArray();
 	this.socketNS = null; // contains all the sockets attached to this drawing
 	this.isFlattening = false;
+	this.timeout = null;
 
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
