@@ -20,7 +20,6 @@ body {
 	right: 0px;
 	bottom: 0px;
 	left: 0px;
-	margin: 0px;
 }
 
 h1 {
@@ -59,6 +58,8 @@ a.logo:hover, a.logo:active {
 
 .content {
 	padding: 20px;
+	float: left;
+	display: block;
 }
 
 .drawing_pointer {
@@ -136,11 +137,7 @@ a.logo:hover, a.logo:active {
 	font-size: 20px;
 	line-height: 25px;
 	text-decoration: none;
-	text-shadow:
-          -1px -1px 0 #000,
-          1px -1px 0 #000,
-          -1px 1px 0 #000,
-          1px 1px 0 #000;
+	text-shadow: 0px 0px 8px #666;
 	border: 1px solid #333;
 }
 
@@ -150,12 +147,12 @@ a.logo:hover, a.logo:active {
 
 .button:hover {
 	border: 1px solid #000;
-	box-shadow: 0px 0px 8px 4px rgba(255, 255, 255, 0.3);
+	box-shadow: 0px 0px 5px 2px rgba(255, 255, 255, 0.2);
 }
 
 .button:active {
 	padding: 9px 10px 5px 10px;
-	box-shadow: inset 0px 5px 10px rgba(0, 0, 0, 0.8), 0px 0px 8px 4px rgba(255, 255, 255, 0.3);
+	box-shadow: inset 0px 5px 10px rgba(0, 0, 0, 0.8), 0px 0px 5px 2px rgba(255, 255, 255, 0.2);
 }
 
 .thumb {
