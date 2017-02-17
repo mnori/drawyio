@@ -60,10 +60,19 @@ function configureRoutes(app) {
 	app.get("/drawing_images/:id", getDrawingImage);
 
 	// Index page, rendered as a template
-	app.get("/", function(req, res) { res.render("index.html"); });
+	app.get("/", function(req, res) { res.render("index.html", getGallery()); });
 
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
+}
+
+function getGallery() {
+	var out = []
+	var drawIDs = drawings.getKeys();
+	for (var i = 0; i < drawIDs.length; i++) {
+		var drawing = drawings[i];
+		console.log(drawing);
+	}
 }
 
 // Set up drawing-specific event handlers
@@ -130,27 +139,32 @@ function send404(res) {
 
 function renderDrawingPage(req, res) {
 	var drawID = req.params.id
-	if (drawings.get(drawID)) {
+	if (drawings.get(drawID)) { // drawing present
 		res.render("drawing.html", { 
 			drawID: drawID,
 			width: DRAWING_PARAMS.width,
 			height: DRAWING_PARAMS.height
 		});
-	} else {
+	} else { // drawing is missing
 		send404(res);
 	}
 }
 
-// Get the drawing image data as layered encoded JSON buffer
+// Return png image as buffer
 function getDrawingImage(req, res) {
 	console.log("Is this ever called?");
-	var drawID = req.params.id;
+	var drawID = req.params.id.replace(".png", "");
 	var drawing = drawings.get(drawID)
-
 	if (drawing == null) { // drawing missing
 		send404(res)
 	} else { // drawing is present
-		res.send(drawing.getJson());
+		var layer = drawing.getUnmergedLayer(0);
+		var buf = base64ToBuffer(layer.base64);
+		res.writeHead(200, {
+			'Content-Type': 'image/png',
+			'Content-Length': buf.length
+		});
+		res.end(buf);
 	}
 }
 
@@ -323,14 +337,11 @@ function Drawing(idIn, startLayer) {
 		tl.log("a");
 
 		function flattenRecursive(self, baseBuf, ind) {
-			// console.log("flattenRecursive() invoked with ind: "+ind);
-			// get base image
-
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
 			if (ind < MAX_LAYERS && overlay != null) {
+
 				// not reached the end yet - so overlay the image
-				// This is where we need to use the coordinate data
 				componentCodes.push(overlay.code);
 				var overlayBuf = base64ToBuffer(overlay.base64);
 				var overlayParams = {top: overlay.offsets.top, left: overlay.offsets.left};
@@ -340,7 +351,7 @@ function Drawing(idIn, startLayer) {
 					}
 				);
 
-			} else { // overlay is not null
+			} else {
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
