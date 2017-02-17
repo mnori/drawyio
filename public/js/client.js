@@ -139,13 +139,13 @@ function initDrawing(drawIdIn) {
 			if (minNew == null || keyInt < minNew) {
 				minNew = keyInt;
 			}
-			addLayer(keyInt, value, false);
+			renderLayerHtml(keyInt, value, false);
 		});
 	}
 
 	function receiveLayer(data) {
 		data = $.parseJSON(data);
-		addLayer(data.id, data.layer, false);
+		renderLayerHtml(data.id, data.layer, false);
 	}	
 
 	// get the mouse position inside the canvas
@@ -189,26 +189,22 @@ function initDrawing(drawIdIn) {
 		prevCoord = null;
 	}
 
-	function removeLayerByCode(code) {
+	function getLayerByCode(code) {
 		var existingLayer = $("#drawing_layer_"+code);
 		if (existingLayer.length > 0) { // avoid a duplicate element
-			existingLayer.remove();
+			return existingLayer;
 		}
+		return null;
 	}
 	
 	// add layer data to the dom
 	// isTemp: whether this is a temporary layer created by the client
-	function addLayer(layerIDIn, layer, isTemp) {
+	function renderLayerHtml(layerIDIn, layer, isTemp) {
 
 		// Remove duplicate layer with same ID as this one
-		removeLayerByCode(layer.code)
-
-		// If this is a flatten layer, removes the components
-		if (typeof(layer["components"]) !== "undefined") {
-			var codes = layer["components"]
-			for (var i = 0; i < codes.length; i++) {
-				removeLayerByCode(codes[i]);
-			}
+		var duplicate = getLayerByCode(layer.code);
+		if (duplicate != null) {
+			duplicate.remove();
 		}
 
 		// check if there are any component layers to remove from a flattened image
@@ -222,7 +218,18 @@ function initDrawing(drawIdIn) {
 					"top: "+layer.offsets.top+"px;\"/>";
 		$("#drawing_layers").append(layersHtml);
 
-		if (layerIDIn > highestLayerID) { // only add if it's a new layer
+		// If this is a flatten layer, removes the components
+		if (typeof(layer["components"]) !== "undefined") {
+			var codes = layer["components"]
+			for (var i = 0; i < codes.length; i++) {
+				var layer = getLayerByCode(codes[i].code);
+				if (layer != null) {
+					layer.remove();
+				}
+			}
+		}
+
+		if (layerIDIn > highestLayerID) {
 			highestLayerID = layerIDIn;
 		}
 	}
@@ -248,7 +255,7 @@ function initDrawing(drawIdIn) {
 					code: code
 				}
 				// true will bump the layer z-index since it's temporary
-				addLayer(highestLayerID + 1, layer, true);
+				renderLayerHtml(highestLayerID + 1, layer, true);
 
 				// Clear the canvas
 				ctx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height)
