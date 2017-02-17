@@ -169,7 +169,7 @@ a.logo:hover, a.logo:active {
 
 .thumb_img {
 	display: block;
-	width: 250px;
+	width: 300px;
 	float: left;
 }
 
@@ -194,10 +194,10 @@ a.logo:hover, a.logo:active {
 
 #controls {
 	background-color: #eee;
-	/*border: 1px solid #ccc;*/
+	border: 1px solid #ccc;
 	/*box-shadow: 0px 0px 10px 3px #bbb;*/
 	width: 200px;
 	padding: 20px;
-	margin-left: 20px;
+	margin-left: 0px;
 	float: left;
 }
