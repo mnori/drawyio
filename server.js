@@ -22,8 +22,8 @@ const LAYER_CODE_LEN = 32; // Length of layer codes
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const FLATTEN_TIMEOUT = 1000; // after n ms since last edit, flatten the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 600,
-	height: 400,
+	width: 640,
+	height: 480,
 	channels: 4,
 	rgbaPixel: 0x00000000
 }

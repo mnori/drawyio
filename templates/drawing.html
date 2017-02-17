@@ -2,8 +2,7 @@
 
 {% block content %}
 	
-	Nickname <input type="text" id="nickname" />
-    <div class="col-lg-12 text-center">
+    <div id="drawing_container">
     	<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
     		<canvas id="drawing_canvas" width="{{ width }}" height="{{ height }}">
 	        	Canvas not supported :(
@@ -11,6 +10,7 @@
     	</div>
     	<canvas id="crop_canvas" style="display: none;"></canvas>
     </div>
+    <div id="controls"><input type="text" id="nickname" value="Anonymous" /></div>
 		
 {% endblock %}
 
