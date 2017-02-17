@@ -118,18 +118,17 @@ function receiveLayer(data, socket) {
 		var layer = data;
 		var layerID = drawing.addLayer(layer);
 		drawing.broadcastLayer(layerID, layer, socket);
+		if (drawing.timeout) {
+			clearTimeout(drawing.timeout)
+			drawing.timeout = null;
+		}
 		if (drawing.getNStoredLayers() > MAX_LAYERS) {
 			drawing.flatten();
-			if (drawing.timeout != null) {
-				cancelTimeout(drawing.timeout)
-				drawing.timeout = null;
-			}
 		} else {
 			drawing.timeout = setTimeout(function() {
 				console.log("Timeout triggered");
 				drawing.flatten();
-				drawing.timeout = null;
-			}, 1);
+			}, FLATTEN_TIMEOUT);
 		}
 	}
 }
