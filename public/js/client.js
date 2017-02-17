@@ -31,7 +31,7 @@ function initDrawing(drawIdIn) {
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
 	var labelFadeInMs = 500;
-	var toolData = {mousedown: false}
+	var toolData = {mouseDown: false}
 
 	function setup() { 
 
@@ -57,21 +57,24 @@ function initDrawing(drawIdIn) {
 		body.mousemove(function(ev) { 
 			var newCoord = getMousePos(ev);
 			if (newCoord == null) {
-				emitMouseCoords(prevCoord, null); // fell off edge of screen
-				stopDrawing();
+				toolData.newCoord = null;
+				handleAction(toolData);
 				return;
 			}
 			if($.now() - lastEmit > mouseEmitInterval) { 
 				if (prevCoord != null) {
-					drawLine(prevCoord, newCoord);
-					emitMouseCoords(prevCoord, newCoord);
+					toolData.prevCoord = prevCoord, 
+					toolData.newCoord = newCoord;
+					handleAction(toolData);
 					prevCoord = newCoord;
+					toolData.prevCoord = newCoord;
 				} else {
 					// this indicates that we are not drawing.
 					emitMouseCoords(null, newCoord);
 				}
 				lastEmit = $.now();
 			}
+
 		});
 
 		// stop drawing
@@ -88,12 +91,16 @@ function initDrawing(drawIdIn) {
 
 	function handleAction(toolData) {
 		if (toolData.mouseDown) {
-			drawLine(toolData.prevCoord, toolData.newCoord);
+			if (toolData.newCoord == null) { // stopped drawing for some reason
+				stopDrawing();
+			} else { // continue drawing
+				drawLine(toolData.prevCoord, toolData.newCoord);
+			}
 			emitMouseCoords(toolData.prevCoord, toolData.newCoord);
 		}
 	}
 
-	function emitMouseCoords(prevCoord, newCoord) {
+	function emitMouseCoords(prevCoord, newCoord) { 
 		// send mouse position data to the server
 		socket.emit('mousemove', {
 			nickname: $("#nickname").val(),
