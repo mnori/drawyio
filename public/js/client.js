@@ -23,7 +23,6 @@ function initDrawing(drawIdIn) {
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
-	var prevCoord = null; // if this is null, it means we are not drawing
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
 	var layerCodeLen = 32;
@@ -31,7 +30,9 @@ function initDrawing(drawIdIn) {
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
 	var labelFadeInMs = 500;
-	var toolData = {mouseDown: false}
+
+	// Metadata about the action being performed
+	var tool = {prevCoord: null, newCoord: null, state: "idle"};
 
 	function setup() { 
 
@@ -43,38 +44,38 @@ function initDrawing(drawIdIn) {
 		// start drawing
 		var body = $("body");
 		body.mousedown(function(ev) {
-			prevCoord = getMousePos(ev);
-			if (prevCoord == null) { // click occured outside of canvas
-				return;
-			}
-			toolData.prevCoord = prevCoord;
-			toolData.newCoord = prevCoord;
-			toolData.mouseDown = true;
-			handleAction(toolData);
+			tool.newCoord = getMousePos(ev);
+			tool.prevCoord = tool.newCoord;
+			tool.state = "drawing";
+			handleAction(tool);
+
+			// tool.prevCoord = getMousePos(ev);
+			// if (tool.prevCoord == null) { // click occured outside of canvas
+			// 	return;
+			// }
+			// tool.newCoord = tool.prevCoord;
+			// handleAction(tool);
 		});
 
 		// draw a stroke. Sync with the tick so coords send are the same used for drawing
-		body.mousemove(function(ev) { 
-			var newCoord = getMousePos(ev);
-			if (newCoord == null) {
-				toolData.newCoord = null;
-				handleAction(toolData);
-				return;
-			}
-			if($.now() - lastEmit > mouseEmitInterval) { 
-				if (prevCoord != null) {
-					toolData.prevCoord = prevCoord, 
-					toolData.newCoord = newCoord;
-					handleAction(toolData);
-					prevCoord = newCoord;
-					toolData.prevCoord = newCoord;
-				} else {
-					// this indicates that we are not drawing.
-					emitMouseCoords(null, newCoord);
-				}
-				lastEmit = $.now();
-			}
-
+		body.mousemove(function(ev) {
+			tool.newCoord = getMousePos(ev);
+			handleAction(tool);
+			// if (tool.newCoord == null) { // mouse fell off edge of screen
+			// 	handleAction(tool);
+			// }
+			// if($.now() - lastEmit > mouseEmitInterval) { 
+			// 	if (tool.prevCoord != null) {
+			// 		handleAction(tool);
+			// 		tool.prevCoord = tool.newCoord;
+			// 	} else {
+			// 		// this indicates that we are not drawing.
+			// 		tool.prevCoord = null;
+			// 		handleAction(tool);
+			// 	}
+			// 	lastEmit = $.now();
+			// }
+			tool.prevCoord = tool.newCoord;
 		});
 
 		// stop drawing
@@ -89,15 +90,26 @@ function initDrawing(drawIdIn) {
 		getDrawing();
 	}
 
-	function handleAction(toolData) {
-		if (toolData.mouseDown) {
-			if (toolData.newCoord == null) { // stopped drawing for some reason
-				stopDrawing();
-			} else { // continue drawing
-				drawLine(toolData.prevCoord, toolData.newCoord);
-			}
-			emitMouseCoords(toolData.prevCoord, toolData.newCoord);
+	function stopDrawing() {
+		if (tool.state == "drawing") {
+			tool.state = "end";
 		}
+		// tool.prevCoord = tool.newCoord
+		// tool.newCoord = null;
+		handleAction(tool);
+	}
+
+	function handleAction(tool) {
+		console.log("handleAction() invoked with state "+tool.state);
+		if (tool.state == "drawing") {
+			drawLine(tool.prevCoord, tool.newCoord);
+		} else if (tool.state == "end") {
+			processCanvas(canvas[0], croppingCanvas[0])
+			tool.state = "idle";
+		}
+
+		// always emit those mouse coords
+		emitMouseCoords(tool.prevCoord, tool.newCoord);
 	}
 
 	function emitMouseCoords(prevCoord, newCoord) { 
@@ -198,13 +210,6 @@ function initDrawing(drawIdIn) {
 	  	ctx.lineWidth = 5;
 		ctx.stroke()
 		ctx.closePath();
-	}
-
-	function stopDrawing(ev) {
-		if (prevCoord != null) {
-			processCanvas(canvas[0], croppingCanvas[0])
-		}
-		prevCoord = null;
 	}
 
 	function getLayerByCode(code) {
