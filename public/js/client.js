@@ -52,9 +52,10 @@ function initDrawing(drawIdIn) {
 			if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
 				if (tool.newCoord == null) {
-					tool.state = "end";
+					stopDrawing();
+				} else {
+					handleAction(tool);
 				}
-				handleAction(tool);
 				lastEmit = $.now();
 			}
 			tool.prevCoord = tool.newCoord;
