@@ -36,45 +36,27 @@ function initDrawing(drawIdIn) {
 
 	function setup() { 
 
-		// PLAN HERE
-		// - Each mouse event should generate a draw command struct
-		// - Send the struct to a handler
-		// - Tackle each handler method one a time
-
 		// start drawing
 		var body = $("body");
 		body.mousedown(function(ev) {
 			tool.newCoord = getMousePos(ev);
-			tool.prevCoord = tool.newCoord;
-			tool.state = "drawing";
+			if (tool.newCoord != null) {
+				tool.prevCoord = tool.newCoord;
+				tool.state = "drawing";
+			}
 			handleAction(tool);
-
-			// tool.prevCoord = getMousePos(ev);
-			// if (tool.prevCoord == null) { // click occured outside of canvas
-			// 	return;
-			// }
-			// tool.newCoord = tool.prevCoord;
-			// handleAction(tool);
 		});
 
 		// draw a stroke. Sync with the tick so coords send are the same used for drawing
 		body.mousemove(function(ev) {
-			tool.newCoord = getMousePos(ev);
-			handleAction(tool);
-			// if (tool.newCoord == null) { // mouse fell off edge of screen
-			// 	handleAction(tool);
-			// }
-			// if($.now() - lastEmit > mouseEmitInterval) { 
-			// 	if (tool.prevCoord != null) {
-			// 		handleAction(tool);
-			// 		tool.prevCoord = tool.newCoord;
-			// 	} else {
-			// 		// this indicates that we are not drawing.
-			// 		tool.prevCoord = null;
-			// 		handleAction(tool);
-			// 	}
-			// 	lastEmit = $.now();
-			// }
+			if($.now() - lastEmit > mouseEmitInterval) { 
+				tool.newCoord = getMousePos(ev);
+				if (tool.newCoord == null) {
+					tool.state = "end";
+				}
+				handleAction(tool);
+				lastEmit = $.now();
+			}
 			tool.prevCoord = tool.newCoord;
 		});
 
@@ -94,8 +76,6 @@ function initDrawing(drawIdIn) {
 		if (tool.state == "drawing") {
 			tool.state = "end";
 		}
-		// tool.prevCoord = tool.newCoord
-		// tool.newCoord = null;
 		handleAction(tool);
 	}
 
