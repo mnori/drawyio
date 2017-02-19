@@ -79,7 +79,7 @@ function configureDrawingSocket(drawing) {
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
 		// Update drawing with mouse cursor info
-		socket.on("mousemove", function(data) { receiveMouseMove(data, socket); });
+		socket.on("mousemove", function(data) { receiveTool(data, socket); });
 
 		// Receive new png draw data as base64 encoded string and add to the Drawing
 		socket.on("add_layer", function(data) { receiveLayer(data, socket); });
@@ -116,9 +116,9 @@ function getGallery() {
 	return out;
 }
 
-function receiveMouseMove(data, socket) {
+function receiveTool(data, socket) {
 	var drawing = drawings.get(socket.drawID);
-	drawing.broadcastMouseCoords(data, socket);
+	drawing.broadcastTool(data, socket);
 }
 
 // we'll also want a broadcastDrawing() method for when the image is flattened
@@ -302,7 +302,7 @@ function Drawing(idIn, startLayer) {
 	}
 
 	// Broadcast mousecoords to all sockets except the originator
-	this.broadcastMouseCoords = function(data, socket) {
+	this.broadcastTool = function(data, socket) {
 		var socketID = socket.id.split("#").pop();
 		data.socketID = socketID; // we need the socket id to keep track of things
 		socket.broadcast.emit("receive_mouse_coords", data);

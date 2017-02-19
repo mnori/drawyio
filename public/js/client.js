@@ -29,7 +29,6 @@ function initDrawing(drawIdIn) {
 	var highestLayerID = 1;
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
-	var labelFadeInMs = 500;
 
 	// Metadata about the action being performed
 	var tool = {prevCoord: null, newCoord: null, state: "idle"};
@@ -40,15 +39,16 @@ function initDrawing(drawIdIn) {
 		var body = $("body");
 		body.mousedown(function(ev) {
 			tool.newCoord = getMousePos(ev);
-			if (tool.newCoord != null) {
+			if (tool.newCoord != null) { // make sure mouse is within canvas
 				tool.prevCoord = tool.newCoord;
 				tool.state = "drawing";
 			}
 			handleAction(tool);
 		});
 
-		// draw a stroke. Sync with the tick so coords send are the same used for drawing
+		// Handle mouse move. 
 		body.mousemove(function(ev) {
+			// Sync with the tick so coords send are the same used for drawing
 			if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
 				if (tool.newCoord == null) {
@@ -61,18 +61,19 @@ function initDrawing(drawIdIn) {
 			tool.prevCoord = tool.newCoord;
 		});
 
-		// stop drawing
+		// stop drawing if mouse up or mouse leaves canvas
 		body.mouseup(stopDrawing);
 		body.mouseleave(stopDrawing);
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
 		socket.on("add_layer", receiveLayer);
-		socket.on("receive_mouse_coords", receiveMouseCoords);
+		socket.on("receive_mouse_coords", receiveTool);
 
 		getDrawing();
 	}
 
+	// Stop drawing but only if already drawing
 	function stopDrawing() {
 		if (tool.state == "drawing") {
 			tool.state = "end";
@@ -81,28 +82,27 @@ function initDrawing(drawIdIn) {
 	}
 
 	function handleAction(tool) {
-		console.log("handleAction() invoked with state "+tool.state);
-		if (tool.state == "drawing") {
+		if (tool.state == "drawing") { // drawing stroke in progress
 			drawLine(tool.prevCoord, tool.newCoord);
-		} else if (tool.state == "end") {
+		} else if (tool.state == "end") { // mouseup or other stroke end event
 			processCanvas(canvas[0], croppingCanvas[0])
 			tool.state = "idle";
-		}
+		} // if state = "idle", do nothing except emit data with mouse coords
 
-		// always emit those mouse coords
-		emitMouseCoords(tool.prevCoord, tool.newCoord);
+		// always emit those mouse coords and all the other stuff
+		emitTool();
 	}
 
-	function emitMouseCoords(prevCoord, newCoord) { 
-		// send mouse position data to the server
-		socket.emit('mousemove', {
-			nickname: $("#nickname").val(),
-			prevCoord: prevCoord,
-			newCoord: newCoord
-		});
+	// emit a tool action
+	function emitTool(prevCoord, newCoord) { 
+		// TODO put this on the text box event handler
+
+		var nickname = $("#nickname").val();
+		socket.emit('mousemove', tool);
 	}
 
-	function receiveMouseCoords(data) {
+	// receive a tool action from another user
+	function receiveTool(data) {
 		var sockID = data.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
 		if (data.newCoord == null) {
@@ -123,13 +123,12 @@ function initDrawing(drawIdIn) {
 			pointerElement = $("#drawing_pointer_"+sockID);
 			// position the pointer element
 		}
-		pointerElement.css({ // did try animate but it didn't work particularly well
+		pointerElement.css({
 			left: data.newCoord.x+"px",
 			top: data.newCoord.y+"px"
 		});
 		var nick = !data.nickname ? "Anonymous" : data.nickname;
 		$("#drawing_pointer_label_"+sockID).text(nick);
-		pointerElement.fadeIn(labelFadeInMs);
 	}
 
 	// Ask the server for drawing data
@@ -168,7 +167,7 @@ function initDrawing(drawIdIn) {
 			y: Math.floor(ev.clientY - rect.top)
 		};
 
-		// attempt to wrap edges
+		// attempt to wrap edges - troublesome since it messes up exit behaviour
 		// if (mousePos.x < 0) mousePos.x = 0;
 		// if (mousePos.y < 0) mousePos.y = 0;
 		// if (mousePos.x >= rect.width) mousePos.x = rect.width - 1;
