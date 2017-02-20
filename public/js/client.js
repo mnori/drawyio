@@ -38,6 +38,7 @@ function initDrawing(drawIdIn) {
 			if (tool.newCoord != null) { // make sure mouse is within canvas
 				tool.prevCoord = tool.newCoord;
 				tool.state = "drawing";
+				tool.layerCode = randomString(layerCodeLen);
 			}
 			handleAction(tool, true);
 		});
@@ -82,9 +83,12 @@ function initDrawing(drawIdIn) {
 			drawLine(tool.prevCoord, tool.newCoord);
 			if (emit) emitTool();
 		} else if (tool.state == "end") { // mouseup or other stroke end event
-			processCanvas(canvas[0], croppingCanvas[0])
-			if (emit) emitTool();
-			tool.state = "idle";
+			if (emit) {
+				processCanvas(canvas[0], croppingCanvas[0], tool);
+				emitTool();
+				tool.state = "idle";
+				tool.layerCode = null;
+			}
 		} else { // if state = "idle", do nothing except emit data with mouse coords
 			if (emit) emitTool();
 		}
@@ -92,8 +96,6 @@ function initDrawing(drawIdIn) {
 
 	// emit a tool action
 	function emitTool(prevCoord, newCoord) { 
-		// TODO put this on the text box event handler
-
 		var nickname = $("#nickname").val();
 		socket.emit('mousemove', tool);
 	}
@@ -223,6 +225,7 @@ function initDrawing(drawIdIn) {
 		// If this is a flatten layer, removes the components
 		if (typeof(layer["components"]) !== "undefined") {
 			var codes = layer["components"]
+			console.log(codes);
 			for (var i = 0; i < codes.length; i++) {
 				var layer = getLayerByCode(codes[i].code);
 				if (layer != null) {
@@ -237,7 +240,10 @@ function initDrawing(drawIdIn) {
 	}
 
 	// Converts canvas to various useful things
-	function processCanvas(sourceCanvas, croppingCanvas) {
+	function processCanvas(sourceCanvas, croppingCanvas, tool) {
+
+		var layerCode = tool.layerCode; // must keep copy since it gets reset to null
+
 		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas);
 
 		// First generate a png blob
@@ -247,15 +253,13 @@ function initDrawing(drawIdIn) {
 			var fr = new FileReader();
 			fr.onload = function(e) {
 				
-				// create a random identifier for this layer
-				var code = randomString(layerCodeLen);
-
 				var layer = {
 					drawID: drawID,
 					base64: e.target.result, 
 					offsets: cropCoords,
-					code: code
+					code: layerCode
 				}
+
 				// true will bump the layer z-index since it's temporary
 				renderLayerHtml(highestLayerID + 1, layer, true);
 
