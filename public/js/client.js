@@ -85,7 +85,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) emitTool();
 		} else if (tool.state == "end") { // mouseup or other stroke end event
 			if (emit) {
-				processCanvas(canvas[0], croppingCanvas[0], tool);
+				// convert canvas to png and send to the server
+				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				emitTool();
 				tool.state = "idle";
 				tool.layerCode = null;
@@ -207,7 +208,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				"<canvas id=\""+canvasID+"\" "+
 					"width=\""+width+"\" height=\""+height+"\" "+
 					"style=\"z-index: 9000;\"> "+
-					"class=\"peer-canvas\"> "+
+					"class=\"drawing_canvas\"> "+
 				"</canvas>";
 			$("#drawing_layers").append(buf)
 			existingCanvas = $("#"+canvasID);
@@ -225,13 +226,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	
 	// add layer data to the dom
 	// isTemp: whether this is a temporary layer created by the client
-	function renderLayerHtml(layerIDIn, layer, isTemp) {
+	function renderLayerHtml(layerIDIn, layerIn, isTemp) {
+		var layer = layerIn; // for scope
+
+		console.log("renderLayerHtml() invoked");
 
 		// Remove duplicate layer with same ID as this one
 		var duplicate = getLayerByCode(layer.code);
-		if (duplicate != null) {
-			duplicate.remove();
-		}
 
 		// check if there are any component layers to remove from a flattened image
 		var bump = (isTemp) ? 1000 : 0; // temporary layers always above the rest
@@ -239,12 +240,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			"<img id=\"drawing_layer_"+layer.code+"\" class=\"drawing_layer\" "+
 				"src=\""+layer.base64+"\" "+
 				"style=\""+
-					"z-index: "+(layerIDIn + bump)+";"+
-					"left: "+layer.offsets.left+"px;"+
+					"z-index: "+(layerIDIn + bump)+"; "+
+					"left: "+layer.offsets.left+"px; "+
 					"top: "+layer.offsets.top+"px;\"/>";
+
 		$("#drawing_layers").append(layersHtml);
 
-		// If this is a flatten layer, removes the components
+	    // If this is a flatten layer, removes the components
 		if (typeof(layer["components"]) !== "undefined") {
 			var codes = layer["components"]
 			for (var i = 0; i < codes.length; i++) {
@@ -253,6 +255,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					layer.remove();
 				}
 			}
+		}
+		if (duplicate != null) {
+			duplicate.remove();
 		}
 
 		if (layerIDIn > highestLayerID) {

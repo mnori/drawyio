@@ -118,8 +118,8 @@ h1 {
 	z-index: 9007199254740991;
 }
 
-/* canvas that other users are drawing onto */
-.peer_canvas {
+/* canvas that other users are drawing onto, or this user */
+.drawing_canvas {
 	z-index: 9007199254740000;	
 	position: absolute;
 	top: 0px;
