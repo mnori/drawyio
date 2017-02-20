@@ -186,7 +186,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var thisCtx = ctx;
 		if (!emit) { // if it came from remote user, draw on a different canvas
 			var peerCanvas = createPeerCanvas(tool);
-			// console.log(peerCanvas);
 			thisCtx = peerCanvas[0].getContext("2d");
 		}
 		thisCtx.beginPath();
@@ -210,7 +209,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					"style=\"z-index: 9000;\"> "+
 					"class=\"peer-canvas\"> "+
 				"</canvas>";
-			console.log(buf);
 			$("#drawing_layers").append(buf)
 			existingCanvas = $("#"+canvasID);
 		}
@@ -249,9 +247,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// If this is a flatten layer, removes the components
 		if (typeof(layer["components"]) !== "undefined") {
 			var codes = layer["components"]
-			console.log(codes);
 			for (var i = 0; i < codes.length; i++) {
-				var layer = getLayerByCode(codes[i].code);
+				var layer = getLayerByCode(codes[i]);
 				if (layer != null) {
 					layer.remove();
 				}
