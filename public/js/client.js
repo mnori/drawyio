@@ -5,10 +5,7 @@
 function initSplash() {
 	$("#create_drawing_btn").click(function() {
 		// "New drawing" button AJAX
-		$.ajax({
-			url: "/create_drawing"
-
-		}).done(function(drawingID) {
+		$.ajax({url: "/create_drawing"}).done(function(drawingID) {
 			// Redirect to the drawing's page
 			window.location.href = "/d/"+drawingID
 		});
@@ -17,8 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn) {
-	// gives around 60fps. Is used for both drawing and sending drawing data
-	var mouseEmitInterval = 16; 
+	var mouseEmitInterval = 8; 
 
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
@@ -43,7 +39,7 @@ function initDrawing(drawIdIn) {
 				tool.prevCoord = tool.newCoord;
 				tool.state = "drawing";
 			}
-			handleAction(tool);
+			handleAction(tool, true);
 		});
 
 		// Handle mouse move. 
@@ -54,7 +50,7 @@ function initDrawing(drawIdIn) {
 				if (tool.newCoord == null) {
 					stopDrawing();
 				} else {
-					handleAction(tool);
+					handleAction(tool, true);
 				}
 				lastEmit = $.now();
 			}
@@ -78,19 +74,20 @@ function initDrawing(drawIdIn) {
 		if (tool.state == "drawing") {
 			tool.state = "end";
 		}
-		handleAction(tool);
+		handleAction(tool, true);
 	}
 
-	function handleAction(tool) {
+	function handleAction(tool, emit) {
 		if (tool.state == "drawing") { // drawing stroke in progress
 			drawLine(tool.prevCoord, tool.newCoord);
+			if (emit) emitTool();
 		} else if (tool.state == "end") { // mouseup or other stroke end event
 			processCanvas(canvas[0], croppingCanvas[0])
+			if (emit) emitTool();
 			tool.state = "idle";
-		} // if state = "idle", do nothing except emit data with mouse coords
-
-		// always emit those mouse coords and all the other stuff
-		emitTool();
+		} else { // if state = "idle", do nothing except emit data with mouse coords
+			if (emit) emitTool();
+		}
 	}
 
 	// emit a tool action
@@ -102,10 +99,10 @@ function initDrawing(drawIdIn) {
 	}
 
 	// receive a tool action from another user
-	function receiveTool(data) {
-		var sockID = data.socketID;
+	function receiveTool(tool) {
+		var sockID = tool.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
-		if (data.newCoord == null) {
+		if (tool.newCoord == null) {
 			// also fades out when the mouse is not drawing
 			pointerElement.fadeOut(labelFadeOutMs, function() {
 				pointerElement.remove();
@@ -124,11 +121,13 @@ function initDrawing(drawIdIn) {
 			// position the pointer element
 		}
 		pointerElement.css({
-			left: data.newCoord.x+"px",
-			top: data.newCoord.y+"px"
+			left: tool.newCoord.x+"px",
+			top: tool.newCoord.y+"px"
 		});
-		var nick = !data.nickname ? "Anonymous" : data.nickname;
+		var nick = !tool.nickname ? "Anonymous" : tool.nickname;
 		$("#drawing_pointer_label_"+sockID).text(nick);
+
+		handleAction(tool);
 	}
 
 	// Ask the server for drawing data
