@@ -26,6 +26,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var highestLayerID = 1;
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
+	var canvasCeiling = 9007199254740000;
 
 	// Metadata about the action being performed
 	var tool = {prevCoord: null, newCoord: null, state: "idle"};
@@ -82,6 +83,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function handleAction(tool, emit) {
 		if (tool.state == "drawing") { // drawing stroke in progress
 			drawLine(tool, emit);
+			bumpCanvas(canvas);
 			if (emit) emitTool();
 		} else if (tool.state == "end") { // mouseup or other stroke end event
 			if (emit) {
@@ -213,7 +215,18 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			$("#drawing_layers").append(buf)
 			existingCanvas = $("#"+canvasID);
 		}
+		bumpCanvas(existingCanvas);
 		return existingCanvas;
+	}
+
+	function bumpCanvas(canvasElement) {
+		console.log("bumpCanvas() invoked");
+		$(".drawing_canvas").each(function() { // shift everything else -1 on zindex
+			var element = $(this);
+			var zIndex = parseInt(element.css("z-index"));
+			element.css("z-index", zIndex);
+		});
+		canvasElement.css("z-index", canvasCeiling);
 	}
 
 	function getLayerByCode(code) {

@@ -115,7 +115,6 @@ h1 {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	z-index: 9007199254740991;
 }
 
 /* canvas that other users are drawing onto, or this user */
