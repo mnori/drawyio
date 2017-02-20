@@ -13,9 +13,10 @@ function initSplash() {
 }
 
 // Initialise the drawing image UI
-function initDrawing(drawIdIn) {
+function initDrawing(drawIdIn, widthIn, heightIn) {
 	var mouseEmitInterval = 8; 
-
+	var width = widthIn;
+	var height = heightIn;
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
@@ -80,7 +81,7 @@ function initDrawing(drawIdIn) {
 
 	function handleAction(tool, emit) {
 		if (tool.state == "drawing") { // drawing stroke in progress
-			drawLine(tool.prevCoord, tool.newCoord);
+			drawLine(tool, emit);
 			if (emit) emitTool();
 		} else if (tool.state == "end") { // mouseup or other stroke end event
 			if (emit) {
@@ -129,7 +130,7 @@ function initDrawing(drawIdIn) {
 		var nick = !tool.nickname ? "Anonymous" : tool.nickname;
 		$("#drawing_pointer_label_"+sockID).text(nick);
 
-		handleAction(tool);
+		handleAction(tool, false);
 	}
 
 	// Ask the server for drawing data
@@ -181,16 +182,39 @@ function initDrawing(drawIdIn) {
 		return mousePos;
 	}
 
-	function drawLine(prevCoord, newCoord) {
-		ctx.beginPath();
-		ctx.moveTo(prevCoord.x, prevCoord.y);
-		ctx.lineTo(newCoord.x, newCoord.y);
-		ctx.strokeStyle = "black";
-		ctx.lineCap = "round";
-		ctx.lineJoin = "round";
-	  	ctx.lineWidth = 5;
-		ctx.stroke()
-		ctx.closePath();
+	function drawLine(tool, emit) {
+		var thisCtx = ctx;
+		if (!emit) { // if it came from remote user, draw on a different canvas
+			var peerCanvas = createPeerCanvas(tool);
+			// console.log(peerCanvas);
+			thisCtx = peerCanvas[0].getContext("2d");
+		}
+		thisCtx.beginPath();
+		thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
+		thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
+		thisCtx.strokeStyle = "black";
+		thisCtx.lineCap = "round";
+		thisCtx.lineJoin = "round";
+	  	thisCtx.lineWidth = 5;
+		thisCtx.stroke()
+		thisCtx.closePath();
+	}
+
+	function createPeerCanvas(tool) {
+		var canvasID = "drawing_layer_"+tool.layerCode
+		var existingCanvas = $("#"+canvasID);	
+		if (existingCanvas.length == 0) {
+			var buf = 
+				"<canvas id=\""+canvasID+"\" "+
+					"width=\""+width+"\" height=\""+height+"\" "+
+					"style=\"z-index: 9000;\"> "+
+					"class=\"peer-canvas\"> "+
+				"</canvas>";
+			console.log(buf);
+			$("#drawing_layers").append(buf)
+			existingCanvas = $("#"+canvasID);
+		}
+		return existingCanvas;
 	}
 
 	function getLayerByCode(code) {

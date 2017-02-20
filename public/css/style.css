@@ -118,6 +118,14 @@ h1 {
 	z-index: 9007199254740991;
 }
 
+/* canvas that other users are drawing onto */
+.peer_canvas {
+	z-index: 9007199254740000;	
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
 #crop_canvas {
 	border: 1px solid #000;
 }
