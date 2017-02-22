@@ -44,6 +44,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				tool.state = "drawing";
 				tool.layerCode = randomString(layerCodeLen);
 			}
+			addToolSettings();
 			handleAction(tool, true);
 		});
 
@@ -52,6 +53,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			// Sync with the tick so coords send are the same used for drawing
 			if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
+				addToolSettings();
 				if (tool.newCoord == null) {
 					stopDrawing();
 				} else {
@@ -74,6 +76,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		getDrawing();
 	}
 
+	function addToolSettings() {
+		tool.colourFg = $("#colour_fg").css("backgroundColor");
+		tool.brushSize = parseInt($("#brush_size").val());
+	}
+
 	function setupControls() {
 		// set up colour picker
 		$("#colour_fg").colorPicker();
@@ -81,6 +88,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Stop drawing but only if already drawing
 	function stopDrawing() {
+		addToolSettings();
 		if (tool.state == "drawing") {
 			tool.state = "end";
 		}
@@ -201,10 +209,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.beginPath();
 		thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
 		thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
-		thisCtx.strokeStyle = $("#colour_fg").css("backgroundColor");
+		thisCtx.strokeStyle = tool.colourFg;
 		thisCtx.lineCap = "round";
 		thisCtx.lineJoin = "round";
-	  	thisCtx.lineWidth = parseInt($("#brush_size").val());
+	  	thisCtx.lineWidth = tool.brushSize;
 		thisCtx.stroke()
 		thisCtx.closePath();
 	}
