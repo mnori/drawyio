@@ -33,6 +33,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function setup() { 
 
+		setupControls();
+
 		// start drawing
 		var body = $("body");
 		body.mousedown(function(ev) {
@@ -70,6 +72,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		socket.on("receive_mouse_coords", receiveTool);
 
 		getDrawing();
+	}
+
+	function setupControls() {
+		// set up colour picker
+		$("#colour_fg").colorPicker();
 	}
 
 	// Stop drawing but only if already drawing
@@ -194,10 +201,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.beginPath();
 		thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
 		thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
-		thisCtx.strokeStyle = "black";
+		thisCtx.strokeStyle = $("#colour_fg").css("backgroundColor");
 		thisCtx.lineCap = "round";
 		thisCtx.lineJoin = "round";
-	  	thisCtx.lineWidth = 5;
+	  	thisCtx.lineWidth = parseInt($("#brush_size").val());
 		thisCtx.stroke()
 		thisCtx.closePath();
 	}

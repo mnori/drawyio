@@ -19,6 +19,14 @@
     <meta name="description" content="Collab draw app">
     <meta name="author" content="drawy.io">
     <title>Drawy.io</title>
+
+    <!-- Some JS libraries -->
+    <script src="/js/jquery.js"></script>
+    <script src="/js/jqColorPicker.js"></script>
+    <script src="/js/imagesloaded.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- CSS -->
     <link href="/css/style.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css" />
 </head>
@@ -37,11 +45,6 @@
     <div class="content">
         {% block content %}{% endblock %}
     </div>
-
-    <!-- Some JS libraries -->
-    <script src="/js/jquery.js"></script>
-    <script src="/js/imagesloaded.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
 
     <!-- Our own front end code -->
     <script src="/js/client.js"></script>
