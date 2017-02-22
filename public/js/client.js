@@ -203,7 +203,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function createPeerCanvas(tool) {
-		var canvasID = "drawing_layer_"+tool.layerCode
+		var canvasID = "canvas_layer_"+tool.layerCode
 		var existingCanvas = $("#"+canvasID);	
 		if (existingCanvas.length == 0) {
 			var buf = 
@@ -220,7 +220,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function bumpCanvas(canvasElement) {
-		console.log("bumpCanvas() invoked");
 		$(".drawing_canvas").each(function() { // shift everything else -1 on zindex
 			var element = $(this);
 			var zIndex = parseInt(element.css("z-index"));
@@ -230,6 +229,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function getLayerByCode(code) {
+		var existingLayer = $("#canvas_layer_"+code);
+		if (existingLayer.length > 0) { // avoid a duplicate element
+			return existingLayer;
+		}
 		var existingLayer = $("#drawing_layer_"+code);
 		if (existingLayer.length > 0) { // avoid a duplicate element
 			return existingLayer;
@@ -240,38 +243,45 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// add layer data to the dom
 	// isTemp: whether this is a temporary layer created by the client
 	function renderLayerHtml(layerIDIn, layerIn, isTemp) {
-		var layer = layerIn; // for scope
+		var context = {}
+		context.layer = layerIn; // for scope
 
-		console.log("renderLayerHtml() invoked");
-
-		// Remove duplicate layer with same ID as this one
-		var duplicate = getLayerByCode(layer.code);
+		// Get duplicate layer with same ID and rename its ID
+		context.duplicate = getLayerByCode(context.layer.code);	
+		if (context.duplicate != null) {
+			context.duplicate.attr("id", "duplicate_temp");
+		}
 
 		// check if there are any component layers to remove from a flattened image
 		var bump = (isTemp) ? 1000 : 0; // temporary layers always above the rest
+		var newLayerID = "drawing_layer_"+context.layer.code;
 		var layersHtml = 
-			"<img id=\"drawing_layer_"+layer.code+"\" class=\"drawing_layer\" "+
-				"src=\""+layer.base64+"\" "+
+			"<img id=\""+newLayerID+"\" class=\"drawing_layer\" "+
+				"src=\""+context.layer.base64+"\" "+
 				"style=\""+
 					"z-index: "+(layerIDIn + bump)+"; "+
-					"left: "+layer.offsets.left+"px; "+
-					"top: "+layer.offsets.top+"px;\"/>";
+					"left: "+context.layer.offsets.left+"px; "+
+					"top: "+context.layer.offsets.top+"px;\"/>";
 
 		$("#drawing_layers").append(layersHtml);
 
-	    // If this is a flatten layer, removes the components
-		if (typeof(layer["components"]) !== "undefined") {
-			var codes = layer["components"]
-			for (var i = 0; i < codes.length; i++) {
-				var layer = getLayerByCode(codes[i]);
-				if (layer != null) {
-					layer.remove();
+		// use imagesLoaded library to determine when it has definitely loaded
+		// this was an attempt to fix firefox flicker bug
+		$("#"+newLayerID).imagesLoaded().done(function() {
+			// If this is a flatten layer, removes the components
+			if (typeof(context.layer["components"]) !== "undefined") {
+				var codes = context.layer["components"]
+				for (var i = 0; i < codes.length; i++) {
+					var layer = getLayerByCode(codes[i]);
+					if (layer != null) {
+						layer.remove();
+					}
 				}
 			}
-		}
-		if (duplicate != null) {
-			duplicate.remove();
-		}
+			if (context.duplicate != null) {
+				context.duplicate.remove();
+			}
+		});
 
 		if (layerIDIn > highestLayerID) {
 			highestLayerID = layerIDIn;
