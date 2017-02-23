@@ -29,7 +29,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 
 	// Metadata about the action being performed
-	var tool = {prevCoord: null, newCoord: null, state: "idle"};
+	var tool = {
+		prevCoord: null,
+		newCoord: null,
+		state: "idle",
+		tool: "paint"
+	};
 
 	function setup() { 
 
@@ -84,6 +89,26 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function setupControls() {
 		// set up colour picker
 		$("#colour_fg").colorPicker();
+		$("#paint").on("mousedown", function() {
+			toggleButtons($(this));
+			tool.tool = "paint";
+		});
+		$("#flood").on("mousedown", function() {
+			toggleButtons($(this));
+			tool.tool = "flood";
+		});
+		toggleButtons($("#paint"));
+	}
+
+	function toggleButtons(clickedElement) {
+		$(".button_tool").each(function() {
+			var element = $(this);
+			if (element.attr("id") == clickedElement.attr("id")) {
+				element.addClass("button_pressed")
+			} else {
+				element.removeClass("button_pressed")
+			}
+		});
 	}
 
 	// Stop drawing but only if already drawing
@@ -97,7 +122,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function handleAction(tool, emit) {
 		if (tool.state == "drawing") { // drawing stroke in progress
-			drawLine(tool, emit);
+			if (tool.tool == "paint") {
+				drawLine(tool, emit);
+			} else if (tool.tool == "flood") {
+				flood(tool, emit);
+			}
 			bumpCanvas(canvas);
 			if (emit) emitTool();
 		} else if (tool.state == "end") { // mouseup or other stroke end event
@@ -215,6 +244,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	  	thisCtx.lineWidth = tool.brushSize;
 		thisCtx.stroke()
 		thisCtx.closePath();
+	}
+
+	function flood(tool, emit) {
+		console.log("Flood invoked")
+		console.log(tool);
+
+		// step 1. find the background image
+		var backgroundImage = null;
+
+
+		$(".")
 	}
 
 	function createPeerCanvas(tool) {
