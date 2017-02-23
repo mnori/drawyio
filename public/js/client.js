@@ -20,7 +20,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var floodCanvas = $("#flood_canvas");
-	console.log(floodCanvas);
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
@@ -116,8 +115,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		var canvas = floodCanvas[0]
 		canvas.setAttribute("width", width);
-		canvas.setAttribute("height", width);
+		canvas.setAttribute("height", height);
 		var ctx = canvas.getContext('2d'); // the user editable element
+
+		ctx.drawImage(backgroundImage[0], 0, 0);
 
 		console.log(ctx);
 	}
