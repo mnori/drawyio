@@ -113,16 +113,69 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 		});
 
-		var canvas = floodCanvas[0]
+		// Draw the background image onto a flood fill canvas
+		var canvas = floodCanvas[0];
 		canvas.setAttribute("width", width);
 		canvas.setAttribute("height", height);
 		var ctx = canvas.getContext('2d'); // the user editable element
-
 		ctx.drawImage(backgroundImage[0], 0, 0);
 
-		console.log(ctx);
+
+    	// Fetch the RGBA colour at the position
+    	var canvasColor = ctx.getImageData(0, 0, 1,1); // rgba e [0,255]
+    	var rgba = canvasColor.data;
+
+
+
+		floodFill(ctx, 0, 0, null, [255, 0, 0, 255]);
 	}
 	/* / */
+
+	// from http://www.somethinghitme.com/2012/03/07/html5-canvas-flood-fill/
+	function floodFill(ctx, x, y, oldVal, newVal) {
+        if (oldVal == null){
+            oldVal = ctx.getImageData(x, y, 1, 1);
+            console.log(oldVal);
+        }
+ 
+        if(!rgbaEqual(ctx.getImageData(x, y, 1, 1), oldVal)) { // found flood fill edge
+            return true;
+        }
+	 	
+	 	// write data to canvas
+	    // mapData[x][y] = newVal;
+		ctx.fillStyle = "rgba("+ctx[0]+","+ctx[1]+","+ctx[2]+","+255+")";
+		ctx.fillRect( x, y, 1, 1 )
+
+	    // var id = ctx.createImageData(1,1); // only do this once per page
+	    // ctx.putImageData(id, x, y );     
+	    // console.log("Wrote "+x+", "+y)
+	 
+	    if (x > 0) {
+	        floodFill(ctx, x - 1, y, oldVal, newVal);
+	    }
+	 
+	    if (y > 0) {
+	        floodFill(ctx, x, y - 1, oldVal, newVal);
+	    }
+	 
+	    if (x < width-1) {
+	        floodFill(ctx, x + 1, y, oldVal, newVal);
+	    }
+	 
+	    if (y < height-1) {
+	        floodFill(ctx, x, y + 1, oldVal, newVal);
+	    }
+	}
+
+	function rgbaEqual(query, target) {
+		for (var i = 0; i < 4; i++) {
+			if (query[i] != target[i]) {
+				return false; // not identical
+			}
+		}
+		return true; // identical
+	}
 
 	function addToolSettings() {
 		tool.colourFg = $("#colour_fg").css("backgroundColor");
