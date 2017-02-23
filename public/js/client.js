@@ -19,6 +19,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
+	var floodCanvas = $("#flood_canvas");
+	console.log(floodCanvas);
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
@@ -80,6 +82,46 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		getDrawing();
 	}
+
+	/* TOOL METHODS */
+	function drawLine(tool, emit) {
+		var thisCtx = ctx;
+		if (!emit) { // if it came from remote user, draw on a different canvas
+			var peerCanvas = createPeerCanvas(tool);
+			thisCtx = peerCanvas[0].getContext("2d");
+		}
+		thisCtx.beginPath();
+		thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
+		thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
+		thisCtx.strokeStyle = tool.colourFg;
+		thisCtx.lineCap = "round";
+		thisCtx.lineJoin = "round";
+	  	thisCtx.lineWidth = tool.brushSize;
+		thisCtx.stroke()
+		thisCtx.closePath();
+	}
+
+	function flood(tool, emit) {
+		// step 1. find the background image
+		var backgroundImage = null;
+		var backgroundZ = null;
+		$(".drawing_layer").each(function() {
+			var element = $(this);
+			var z = parseInt(element.css("z-index"));
+			if (backgroundZ == null || z > backgroundZ) {
+				backgroundImage = element;
+				backgroundZ = z;
+			}
+		});
+
+		var canvas = floodCanvas[0]
+		canvas.setAttribute("width", width);
+		canvas.setAttribute("height", width);
+		var ctx = canvas.getContext('2d'); // the user editable element
+
+		console.log(ctx);
+	}
+	/* / */
 
 	function addToolSettings() {
 		tool.colourFg = $("#colour_fg").css("backgroundColor");
@@ -227,34 +269,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			return null
 		}
 		return mousePos;
-	}
-
-	function drawLine(tool, emit) {
-		var thisCtx = ctx;
-		if (!emit) { // if it came from remote user, draw on a different canvas
-			var peerCanvas = createPeerCanvas(tool);
-			thisCtx = peerCanvas[0].getContext("2d");
-		}
-		thisCtx.beginPath();
-		thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
-		thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
-		thisCtx.strokeStyle = tool.colourFg;
-		thisCtx.lineCap = "round";
-		thisCtx.lineJoin = "round";
-	  	thisCtx.lineWidth = tool.brushSize;
-		thisCtx.stroke()
-		thisCtx.closePath();
-	}
-
-	function flood(tool, emit) {
-		console.log("Flood invoked")
-		console.log(tool);
-
-		// step 1. find the background image
-		var backgroundImage = null;
-
-
-		$(".")
 	}
 
 	function createPeerCanvas(tool) {

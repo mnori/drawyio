@@ -341,3 +341,7 @@ h1 {
   border-color: #fff transparent;
   box-sizing: border-box;
 }
+
+#flood_canvas {
+	border: 1px solid #f00;
+}
