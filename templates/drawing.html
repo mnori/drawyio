@@ -11,9 +11,12 @@
     	<canvas id="crop_canvas" style="display: none;"></canvas>
     </div>
     <div id="controls">
-        <input type="text" id="nickname" value="Anonymous" />
-        <input type="text" id="brush_size" value="5" />
-        <div id="colour_fg" style="background-color: #000;"><div>
+        <input id="nickname" type="text" value="Anonymous" />
+        <input id="brush_size" type="text" value="5" />
+        <div id="colour_fg" style="background-color: #000;"></div>
+        <a id="flood" class="button button_tool" href="javascript:void(0)">
+            <i class="fa fa-database flood_rotate" aria-hidden="true"></i>
+        </a>
     </div>
 		
 {% endblock %}
