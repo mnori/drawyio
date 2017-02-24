@@ -114,7 +114,7 @@ var floodfill = (function() {
 		return color;
 	};
 
-	function fillContext(x,y,tolerance,left,top,right,bottom) {
+	function fillContext(x, y, tolerance, writeCtx, left, top, right, bottom) {
 		var ctx  = this;
 		
 		//Gets the rgba color from the context fillStyle
@@ -135,6 +135,7 @@ var floodfill = (function() {
 		if(width>0 && height>0) {
 			fillUint8ClampedArray(data,x,y,color,tolerance,width,height);
 			ctx.putImageData(image,left,top);
+			writeCtx.putImageData(image,left,top);
 		}
 	};
 

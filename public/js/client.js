@@ -101,7 +101,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function flood(tool, emit) {
-
 		function compareElements(eA, eB) {
 			var zA = parseInt(eA.css("z-index"));
 			var zB = parseInt(eB.css("z-index"));
@@ -126,14 +125,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var canvas = floodCanvas[0];
 		canvas.setAttribute("width", width);
 		canvas.setAttribute("height", height);
-		var ctx = canvas.getContext('2d'); // the user editable element
+		var scratchCtx = canvas.getContext('2d'); // the user editable element
 		for (var i = 0; i < elements.length; i++) {
-			ctx.drawImage(elements[i][0], 0, 0);	
+			var el = elements[i];
+			var left = parseInt(el.css("left"));
+			var top = parseInt(el.css("top"));
+			scratchCtx.drawImage(el[0], left, top);	
 		}
 		
 
-		ctx.fillStyle = tool.colourFg;
-		ctx.fillFlood(tool.newCoord.x, tool.newCoord.y, 255);
+		scratchCtx.fillStyle = tool.colourFg;
+		scratchCtx.fillFlood(tool.newCoord.x, tool.newCoord.y, 255, ctx);
 	}
 
 	function addToolSettings() {
