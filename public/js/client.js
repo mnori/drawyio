@@ -125,26 +125,24 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
     	var canvasColor = ctx.getImageData(0, 0, 1,1); // rgba e [0,255]
     	var rgba = canvasColor.data;
 
-
-
-		floodFill(ctx, 0, 0, null, [255, 0, 0, 255]);
+		floodFill(ctx, 0, 0, rgba, [255, 0, 0, 1]);
 	}
 	/* / */
 
 	// from http://www.somethinghitme.com/2012/03/07/html5-canvas-flood-fill/
 	function floodFill(ctx, x, y, oldVal, newVal) {
         if (oldVal == null){
-            oldVal = ctx.getImageData(x, y, 1, 1);
+            oldVal = ctx.getImageData(x, y, 1, 1).data;
             console.log(oldVal);
         }
  
-        if(!rgbaEqual(ctx.getImageData(x, y, 1, 1), oldVal)) { // found flood fill edge
+        if(!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldVal)) { // found flood fill edge
             return true;
         }
 	 	
 	 	// write data to canvas
 	    // mapData[x][y] = newVal;
-		ctx.fillStyle = "rgba("+ctx[0]+","+ctx[1]+","+ctx[2]+","+255+")";
+		ctx.fillStyle = "rgba("+newVal[0]+","+newVal[1]+","+newVal[2]+","+newVal[3]+")";
 		ctx.fillRect( x, y, 1, 1 )
 
 	    // var id = ctx.createImageData(1,1); // only do this once per page
