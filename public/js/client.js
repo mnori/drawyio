@@ -101,24 +101,36 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function flood(tool, emit) {
-		// step 1. find the background images
-		var backgroundImage = null;
-		var backgroundZ = null;
-		$(".drawing_layer").each(function() {
-			var element = $(this);
-			var z = parseInt(element.css("z-index"));
-			if (backgroundZ == null || z > backgroundZ) {
-				backgroundImage = element;
-				backgroundZ = z;
+
+		function compareElements(eA, eB) {
+			var zA = parseInt(eA.css("z-index"));
+			var zB = parseInt(eB.css("z-index"));
+			if (zA < zB) {
+				return -1;
 			}
+			if (zA > zB) {
+				return 1;
+			}
+			return 0; // should not actually happen
+		}
+
+		// // step 1. find the background images
+		var elements = []
+		$(".drawing_layer").each(function() {
+			elements.push($(this));
 		});
+
+		elements.sort(compareElements);
 
 		// Draw the background images onto a flood fill canvas
 		var canvas = floodCanvas[0];
 		canvas.setAttribute("width", width);
 		canvas.setAttribute("height", height);
 		var ctx = canvas.getContext('2d'); // the user editable element
-		ctx.drawImage(backgroundImage[0], 0, 0);
+		for (var i = 0; i < elements.length; i++) {
+			ctx.drawImage(elements[i][0], 0, 0);	
+		}
+		
 
 		ctx.fillStyle = tool.colourFg;
 		ctx.fillFlood(tool.newCoord.x, tool.newCoord.y, 255);
