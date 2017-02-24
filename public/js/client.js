@@ -125,10 +125,22 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
     	var canvasColor = ctx.getImageData(0, 0, 1,1); // rgba e [0,255]
     	var rgba = canvasColor.data;
 
-		floodFill(ctx, 0, 0, rgba, [255, 0, 0, 1]);
+		floodFill2(ctx, 0, 0, rgba, [255, 0, 0, 1]);
 	}
 	/* / */
 
+
+	// Recursive flood fill algo
+	// Problem is that the max call stack size gets exceeded
+	// from http://www.somethinghitme.com/2012/03/07/html5-canvas-flood-fill/
+	function floodFillTest(ctx, x, y, oldVal, newVal) {
+	 	// At this point, we are writing data to canvas
+		ctx.fillStyle = "rgba("+newVal[0]+","+newVal[1]+","+newVal[2]+","+newVal[3]+")";
+		ctx.fillRect(x, y, 10, 10)
+	}
+
+	// Recursive flood fill algo
+	// Problem is that the max call stack size gets exceeded
 	// from http://www.somethinghitme.com/2012/03/07/html5-canvas-flood-fill/
 	function floodFill(ctx, x, y, oldVal, newVal) {
         if (oldVal == null){
@@ -136,12 +148,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
             console.log(oldVal);
         }
  
-        if(!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldVal)) { // found flood fill edge
+ 		// Have we found flood fill edge
+        if(!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldVal)) { 
             return true;
         }
 	 	
-	 	// write data to canvas
-	    // mapData[x][y] = newVal;
+	 	// At this point, we are writing data to canvas
 		ctx.fillStyle = "rgba("+newVal[0]+","+newVal[1]+","+newVal[2]+","+newVal[3]+")";
 		ctx.fillRect( x, y, 1, 1 )
 
@@ -164,6 +176,64 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	    if (y < height-1) {
 	        floodFill(ctx, x, y + 1, oldVal, newVal);
 	    }
+	}
+
+	// Non-recursive flood fill algo
+	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
+	function floodFill2(ctx, x, y, oldVal, newVal) {
+
+		console.log("floodFill2() invoked");
+
+		var nIts = 0;
+		var queue = []
+		queue.push([x, y]);
+		while(queue.length > 0) {
+
+			// if (queue.length > 100000) { // for testing - prevent infinite loop
+			// 	console.log("Maximum queue size reached");
+			// 	break;
+			// }
+
+			// Retrieve the next x and y position of cursor
+			var coords = queue.pop();
+
+			var x = coords[0];
+			var y = coords[1];
+			
+	        if( // Different colour?
+	        	!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldVal) ||
+
+	        	// Are we hitting an area that has already been filled?
+	        	rgbaEqual(ctx.getImageData(x, y, 1, 1).data, newVal)
+	        ) { 
+	            continue;
+	        }
+
+			// At this point, we are writing data to canvas
+			ctx.fillStyle = "rgba("+newVal[0]+","+newVal[1]+","+newVal[2]+","+newVal[3]+")";
+			ctx.fillRect(x, y, 1, 1)
+
+			// console.log(newVal);
+
+			// Determine another cursor movement
+			if (x > 0) {
+				queue.push([x - 1, y]);
+		    }
+		 
+		    if (y > 0) {
+		    	queue.push([x, y - 1]);
+		    }
+		 
+		    if (x < width - 1) {
+		 		queue.push([x + 1, y]);
+		    }
+		 
+		    if (y < height - 1) {
+		        queue.push([x, y + 1]);
+		    }
+		    nIts++;
+		}
+		console.log("Completed flood fill in "+nIts+" iterations");
 	}
 
 	function rgbaEqual(query, target) {
