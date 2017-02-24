@@ -101,7 +101,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function flood(tool, emit) {
-		// step 1. find the background image
+		// step 1. find the background images
 		var backgroundImage = null;
 		var backgroundZ = null;
 		$(".drawing_layer").each(function() {
@@ -113,134 +113,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 		});
 
-		// Draw the background image onto a flood fill canvas
+		// Draw the background images onto a flood fill canvas
 		var canvas = floodCanvas[0];
 		canvas.setAttribute("width", width);
 		canvas.setAttribute("height", height);
 		var ctx = canvas.getContext('2d'); // the user editable element
 		ctx.drawImage(backgroundImage[0], 0, 0);
 
-		ctx.fillStyle = 'rgba(0, 0, 255, 1.0)';
+		ctx.fillStyle = tool.colourFg;
 		ctx.fillFlood(tool.newCoord.x, tool.newCoord.y, 255);
-
-
-    	// Fetch the RGBA colour at the position
-    	// var canvasColor = ctx.getImageData(0, 0, 1,1); // rgba e [0,255]
-    	// var rgba = canvasColor.data;
-
-		// floodFill2(ctx, 0, 0, rgba, [255, 0, 0, 1]);
-		// var floodColour = [255, 0, 0, 255];
-
-		// uint x, uint y, byte tolerance, uint left, uint top, uint right, uint bottom
-		// floodfill(); // top
-	}
-	/* / */
-
-	// Recursive flood fill algo
-	// Problem is that the max call stack size gets exceeded
-	// from http://www.somethinghitme.com/2012/03/07/html5-canvas-flood-fill/
-	function floodFillRecursive(ctx, x, y, oldVal, newVal) {
-        if (oldVal == null){
-            oldVal = ctx.getImageData(x, y, 1, 1).data;
-            console.log(oldVal);
-        }
- 
- 		// Have we found flood fill edge
-        if(!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldVal)) { 
-            return true;
-        }
-	 	
-	 	// At this point, we are writing data to canvas
-		ctx.fillStyle = "rgba("+newVal[0]+","+newVal[1]+","+newVal[2]+","+newVal[3]+")";
-		ctx.fillRect( x, y, 1, 1 )
-
-	    // var id = ctx.createImageData(1,1); // only do this once per page
-	    // ctx.putImageData(id, x, y );     
-	    // console.log("Wrote "+x+", "+y)
-	 
-	    if (x > 0) {
-	        floodFill(ctx, x - 1, y, oldVal, newVal);
-	    }
-	 
-	    if (y > 0) {
-	        floodFill(ctx, x, y - 1, oldVal, newVal);
-	    }
-	 
-	    if (x < width-1) {
-	        floodFill(ctx, x + 1, y, oldVal, newVal);
-	    }
-	 
-	    if (y < height-1) {
-	        floodFill(ctx, x, y + 1, oldVal, newVal);
-	    }
-	}
-
-	// Non-recursive flood fill algo
-	// This completely works, but unfortunately is very slow
-	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
-	function floodFill2(ctx, x, y, oldVal, newVal) {
-
-		console.log("floodFill2() invoked");
-
-		var nIts = 0;
-		var queue = []
-		queue.push([x, y]);
-		while(queue.length > 0) {
-
-			// if (queue.length > 100000) { // for testing - prevent infinite loop
-			// 	console.log("Maximum queue size reached");
-			// 	break;
-			// }
-
-			// Retrieve the next x and y position of cursor
-			var coords = queue.pop();
-
-			var x = coords[0];
-			var y = coords[1];
-			
-	        if( // Different colour?
-	        	!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldVal) ||
-
-	        	// Are we hitting an area that has already been filled?
-	        	rgbaEqual(ctx.getImageData(x, y, 1, 1).data, newVal)
-	        ) { 
-	            continue;
-	        }
-
-			// At this point, we are writing data to canvas
-			ctx.fillStyle = "rgba("+newVal[0]+","+newVal[1]+","+newVal[2]+","+newVal[3]+")";
-			ctx.fillRect(x, y, 1, 1)
-
-			// console.log(newVal);
-
-			// Determine another cursor movement
-			if (x > 0) {
-				queue.push([x - 1, y]);
-		    }
-		 
-		    if (y > 0) {
-		    	queue.push([x, y - 1]);
-		    }
-		 
-		    if (x < width - 1) {
-		 		queue.push([x + 1, y]);
-		    }
-		 
-		    if (y < height - 1) {
-		        queue.push([x, y + 1]);
-		    }
-		    nIts++;
-		}
-		console.log("Completed flood fill in "+nIts+" iterations");
-	}
-
-	function rgbaEqual(query, target) {
-		for (var i = 0; i < 4; i++) {
-			if (query[i] != target[i]) {
-				return false; // not identical
-			}
-		}
-		return true; // identical
 	}
 
 	function addToolSettings() {
