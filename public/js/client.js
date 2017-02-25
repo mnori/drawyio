@@ -135,7 +135,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		
 
 		scratchCtx.fillStyle = tool.colourFg;
-		var tolerance = 1; // setting to zero = infinite wut
+		var tolerance = 255; // setting to zero = infinite wut
 		scratchCtx.fillFlood(tool.newCoord.x, tool.newCoord.y, tolerance, ctx);
 	}
 

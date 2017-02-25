@@ -51,7 +51,7 @@ var floodfill = (function() {
 		) return true; //target matches surface
 
 		if (
-			Math.abs(targetcolor[3] - data[i+3])<=(255-tolerance) &&
+			Math.abs(targetcolor[3] - data[i+3])<=tolerance &&
 			Math.abs(targetcolor[0] - data[i]  )<=tolerance &&
 			Math.abs(targetcolor[1] - data[i+1])<=tolerance &&
 			Math.abs(targetcolor[2] - data[i+2])<=tolerance
@@ -119,7 +119,6 @@ var floodfill = (function() {
 		
 		//Gets the rgba color from the context fillStyle
 		var color = getComputedColor(this.fillStyle);
-
 		//Defaults and type checks for image boundaries
 		left     = (isNaN(left)) ? 0 : left;
 		top      = (isNaN(top)) ? 0 : top;
