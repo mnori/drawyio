@@ -132,11 +132,86 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var top = parseInt(el.css("top"));
 			scratchCtx.drawImage(el[0], left, top);	
 		}
-		
+	
 
-		scratchCtx.fillStyle = tool.colourFg;
-		var tolerance = 255; // setting to zero = infinite wut
-		scratchCtx.fillFlood(tool.newCoord.x, tool.newCoord.y, tolerance, ctx);
+		// Get the colour at the position
+		var colour = parseColour(tool.colourFg);
+		// console.log(tool.colourFg);
+		console.log(colour);
+
+		// scratchCtx.fillStyle = tool.colourFg;
+		// var tolerance = 255; // setting to zero = infinite wut
+		// scratchCtx.fillFlood(tool.newCoord.x, tool.newCoord.y, tolerance, ctx);
+	}
+
+	function parseColour(strIn) {
+		var str = strIn.replace("rgb(", "").replace("rgba(", "").replace(")", "");
+		var bits = str.split(",");
+		out = [
+			parseInt(bits[0]),
+			parseInt(bits[1]),
+			parseInt(bits[2]),
+			bits.length > 3 ? parseInt(bits[3]) : 1
+		]
+		return out;
+	}
+
+	// Non-recursive flood fill algo
+	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
+	function floodFill2(ctx, x, y, oldVal, newVal) {
+
+		console.log("floodFill2() invoked");
+
+		var nIts = 0;
+		var queue = []
+		queue.push([x, y]);
+		while(queue.length > 0) {
+
+			// if (queue.length > 100000) { // for testing - prevent infinite loop
+			// 	console.log("Maximum queue size reached");
+			// 	break;
+			// }
+
+			// Retrieve the next x and y position of cursor
+			var coords = queue.pop();
+
+			var x = coords[0];
+			var y = coords[1];
+			
+	        if( // Different colour?
+	        	!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldVal) ||
+
+	        	// Are we hitting an area that has already been filled?
+	        	rgbaEqual(ctx.getImageData(x, y, 1, 1).data, newVal)
+	        ) { 
+	            continue;
+	        }
+
+			// At this point, we are writing data to canvas
+			ctx.fillStyle = "rgba("+newVal[0]+","+newVal[1]+","+newVal[2]+","+newVal[3]+")";
+			ctx.fillRect(x, y, 1, 1)
+
+			// console.log(newVal);
+
+			// Determine another cursor movement
+			if (x > 0) {
+				queue.push([x - 1, y]);
+		    }
+		 
+		    if (y > 0) {
+		    	queue.push([x, y - 1]);
+		    }
+		 
+		    if (x < width - 1) {
+		 		queue.push([x + 1, y]);
+		    }
+		 
+		    if (y < height - 1) {
+		        queue.push([x, y + 1]);
+		    }
+		    nIts++;
+		}
+		console.log("Completed flood fill in "+nIts+" iterations");
 	}
 
 	function addToolSettings() {
