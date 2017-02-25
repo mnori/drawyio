@@ -47,7 +47,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.newCoord = getMousePos(ev);
 			if (tool.newCoord != null) { // make sure mouse is within canvas
 				tool.prevCoord = tool.newCoord;
-				tool.state = "drawing";
+				tool.state = "start";
 				tool.layerCode = randomString(layerCodeLen);
 			}
 			addToolSettings();
@@ -59,6 +59,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			// Sync with the tick so coords send are the same used for drawing
 			if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
+				if (tool.state == "start") {
+					tool.state = "drawing";
+				}
 				addToolSettings();
 				if (tool.newCoord == null) {
 					stopDrawing();
@@ -126,6 +129,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		scatchCanvas.setAttribute("width", width);
 		scatchCanvas.setAttribute("height", height);
 		var scratchCtx = scatchCanvas.getContext('2d'); // the user editable element
+
+		// Clear the canvas - pretty important
+		scratchCtx.clearRect(0, 0, width, height);
 		for (var i = 0; i < elements.length; i++) {
 			var el = elements[i];
 			var left = parseInt(el.css("left"));
@@ -280,11 +286,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function handleAction(tool, emit) {
-		if (tool.state == "drawing") { // drawing stroke in progress
+		if (tool.state == "start") { // flood fill - only on mousedown
+			if (tool.tool == "flood") {
+				flood(tool, emit);
+			} // ...
+		} else if (tool.state == "drawing") { // drawing stroke in progress
 			if (tool.tool == "paint") {
 				drawLine(tool, emit);
-			} else if (tool.tool == "flood") {
-				flood(tool, emit);
 			}
 			bumpCanvas(canvas);
 			if (emit) emitTool();
