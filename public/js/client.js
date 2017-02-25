@@ -104,7 +104,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function flood(tool, emit) {
-		function compareElements(eA, eB) {
+		// // step 1. find the background images
+		var elements = []
+		$(".drawing_layer").each(function() {
+			elements.push($(this));
+		});
+
+		// sort the background images
+		elements.sort(function(eA, eB) {
 			var zA = parseInt(eA.css("z-index"));
 			var zB = parseInt(eB.css("z-index"));
 			if (zA < zB) {
@@ -114,24 +121,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				return 1;
 			}
 			return 0; // should not actually happen
-		}
-
-		// // step 1. find the background images
-		var elements = []
-		$(".drawing_layer").each(function() {
-			elements.push($(this));
 		});
-
-		elements.sort(compareElements);
 
 		// Draw the background images onto a flood fill canvas
 		var scatchCanvas = floodCanvas[0];
 		scatchCanvas.setAttribute("width", width);
 		scatchCanvas.setAttribute("height", height);
 		var scratchCtx = scatchCanvas.getContext('2d'); // the user editable element
+		scratchCtx.clearRect(0, 0, width, height); // Clear the canvas - pretty important
+		console.log("Cleared rect");
 
-		// Clear the canvas - pretty important
-		scratchCtx.clearRect(0, 0, width, height);
 		for (var i = 0; i < elements.length; i++) {
 			var el = elements[i];
 			var left = parseInt(el.css("left"));
@@ -187,6 +186,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		queue.push([x, y]);
 		while(queue.length > 0) {
 
+			nIts++;
+
 			// if (queue.length > 100000) { // for testing - prevent infinite loop
 			// 	console.log("Maximum queue size reached");
 			// 	break;
@@ -232,7 +233,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		    if (y < height - 1) {
 		        queue.push([x, y + 1]);
 		    }
-		    nIts++;
 		}
 		console.log("Completed flood fill in "+nIts+" iterations");
 	}
@@ -289,6 +289,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (tool.state == "start") { // flood fill - only on mousedown
 			if (tool.tool == "flood") {
 				flood(tool, emit);
+				processCanvasAndEmit(tool, emit);
 			} // ...
 		} else if (tool.state == "drawing") { // drawing stroke in progress
 			if (tool.tool == "paint") {
@@ -296,16 +297,20 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 			bumpCanvas(canvas);
 			if (emit) emitTool();
-		} else if (tool.state == "end") { // mouseup or other stroke end event
-			if (emit) {
-				// convert canvas to png and send to the server
-				processCanvas(canvas[0], croppingCanvas[0], tool); 
-				emitTool();
-				tool.state = "idle";
-				tool.layerCode = null;
-			}
+		} else if (tool.state == "end" && tool.tool != "flood") { // mouseup or other stroke end event
+			processCanvasAndEmit(tool, emit);
 		} else { // if state = "idle", do nothing except emit data with mouse coords
 			if (emit) emitTool();
+		}
+	}
+
+	function processCanvasAndEmit(tool, emit) {
+		if (emit) {
+			// convert canvas to png and send to the server
+			processCanvas(canvas[0], croppingCanvas[0], tool); 
+			emitTool();
+			tool.state = "idle";
+			tool.layerCode = null;
 		}
 	}
 
