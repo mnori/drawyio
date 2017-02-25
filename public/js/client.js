@@ -153,21 +153,28 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function parseColour(strIn) {
 		var str = strIn.replace("rgb(", "").replace("rgba(", "").replace(")", "");
+		console.log(str);
 		var bits = str.split(",");
+		var alpha = parseInt(bits[3]);
 		out = [
 			parseInt(bits[0]),
 			parseInt(bits[1]),
 			parseInt(bits[2]),
-			1
+			255 * (isNaN(alpha) ? 1 : alpha) // if is nan, max alpha should be used (1)
 		]
 		return out;
 	}
 
 	// Non-recursive flood fill algo
+	// Although it works, it's slow
 	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
 	function floodFill2(sourceCtx, destCtx, x, y, oldColour, newColour) {
-
 		console.log("floodFill2() invoked");
+
+		var sourceData = sourceCtx.getImageData(x, y, width, height).data;
+		var destData = destCtx.getImageData(x, y, width, height).data;
+
+		console.log(sourceData);
 
 		var nIts = 0;
 		var queue = []
