@@ -136,8 +136,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Get the colour from the tool
 		var newColour = parseColour(tool.colourFg);
-		var oldColour = ctx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-		floodFill2(scratchCtx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
+		var oldColour = ctx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data ;
+		floodFill2(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
 
 		// scratchCtx.fillStyle = tool.colourFg;
 		// var tolerance = 255; // setting to zero = infinite wut
@@ -158,7 +158,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Non-recursive flood fill algo
 	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
-	function floodFill2(ctx, x, y, oldColour, newColour) {
+	function floodFill2(sourceCtx, destCtx, x, y, oldColour, newColour) {
 
 		console.log("floodFill2() invoked");
 
@@ -179,17 +179,20 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var y = coords[1];
 			
 	        if( // Different colour?
-	        	!rgbaEqual(ctx.getImageData(x, y, 1, 1).data, oldColour) ||
+	        	!rgbaEqual(sourceCtx.getImageData(x, y, 1, 1).data, oldColour) ||
 
 	        	// Are we hitting an area that has already been filled?
-	        	rgbaEqual(ctx.getImageData(x, y, 1, 1).data, newColour)
+	        	rgbaEqual(destCtx.getImageData(x, y, 1, 1).data, newColour)
 	        ) { 
 	            continue;
 	        }
 
 			// At this point, we are writing data to canvas
-			ctx.fillStyle = "rgba("+newColour[0]+","+newColour[1]+","+newColour[2]+","+newColour[3]+")";
-			ctx.fillRect(x, y, 1, 1)
+			sourceCtx.fillStyle = "rgba("+newColour[0]+","+newColour[1]+","+newColour[2]+","+newColour[3]+")";
+			sourceCtx.fillRect(x, y, 1, 1)
+
+			destCtx.fillStyle = "rgba("+newColour[0]+","+newColour[1]+","+newColour[2]+","+newColour[3]+")";
+			destCtx.fillRect(x, y, 1, 1)
 
 			// console.log(newColour);
 
