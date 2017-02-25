@@ -129,7 +129,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		scatchCanvas.setAttribute("height", height);
 		var scratchCtx = scatchCanvas.getContext('2d'); // the user editable element
 		scratchCtx.clearRect(0, 0, width, height); // Clear the canvas - pretty important
-		console.log("Cleared rect");
 
 		for (var i = 0; i < elements.length; i++) {
 			var el = elements[i];
@@ -143,11 +142,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		var newColour = parseColour(tool.colourFg);
 
-		console.log(tool.colourFg);
-
-		console.log("newColour:");
-		console.log(newColour);
-
 		floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
 	}
 
@@ -155,16 +149,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Although it works, it's slow
 	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
 	function floodFill(sourceCtx, destCtx, x, y, oldColour, newColour) {
-		console.log("floodFill() invoked");
-
 		var sourceData = sourceCtx.getImageData(0, 0, width, height);
 		var destData = destCtx.getImageData(0, 0, width, height);
-
-		var nIts = 0;
 		var queue = []
+
 		queue.push([x, y]);
 		while(queue.length > 0) {
-			nIts++;
 
 			// Retrieve the next x and y position of cursor
 			var coords = queue.pop();
@@ -184,7 +174,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	            continue;
 	        }
 
-			// At this point, we are writing data to data
+			// At this point, we are writing data to storage
 			// Data is written to canvas in later step
 			setColour(sourceData.data, x, y, newColour);
 			setColour(destData.data, x, y, newColour);
@@ -208,20 +198,18 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 
 		destCtx.putImageData(destData, 0, 0);
-		console.log("Completed flood fill in "+nIts+" iterations");
 	}
 
 	// parse CSS colour details
 	function parseColour(strIn) {
 		var str = strIn.replace("rgb(", "").replace("rgba(", "").replace(")", "");
-		console.log(str);
 		var bits = str.split(",");
-		var alpha = parseInt(bits[3]);
+		var alpha = parseFloat(bits[3]);
 		out = [
 			parseInt(bits[0]),
 			parseInt(bits[1]),
 			parseInt(bits[2]),
-			255 * (isNaN(alpha) ? 1 : alpha) // if is nan, max alpha should be used (1)
+			Math.round(255 * (isNaN(alpha) ? 1 : alpha)) // if is nan, max alpha should be used (1)
 		]
 		return out;
 	}
