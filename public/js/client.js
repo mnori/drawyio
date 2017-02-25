@@ -156,6 +156,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// scratchCtx.fillFlood(tool.newCoord.x, tool.newCoord.y, tolerance, ctx);
 	}
 
+	// parse CSS colour details
 	function parseColour(strIn) {
 		var str = strIn.replace("rgb(", "").replace("rgba(", "").replace(")", "");
 		console.log(str);
@@ -170,28 +171,40 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		return out;
 	}
 
+	// Get colour from image data
+	function getColour(data, x, y) {
+		var base = getXYBase(x, y);
+		return [data[base], data[base+1], data[base+2], data[base+3]];
+	}
+
+	// from https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
+	function getXYBase(x, y) {
+		return (y * (width * 4)) + (x * 4);
+	}
+
+	// Set colour into the image data
+	function setColour(data, x, y, colour) {
+		var base = getXYBase(x, y);
+		data[base] = colour[0];
+		data[base + 1] = colour[1];
+		data[base + 2] = colour[2];
+		data[base + 3] = colour[3];
+	}
+
 	// Non-recursive flood fill algo
 	// Although it works, it's slow
 	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
 	function floodFill2(sourceCtx, destCtx, x, y, oldColour, newColour) {
 		console.log("floodFill2() invoked");
 
-		var sourceData = sourceCtx.getImageData(x, y, width, height).data;
-		var destData = destCtx.getImageData(x, y, width, height).data;
-
-		console.log(sourceData);
+		var sourceData = sourceCtx.getImageData(0, 0, width, height);
+		var destData = destCtx.getImageData(0, 0, width, height);
 
 		var nIts = 0;
 		var queue = []
 		queue.push([x, y]);
 		while(queue.length > 0) {
-
 			nIts++;
-
-			// if (queue.length > 100000) { // for testing - prevent infinite loop
-			// 	console.log("Maximum queue size reached");
-			// 	break;
-			// }
 
 			// Retrieve the next x and y position of cursor
 			var coords = queue.pop();
@@ -199,23 +212,21 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var x = coords[0];
 			var y = coords[1];
 			
-	        if( // Different colour?
-	        	!rgbaEqual(sourceCtx.getImageData(x, y, 1, 1).data, oldColour) ||
+			var sourceColour = getColour(sourceData.data, x, y);
+			var destColour = getColour(destData.data, x, y);
+
+	        if( // Found different colour in original image?
+	        	!rgbaEqual(sourceColour, oldColour) ||
 
 	        	// Are we hitting an area that has already been filled?
-	        	rgbaEqual(destCtx.getImageData(x, y, 1, 1).data, newColour)
+	        	rgbaEqual(destColour, newColour)
 	        ) { 
 	            continue;
 	        }
 
 			// At this point, we are writing data to canvas
-			sourceCtx.fillStyle = "rgba("+newColour[0]+","+newColour[1]+","+newColour[2]+","+newColour[3]+")";
-			sourceCtx.fillRect(x, y, 1, 1)
-
-			destCtx.fillStyle = "rgba("+newColour[0]+","+newColour[1]+","+newColour[2]+","+newColour[3]+")";
-			destCtx.fillRect(x, y, 1, 1)
-
-			// console.log(newColour);
+			setColour(sourceData.data, x, y, newColour);
+			setColour(destData.data, x, y, newColour);
 
 			// Determine another cursor movement
 			if (x > 0) {
@@ -234,6 +245,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		        queue.push([x, y + 1]);
 		    }
 		}
+
+		destCtx.putImageData(destData, 0, 0);
 		console.log("Completed flood fill in "+nIts+" iterations");
 	}
 
