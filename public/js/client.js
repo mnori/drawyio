@@ -136,7 +136,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Get the colour from the tool
 		var newColour = parseColour(tool.colourFg);
-		var oldColour = ctx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1);
+		var oldColour = ctx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		floodFill2(scratchCtx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
 
 		// scratchCtx.fillStyle = tool.colourFg;
@@ -212,6 +212,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		    nIts++;
 		}
 		console.log("Completed flood fill in "+nIts+" iterations");
+	}
+
+	function rgbaEqual(query, target) {
+		for (var i = 0; i < 4; i++) {
+			if (query[i] != target[i]) {
+				return false; // not identical
+			}
+		}
+		return true; // identical
 	}
 
 	function addToolSettings() {
