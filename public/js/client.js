@@ -135,8 +135,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	
 
 		// Get the colour from the tool
+		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		var newColour = parseColour(tool.colourFg);
-		var oldColour = ctx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data ;
+
+		console.log("old: ");
+		console.log(oldColour);
+
+		console.log("new: ");
+		console.log(newColour);
+
 		floodFill2(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
 
 		// scratchCtx.fillStyle = tool.colourFg;
@@ -151,7 +158,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			parseInt(bits[0]),
 			parseInt(bits[1]),
 			parseInt(bits[2]),
-			bits.length > 3 ? parseInt(bits[3]) : 1
+			1
 		]
 		return out;
 	}
