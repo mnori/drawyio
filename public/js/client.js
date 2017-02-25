@@ -292,19 +292,20 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Stop drawing but only if already drawing
 	function stopDrawing() {
 		addToolSettings();
-		if (tool.state == "drawing") {
+		if (tool.state == "drawing" || tool.state == "start") {
 			tool.state = "end";
 		}
 		handleAction(tool, true);
 	}
 
 	function handleAction(tool, emit) {
-		if (tool.state == "start") { // flood fill - only on mousedown
-			if (tool.tool == "flood") {
-				flood(tool, emit);
-				processCanvasAndEmit(tool, emit);
-			} // ...
-		} else if (tool.state == "drawing") { // drawing stroke in progress
+		if (tool.state == "start" && tool.tool == "flood") { // flood fill - only on mousedown
+			flood(tool, emit);
+			processCanvasAndEmit(tool, emit);
+		} else if (
+			(tool.state == "start" || tool.state == "drawing") && 
+			tool.tool != "flood"
+		) { // drawing stroke in progress
 			if (tool.tool == "paint") {
 				drawLine(tool, emit);
 			}
