@@ -139,21 +139,76 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	
 
-		// Get the colour from the tool
+		// Get the colours from the background image and tool
 		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		var newColour = parseColour(tool.colourFg);
 
-		console.log("old: ");
-		console.log(oldColour);
+		console.log(tool.colourFg);
 
-		console.log("new: ");
+		console.log("newColour:");
 		console.log(newColour);
 
-		floodFill2(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
+		floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
+	}
 
-		// scratchCtx.fillStyle = tool.colourFg;
-		// var tolerance = 255; // setting to zero = infinite wut
-		// scratchCtx.fillFlood(tool.newCoord.x, tool.newCoord.y, tolerance, ctx);
+	// Non-recursive flood fill algo
+	// Although it works, it's slow
+	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
+	function floodFill(sourceCtx, destCtx, x, y, oldColour, newColour) {
+		console.log("floodFill() invoked");
+
+		var sourceData = sourceCtx.getImageData(0, 0, width, height);
+		var destData = destCtx.getImageData(0, 0, width, height);
+
+		var nIts = 0;
+		var queue = []
+		queue.push([x, y]);
+		while(queue.length > 0) {
+			nIts++;
+
+			// Retrieve the next x and y position of cursor
+			var coords = queue.pop();
+
+			var x = coords[0];
+			var y = coords[1];
+			
+			var sourceColour = getColour(sourceData.data, x, y);
+			var destColour = getColour(destData.data, x, y);
+
+	        if( // Found different colour in original image?
+	        	!rgbaEqual(sourceColour, oldColour) ||
+
+	        	// Are we hitting an area that has already been filled?
+	        	rgbaEqual(destColour, newColour)
+	        ) { 
+	            continue;
+	        }
+
+			// At this point, we are writing data to data
+			// Data is written to canvas in later step
+			setColour(sourceData.data, x, y, newColour);
+			setColour(destData.data, x, y, newColour);
+
+			// Determine another cursor movement
+			if (x > 0) {
+				queue.push([x - 1, y]);
+		    }
+		 
+		    if (y > 0) {
+		    	queue.push([x, y - 1]);
+		    }
+		 
+		    if (x < width - 1) {
+		 		queue.push([x + 1, y]);
+		    }
+		 
+		    if (y < height - 1) {
+		        queue.push([x, y + 1]);
+		    }
+		}
+
+		destCtx.putImageData(destData, 0, 0);
+		console.log("Completed flood fill in "+nIts+" iterations");
 	}
 
 	// parse CSS colour details
@@ -189,65 +244,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		data[base + 1] = colour[1];
 		data[base + 2] = colour[2];
 		data[base + 3] = colour[3];
-	}
-
-	// Non-recursive flood fill algo
-	// Although it works, it's slow
-	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
-	function floodFill2(sourceCtx, destCtx, x, y, oldColour, newColour) {
-		console.log("floodFill2() invoked");
-
-		var sourceData = sourceCtx.getImageData(0, 0, width, height);
-		var destData = destCtx.getImageData(0, 0, width, height);
-
-		var nIts = 0;
-		var queue = []
-		queue.push([x, y]);
-		while(queue.length > 0) {
-			nIts++;
-
-			// Retrieve the next x and y position of cursor
-			var coords = queue.pop();
-
-			var x = coords[0];
-			var y = coords[1];
-			
-			var sourceColour = getColour(sourceData.data, x, y);
-			var destColour = getColour(destData.data, x, y);
-
-	        if( // Found different colour in original image?
-	        	!rgbaEqual(sourceColour, oldColour) ||
-
-	        	// Are we hitting an area that has already been filled?
-	        	rgbaEqual(destColour, newColour)
-	        ) { 
-	            continue;
-	        }
-
-			// At this point, we are writing data to canvas
-			setColour(sourceData.data, x, y, newColour);
-			setColour(destData.data, x, y, newColour);
-
-			// Determine another cursor movement
-			if (x > 0) {
-				queue.push([x - 1, y]);
-		    }
-		 
-		    if (y > 0) {
-		    	queue.push([x, y - 1]);
-		    }
-		 
-		    if (x < width - 1) {
-		 		queue.push([x + 1, y]);
-		    }
-		 
-		    if (y < height - 1) {
-		        queue.push([x, y + 1]);
-		    }
-		}
-
-		destCtx.putImageData(destData, 0, 0);
-		console.log("Completed flood fill in "+nIts+" iterations");
 	}
 
 	function rgbaEqual(query, target) {
