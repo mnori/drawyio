@@ -36,6 +36,8 @@ var floodfill = (function() {
 		if (i<0||i>=length) return false; //out of bounds
 		if (data[i+3]===0 && fillcolor.a>0) return true;  //surface is invisible and fill is visible
 
+		tolerance = 0;
+
 		if (
 			Math.abs(targetcolor[3] - fillcolor.a)<=tolerance &&
 			Math.abs(targetcolor[0] - fillcolor.r)<=tolerance &&
