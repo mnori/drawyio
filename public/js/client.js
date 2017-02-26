@@ -146,7 +146,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// Non-recursive flood fill algo
-	// Although it works, it's slow
 	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
 	function floodFill(sourceCtx, destCtx, x, y, oldColour, newColour) {
 		var sourceData = sourceCtx.getImageData(0, 0, width, height);
@@ -197,6 +196,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		    }
 		}
 
+		// Write the new flood filled data to the canvas
 		destCtx.putImageData(destData, 0, 0);
 	}
 

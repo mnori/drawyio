@@ -21,7 +21,6 @@
     <title>Drawy.io</title>
 
     <!-- Some JS libraries -->
-    <script src="/js/floodfill.js"></script>
     <script src="/js/jquery.js"></script>
     <script src="/js/jqColorPicker.js"></script>
     <script src="/js/imagesloaded.js"></script>
@@ -36,7 +35,23 @@
 
     <!-- Navigation -->
     <nav id="navbar" role="navigation">
+        <!-- <div class="pie highlight" data-start="30" data-value="30"></div>
+        <div class="pie" data-start="60" data-value="40"></div>
+        <div class="pie big" data-start="100" data-value="260"></div> -->
+
         <a class="logo" href="/">Drawy.io</a>
+
+        <svg id="logo_image" viewBox="0 0 230 230">
+            <path fill="#FF0000" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(0, 115, 115)"></path>
+            <path fill="#FF7F00" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(51.48, 115, 115)"></path>
+            <path fill="#FFFF00" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(102.96, 115, 115)"></path>
+            <path fill="#00FF00" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(154.44, 115, 115)"></path>
+            <path fill="#0000FF" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(205.92, 115, 115)"></path>
+            <path fill="#4B0082" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(257.4, 115, 115)"></path>
+            <path fill="#9400D3" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(308.88, 115, 115)"></path>
+            <circle cx="115" cy="115" r="64.4" fill="#333"></circle>
+        </svg>
+
         <a id="create_drawing_btn" class="button" href="javascript:void(0)">
             <i class="fa fa-plus-square button_icon" aria-hidden="true"></i>New drawing
         </a>
