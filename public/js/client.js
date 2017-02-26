@@ -19,7 +19,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
-	var floodCanvas = $("#flood_canvas");
+	var scratchCanvas = $("#flood_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 
 	ctx['imageSmoothingEnabled'] = false;       /* standard */
@@ -157,7 +157,25 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	function flood(tool, emit) {
+	function flood(tool) {
+		// Create a flattened canvas to draw from
+		var scratchCtx = drawScratchCanvas();
+
+		// Get the colours from the background image and tool
+		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
+		var newColour = parseColour(tool.colourFg);
+		floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
+	}
+
+	function eyedropper(tool) {
+		var scratchCtx = drawScratchCanvas();
+		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
+		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+		$("#colour_fg").css("background-color", tool.colourFg);
+	}
+
+	function drawScratchCanvas() {
+		console.log("drawScratchCanvas()")
 		// // step 1. find the background images
 		var elements = []
 		$(".drawing_layer").each(function() {
@@ -178,11 +196,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 
 		// Draw the background images onto a flood fill canvas
-		var scatchCanvas = floodCanvas[0];
+		var scatchCanvas = scratchCanvas[0];
 		scatchCanvas.setAttribute("width", width);
 		scatchCanvas.setAttribute("height", height);
 		var scratchCtx = scatchCanvas.getContext('2d'); // the user editable element
-		scratchCtx.clearRect(0, 0, width, height); // Clear the canvas - pretty important
+		scratchCtx.clearRect(0, 0, width, height); // Clear the canvas
 
 		for (var i = 0; i < elements.length; i++) {
 			var el = elements[i];
@@ -190,13 +208,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var top = parseInt(el.css("top"));
 			scratchCtx.drawImage(el[0], left, top);	
 		}
-	
 
-		// Get the colours from the background image and tool
-		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-		var newColour = parseColour(tool.colourFg);
-
-		floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
+		return scratchCtx;
 	}
 
 	// Non-recursive flood fill algo
@@ -342,18 +355,23 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function handleAction(tool, emit) {
 		if (tool.state == "start" && tool.tool == "flood") { // flood fill - only on mousedown
-			flood(tool, emit);
+			flood(tool);
 			processCanvasAndEmit(tool, emit);
+		} else if ((tool.state == "start" || tool.state == "drawing") && tool.tool == "eyedropper") { // eyedropper
+			eyedropper(tool)
 		} else if (
 			(tool.state == "start" || tool.state == "drawing") && 
-			tool.tool != "flood"
+			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { // drawing stroke in progress
 			if (tool.tool == "paint") {
 				drawLine(tool, emit);
 			}
 			bumpCanvas(canvas);
 			if (emit) emitTool();
-		} else if (tool.state == "end" && tool.tool != "flood") { // mouseup or other stroke end event
+		} else if (
+			tool.state == "end" && // mouseup or other stroke end event
+			tool.tool != "flood" && tool.tool != "eyedropper"
+		) { 
 			processCanvasAndEmit(tool, emit);
 		} else { // if state = "idle", do nothing except emit data with mouse coords
 			if (emit) emitTool();
