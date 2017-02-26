@@ -21,6 +21,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var croppingCanvas = $("#crop_canvas");
 	var floodCanvas = $("#flood_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
+
+	ctx['imageSmoothingEnabled'] = false;       /* standard */
+    ctx['mozImageSmoothingEnabled'] = false;    /* Firefox */
+    ctx['oImageSmoothingEnabled'] = false;      /* Opera */
+    ctx['webkitImageSmoothingEnabled'] = false; /* Safari */
+    ctx['msImageSmoothingEnabled'] = false;     /* IE */
+
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
 	var layerCodeLen = 32;
@@ -92,15 +99,39 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var peerCanvas = createPeerCanvas(tool);
 			thisCtx = peerCanvas[0].getContext("2d");
 		}
-		thisCtx.beginPath();
-		thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
-		thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
-		thisCtx.strokeStyle = tool.colourFg;
-		thisCtx.lineCap = "round";
-		thisCtx.lineJoin = "round";
-	  	thisCtx.lineWidth = tool.brushSize;
-		thisCtx.stroke()
-		thisCtx.closePath();
+		var destData = thisCtx.getImageData(0, 0, width, height);
+		var colour = parseColour(tool.colourFg);
+		plotLine(destData.data, colour, tool.prevCoord.x, tool.prevCoord.y, tool.newCoord.x, tool.newCoord.y);
+		thisCtx.putImageData(destData, 0, 0);
+
+
+
+
+		// thisCtx.beginPath();
+		// thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
+		// thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
+		// thisCtx.strokeStyle = tool.colourFg;
+		// thisCtx.lineCap = "round";
+		// thisCtx.lineJoin = "round";
+	 //  	thisCtx.lineWidth = tool.brushSize;
+		// thisCtx.stroke()
+		// thisCtx.closePath();
+	}
+
+	// from http://members.chello.at/easyfilter/bresenham.js
+	function plotLine(data, colour, x0, y0, x1, y1)
+	{
+		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
+		var dy = -Math.abs(y1-y0), sy = y0<y1 ? 1 : -1;
+		var err = dx+dy, e2;
+
+		for (;;) {
+			setColour(data, x0, y0, colour);
+			if (x0 == x1 && y0 == y1) break;
+			e2 = 2*err;
+			if (e2 >= dy) { err += dy; x0 += sx; }
+			if (e2 <= dx) { err += dx; y0 += sy; }
+		}
 	}
 
 	function flood(tool, emit) {
