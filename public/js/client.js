@@ -89,44 +89,67 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		socket.on("add_layer", receiveLayer);
 		socket.on("receive_mouse_coords", receiveTool);
 
+		addToolSettings();
 		getDrawing();
 	}
 
+	function makeCircle(toolIn) {
+		var radius = toolIn.brushSize;
+		var circleData = [];
+		for (x = 0; x < radius * 2 + 1; x++) {
+			var yData = []
+			for (y = 0; y < radius * 2 + 1; y++) {
+				var isCircle = ((x - radius) * (x - radius) + (y - radius) * (y - radius)) <= radius * radius
+				if (isCircle) {
+					yData.push(true);
+				} else {
+					yData.push(false);
+				}
+			}
+			circleData.push(yData)
+		}
+		return circleData;
+	}
+
 	/* TOOL METHODS */
-	function drawLine(tool, emit) {
+	function drawLine(toolIn, emit) {
 		var thisCtx = ctx;
 		if (!emit) { // if it came from remote user, draw on a different canvas
-			var peerCanvas = createPeerCanvas(tool);
+			var peerCanvas = createPeerCanvas(toolIn);
 			thisCtx = peerCanvas[0].getContext("2d");
 		}
 		var destData = thisCtx.getImageData(0, 0, width, height);
-		var colour = parseColour(tool.colourFg);
-		plotLine(destData.data, colour, tool.prevCoord.x, tool.prevCoord.y, tool.newCoord.x, tool.newCoord.y);
+		plotLine(destData.data, toolIn, toolIn.prevCoord.x, toolIn.prevCoord.y, toolIn.newCoord.x, toolIn.newCoord.y);
 		thisCtx.putImageData(destData, 0, 0);
-
-
-
-
-		// thisCtx.beginPath();
-		// thisCtx.moveTo(tool.prevCoord.x, tool.prevCoord.y);
-		// thisCtx.lineTo(tool.newCoord.x, tool.newCoord.y);
-		// thisCtx.strokeStyle = tool.colourFg;
-		// thisCtx.lineCap = "round";
-		// thisCtx.lineJoin = "round";
-	 //  	thisCtx.lineWidth = tool.brushSize;
-		// thisCtx.stroke()
-		// thisCtx.closePath();
 	}
 
 	// from http://members.chello.at/easyfilter/bresenham.js
-	function plotLine(data, colour, x0, y0, x1, y1)
+	function plotLine(data, toolIn, x0, y0, x1, y1)
 	{
+		var circleData = makeCircle(toolIn);
+		var colour = parseColour(toolIn.colourFg);
 		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
 		var dy = -Math.abs(y1-y0), sy = y0<y1 ? 1 : -1;
 		var err = dx+dy, e2;
 
 		for (;;) {
-			setColour(data, x0, y0, colour);
+			var offset = -toolIn.brushSize;
+			for (var x = 0; x < circleData.length; x++) {
+				for (var y = 0; y < circleData[x].length; y++) {
+					if (circleData[x][y] == true) {
+						var xCirc = x0 + offset + x;
+						var yCirc = y0 + offset + y;
+						if (
+							xCirc >= 0 && xCirc < width && 
+							yCirc >= 0 && yCirc < height
+						) {
+							setColour(data, xCirc, yCirc, colour);	
+						}
+						
+					}
+				}
+			}
+
 			if (x0 == x1 && y0 == y1) break;
 			e2 = 2*err;
 			if (e2 >= dy) { err += dy; x0 += sx; }
