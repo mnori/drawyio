@@ -35,6 +35,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 1000000000;
+	var colourPicker = $("#colour_fg").colorPicker();
 
 	// Metadata about the action being performed
 	var tool = {
@@ -187,7 +188,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var scratchCtx = drawScratchCanvas();
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+
+		console.log(col);
+
 		$("#colour_fg").css("background-color", tool.colourFg);
+
+		// set the colour into the colour picker
+		colourPicker.colorPicker.color.setColor(tool.colourFg);
+		colourPicker.colorPicker.render(true);
 	}
 
 	function drawScratchCanvas() {
@@ -332,7 +340,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function setupControls() {
 		// set up colour picker
-		$("#colour_fg").colorPicker();
+		// colourPicker = 
+
 		$("#paint").on("mousedown", function() {
 			toggleButtons($(this).attr("id"));
 			tool.tool = "paint";
@@ -390,13 +399,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			(tool.state == "start" || tool.state == "drawing") && 
 			tool.tool == "eyedropper"
 		) { 
-			eyedropper(tool)
+			if (emit) eyedropper(tool); // eyedropper is user only - not remote
 		} else if (
 			(tool.state == "start" || tool.state == "drawing") && 
 			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { // drawing stroke in progress
 			if (tool.tool == "paint") {
-				console.log("drawLine hit!");
 				drawLine(tool, emit);
 			}
 			bumpCanvas(canvas);

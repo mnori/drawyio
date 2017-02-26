@@ -271,8 +271,7 @@ h1 {
 }
 
 #controls > a {
-	margin-right: 5px;
-	margin-bottom: 5px;
+	margin-bottom: 0px;
 }
 
 #colour_fg {
