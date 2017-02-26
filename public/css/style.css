@@ -180,12 +180,12 @@ h1 {
 
 .button:hover {
 	border: 1px solid #000;
-	box-shadow: 0px 0px 2px 2px rgba(255, 255, 255, 0.15);
+	/*box-shadow: 0px 0px 2px 2px rgba(255, 255, 255, 0.15);*/
 }
 
 .button:active, .button_pressed, .button_pressed:hover {
 	padding: 9px 10px 5px 10px;
-	box-shadow: inset 0px 5px 10px rgba(0, 0, 0, 0.8), 0px 0px 2px 2px rgba(255, 255, 255, 0.15);
+	box-shadow: inset 0px 5px 10px rgba(0, 0, 0, 0.8);
 }
 
 .button_tool, .button_tool:active, .button_tool:hover {
@@ -197,7 +197,7 @@ h1 {
 	width: 25px;
 	height: 25px;
 	float: left;
-	border: 1px solid #ccc;
+	border: 1px solid transparent;
 	background-color: #eee;
 	color: #444;
 	text-shadow: none;
@@ -206,18 +206,17 @@ h1 {
 .button_tool:active, .button_tool:hover, .button_pressed, .button_pressed:hover {
 	background-color: #d9d9d9;
 	color: #222;
-	border: 1px solid #666;
+	border: 1px solid #999;
 }
 
 .button_tool:active, .button_pressed, .button_pressed:hover {
-	box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.4); 
+	box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.6); 
 	padding: 11px 10px 9px 10px;
 }
 
 .button_pressed:active {
 	padding: 12px 10px 8px 10px;
-	box-shadow: inset 0px 3px 6px rgba(0, 0, 0, 0.4); 
-	background-color: #d4d4d4;
+	box-shadow: inset 0px 3px 6px rgba(0, 0, 0, 0.6); 
 }
 
 .rot45 {
