@@ -25,7 +25,7 @@ const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	width: 400,
 	height: 300,
 	channels: 4,
-	rgbaPixel: 0x00000000
+	rgbaPixel: 0xFFFFFFFF
 }
 
 // Associative array containing [alphanumeric code] => [drawing object]

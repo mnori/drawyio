@@ -158,6 +158,9 @@ h1 {
 }
 
 /*** BUTTONS ***/
+.button_icon {
+	margin-right: 10px;	
+}
 
 .button {
 	color: #ddd;
@@ -207,13 +210,14 @@ h1 {
 }
 
 .button_tool:active, .button_pressed, .button_pressed:hover {
-	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.4); 
+	box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.4); 
 	padding: 11px 10px 9px 10px;
 }
 
 .button_pressed:active {
 	padding: 12px 10px 8px 10px;
-	background-color: #ccc;
+	box-shadow: inset 0px 3px 6px rgba(0, 0, 0, 0.4); 
+	background-color: #d4d4d4;
 }
 
 .flood_rotate {
@@ -268,8 +272,7 @@ h1 {
 }
 
 #controls > a {
-	margin-bottom: 5px;
-	margin-right: 5px;
+	margin-right: 10px;
 }
 
 #colour_fg {
