@@ -123,7 +123,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.putImageData(destData, 0, 0);
 	}
 
-	// from http://members.chello.at/easyfilter/bresenham.js
+	// Plot a line using non-antialiased circle
 	function plotLine(data, toolIn, x0, y0, x1, y1)
 	{
 		var circleData = makeCircle(toolIn);
@@ -312,6 +312,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		$("#flood").on("mousedown", function() {
 			toggleButtons($(this));
 			tool.tool = "flood";
+		});
+		$("#eyedropper").on("mousedown", function() {
+			toggleButtons($(this));
+			tool.tool = "eyedropper";
 		});
 		toggleButtons($("#paint"));
 	}
