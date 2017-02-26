@@ -17,8 +17,8 @@
 
 #logo_image {
 	position: absolute;
-	top: 18px;
-	left: 137px;
+	top: 19px;
+	left: 138px;
 	width: 60px;
 	height: 60px; 
 	z-index: 1;
@@ -220,7 +220,7 @@ h1 {
 	background-color: #d4d4d4;
 }
 
-.flood_rotate {
+.rot45 {
 	transform: rotate(-45deg);
 }
 
@@ -260,29 +260,31 @@ h1 {
 	background-color: #eee;
 	border: 1px solid #ccc;
 	/*box-shadow: 0px 0px 10px 3px #bbb;*/
-	width: 200px;
-	padding: 20px;
+	width: 45px;
+	padding: 12px;
 	margin-left: 0px;
 	float: left;
 }
 
-#controls > input, #controls > div {
+#controls > input {
 	margin-bottom: 20px;
 	margin-right: 20px;
 }
 
 #controls > a {
-	margin-right: 10px;
+	margin-right: 3px;
+	margin-bottom: 3px;
 }
 
 #colour_fg {
-	margin-top: 15px;
-	width: 100px;
+	width: 45px;
 	border: 1px solid #000;
-	height: 30px;
+	height: 45px;
 	cursor: pointer;
 	border-radius: 0px;
 	z-index: 9000;
+	float: left;
+	margin-bottom: 3px;
 }
 
 

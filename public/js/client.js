@@ -175,7 +175,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function drawScratchCanvas() {
-		console.log("drawScratchCanvas()")
 		// // step 1. find the background images
 		var elements = []
 		$(".drawing_layer").each(function() {
@@ -330,6 +329,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			toggleButtons($(this));
 			tool.tool = "eyedropper";
 		});
+		$("#line").on("mousedown", function() {
+			toggleButtons($(this));
+			tool.tool = "line";
+		});
+		$("#text").on("mousedown", function() {
+			toggleButtons($(this));
+			tool.tool = "text";
+		});
 		toggleButtons($("#paint"));
 	}
 
@@ -357,7 +364,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (tool.state == "start" && tool.tool == "flood") { // flood fill - only on mousedown
 			flood(tool);
 			processCanvasAndEmit(tool, emit);
-		} else if ((tool.state == "start" || tool.state == "drawing") && tool.tool == "eyedropper") { // eyedropper
+		} else if ( // eyedropper
+			(tool.state == "start" || tool.state == "drawing") && 
+			tool.tool == "eyedropper"
+		) { 
 			eyedropper(tool)
 		} else if (
 			(tool.state == "start" || tool.state == "drawing") && 
