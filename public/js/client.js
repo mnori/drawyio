@@ -19,7 +19,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
-	var scratchCanvas = $("#flood_canvas");
+	var scratchCanvas = $("#scratch_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 
 	ctx['imageSmoothingEnabled'] = false;       /* standard */
@@ -50,8 +50,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// start drawing
 		var body = $("body");
+
+		// Handle mouse down.
 		body.mousedown(function(ev) {
-			tool.newCoord = getMousePos(ev);
+			if (ev.which == 3) { // detect right click
+				tool.rightClick = true;
+				tool.prevTool = tool.tool;
+				tool.tool = "eyedropper";
+				toggleButtons(tool.tool);
+			}
+		    tool.newCoord = getMousePos(ev);
 			if (tool.newCoord != null) { // make sure mouse is within canvas
 				tool.prevCoord = tool.newCoord;
 				tool.state = "start";
@@ -59,6 +67,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 			addToolSettings();
 			handleAction(tool, true);
+		});	
+
+		// Right click activates the eye dropper - not the contex menu
+		canvas.contextmenu(function(ev) {
+			// tool.rightClick = true;
+			// tool.prevTool = tool.tool;
+			// tool.tool = "eyedropper";
+			// mouseDownHandler(ev);
+			return false;
 		});
 
 		// Handle mouse move. 
@@ -70,7 +87,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					tool.state = "drawing";
 				}
 				addToolSettings();
-				if (tool.newCoord == null) {
+				if (tool.newCoord == null) { // outside edge of canvas
 					stopDrawing();
 				} else {
 					handleAction(tool, true);
@@ -124,8 +141,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// Plot a line using non-antialiased circle
-	function plotLine(data, toolIn, x0, y0, x1, y1)
-	{
+	function plotLine(data, toolIn, x0, y0, x1, y1) {
 		var circleData = makeCircle(toolIn);
 		var colour = parseColour(toolIn.colourFg);
 		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
@@ -318,32 +334,33 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// set up colour picker
 		$("#colour_fg").colorPicker();
 		$("#paint").on("mousedown", function() {
-			toggleButtons($(this));
+			toggleButtons($(this).attr("id"));
 			tool.tool = "paint";
 		});
 		$("#flood").on("mousedown", function() {
-			toggleButtons($(this));
+			toggleButtons($(this).attr("id"));
 			tool.tool = "flood";
 		});
 		$("#eyedropper").on("mousedown", function() {
-			toggleButtons($(this));
+			toggleButtons($(this).attr("id"));
 			tool.tool = "eyedropper";
 		});
 		$("#line").on("mousedown", function() {
-			toggleButtons($(this));
+			toggleButtons($(this).attr("id"));
 			tool.tool = "line";
 		});
 		$("#text").on("mousedown", function() {
-			toggleButtons($(this));
+			toggleButtons($(this).attr("id"));
 			tool.tool = "text";
 		});
-		toggleButtons($("#paint"));
+		toggleButtons("paint");
 	}
 
-	function toggleButtons(clickedElement) {
+	function toggleButtons(elementID) {
+		var selectedElement = $("#"+elementID);
 		$(".button_tool").each(function() {
 			var element = $(this);
-			if (element.attr("id") == clickedElement.attr("id")) {
+			if (element.attr("id") == selectedElement.attr("id")) {
 				element.addClass("button_pressed")
 			} else {
 				element.removeClass("button_pressed")
@@ -353,11 +370,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Stop drawing but only if already drawing
 	function stopDrawing() {
-		addToolSettings();
+		// addToolSettings();
 		if (tool.state == "drawing" || tool.state == "start") {
 			tool.state = "end";
 		}
 		handleAction(tool, true);
+		if (tool.rightClick) { // reset after using the eye dropper tool
+			tool.rightClick = false;
+			tool.tool = tool.prevTool;
+			toggleButtons(tool.tool);
+		}
 	}
 
 	function handleAction(tool, emit) {
@@ -374,6 +396,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { // drawing stroke in progress
 			if (tool.tool == "paint") {
+				console.log("drawLine hit!");
 				drawLine(tool, emit);
 			}
 			bumpCanvas(canvas);
