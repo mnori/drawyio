@@ -210,13 +210,13 @@ h1 {
 }
 
 .button_tool:active, .button_pressed, .button_pressed:hover {
-	box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.6); 
+	box-shadow: inset 0px 2px 3px rgba(0, 0, 0, 0.6); 
 	padding: 11px 10px 9px 10px;
 }
 
 .button_pressed:active {
 	padding: 12px 10px 8px 10px;
-	box-shadow: inset 0px 3px 6px rgba(0, 0, 0, 0.6); 
+	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
 }
 
 .rot45 {
@@ -253,6 +253,7 @@ h1 {
 
 #drawing_container {
 	float: left;
+	image-rendering: pixelated;
 }
 
 #controls {

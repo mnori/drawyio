@@ -189,13 +189,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
 
-		// set the colour into the colour picker
-		colourPicker.colorPicker.color.setColor(tool.colourFg);
-		console.log(colourPicker.colorPicker);
-		// colourPicker.colorPicker.toggle(false);
-		// colourPicker.colorPicker.toggle(true);
+		// console.log(_colorPicker.$trigger);
 
-		colourPicker.colorPicker.render(true);
+		// set the colour into the colour picker 
+		// only works after the first time the colour picker is clicked
+		colourPicker.colorPicker.color.setColor(tool.colourFg);
+		colourPicker.colorPicker.render();
 	}
 
 	function drawScratchCanvas() {
