@@ -22,11 +22,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var scratchCanvas = $("#scratch_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 
-	ctx['imageSmoothingEnabled'] = false;       /* standard */
-    ctx['mozImageSmoothingEnabled'] = false;    /* Firefox */
-    ctx['oImageSmoothingEnabled'] = false;      /* Opera */
-    ctx['webkitImageSmoothingEnabled'] = false; /* Safari */
-    ctx['msImageSmoothingEnabled'] = false;     /* IE */
+	// ctx['imageSmoothingEnabled'] = false;       /* standard */
+ //    ctx['mozImageSmoothingEnabled'] = false;    /* Firefox */
+ //    ctx['oImageSmoothingEnabled'] = false;      /* Opera */
+ //    ctx['webkitImageSmoothingEnabled'] = false; /* Safari */
+ //    ctx['msImageSmoothingEnabled'] = false;     /* IE */
 
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
