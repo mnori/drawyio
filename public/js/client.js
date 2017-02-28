@@ -35,7 +35,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var lastEmit = $.now();
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 1000000000;
-	var colourPicker = $("#colour_fg").colorPicker();
+	var colourPicker = $("#colour_picker");
+	colourPicker.spectrum();
 
 	// Metadata about the action being performed
 	var tool = {
@@ -193,8 +194,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// set the colour into the colour picker 
 		// only works after the first time the colour picker is clicked
-		colourPicker.colorPicker.color.setColor(tool.colourFg);
-		colourPicker.colorPicker.render();
+		// colourPicker.colorPicker.color.setColor(tool.colourFg);
+		// colourPicker.colorPicker.render();
 	}
 
 	function drawScratchCanvas() {
@@ -333,14 +334,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function addToolSettings() {
-		tool.colourFg = $("#colour_fg").css("backgroundColor");
+		tool.colourFg = colourPicker.spectrum("get").toRgbString();
 		tool.brushSize = parseInt($("#brush_size").val());
 	}
 
 	function setupControls() {
-		// set up colour picker
-		// colourPicker = 
-
 		$("#paint").on("mousedown", function() {
 			toggleButtons($(this).attr("id"));
 			tool.tool = "paint";
@@ -378,7 +376,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Stop drawing but only if already drawing
 	function stopDrawing() {
-		// addToolSettings();
 		if (tool.state == "drawing" || tool.state == "start") {
 			tool.state = "end";
 		}
