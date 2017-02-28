@@ -36,7 +36,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
-	colourPicker.spectrum();
+	colourPicker.spectrum({
+		showAlpha: true
+	});
 
 	// Metadata about the action being performed
 	var tool = {
@@ -186,14 +188,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function eyedropper(tool) {
+
+		// get the colour from the scratch canvas at the given coordinate
 		var scratchCtx = drawScratchCanvas();
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+		colourPicker.spectrum("set", tool.colourFg);
 
-		// console.log(_colorPicker.$trigger);
-
-		// set the colour into the colour picker 
-		// only works after the first time the colour picker is clicked
 		// colourPicker.colorPicker.color.setColor(tool.colourFg);
 		// colourPicker.colorPicker.render();
 	}
