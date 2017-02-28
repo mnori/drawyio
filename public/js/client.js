@@ -188,15 +188,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function eyedropper(tool) {
-
 		// get the colour from the scratch canvas at the given coordinate
 		var scratchCtx = drawScratchCanvas();
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
 		colourPicker.spectrum("set", tool.colourFg);
-
-		// colourPicker.colorPicker.color.setColor(tool.colourFg);
-		// colourPicker.colorPicker.render();
 	}
 
 	function drawScratchCanvas() {
