@@ -39,7 +39,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	colourPicker.spectrum({
 		showAlpha: true,
 		cancelText: "Cancel",
-        chooseText: "Choose"
+        chooseText: "OK"
 	});
 
 	// Metadata about the action being performed
