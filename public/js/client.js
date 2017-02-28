@@ -14,20 +14,13 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 8; 
+	var mouseEmitInterval = 5; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var scratchCanvas = $("#scratch_canvas");
 	var ctx = canvas[0].getContext('2d'); // the user editable element
-
-	// ctx['imageSmoothingEnabled'] = false;       /* standard */
- //    ctx['mozImageSmoothingEnabled'] = false;    /* Firefox */
- //    ctx['oImageSmoothingEnabled'] = false;      /* Opera */
- //    ctx['webkitImageSmoothingEnabled'] = false; /* Safari */
- //    ctx['msImageSmoothingEnabled'] = false;     /* IE */
-
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
 	var layerCodeLen = 32;
