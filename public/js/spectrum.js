@@ -122,8 +122,9 @@
                     "</div>",
                     "<div class='sp-initial sp-thumb sp-cf'></div>",
                     "<div class='sp-button-container sp-cf'>",
-                        "<a class='sp-cancel' href='#'></a>",
-                        "<button type='button' class='sp-choose'></button>",
+                        "<a class='sp-cancel button_tool button_form button_form_sp' href='#'>Cancel</a>",
+                        "<a class='sp-choose button_tool button_form button_form_sp' href='#'>Choose</a>",
+                        // "<button type='button' class='sp-choose sp-button'></button>",
                     "</div>",
                 "</div>",
             "</div>"

@@ -37,7 +37,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	colourPicker.spectrum({
-		showAlpha: true
+		showAlpha: true,
+		cancelText: "Cancel",
+        chooseText: "Choose"
 	});
 
 	// Metadata about the action being performed

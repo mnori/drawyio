@@ -88,37 +88,7 @@ h1 {
 	display: block;
 }
 
-.pointer_dot {
-	position: absolute;
-	top: -3px;
-	right: -3px;
-	width: 6px;
-	height: 6px;
-	border-radius: 3px;
-	box-shadow: 0px 0px 6px 3px rgba(255,255,255,1);
-	background-color: #000;
-	z-index: 9007199254740990;
-}
 
-.pointer_label {
-	position: absolute;
-	left: 10px;
-	top: -14px;
-	color: #fff;
-	font-size: 18px;
-	line-height: 18px;
-	border-radius: 10px;
-	text-shadow:
-          -1px -1px 0 #000,
-          1px -1px 0 #000,
-          -1px 1px 0 #000,
-          1px 1px 0 #000;
-	padding: 4px;
-    background-color: rgba(0, 0, 0, 0.7);
-	white-space: nowrap;
-	font-family: ubuntuBold;
-	z-index: 9007199254740990;
-}
 
 #drawing_form {
 	background-color: #eee;
@@ -193,14 +163,17 @@ h1 {
 	box-shadow: inset 0px 5px 10px rgba(0, 0, 0, 0.8);
 }
 
+.button_tool {
+	width: 25px;
+	height: 25px;
+	line-height: 25px;
+	font-size: 25px;
+}
+
 .button_tool, .button_tool:active, .button_tool:hover {
 	padding: 10px 10px;
 	text-align: center;
 	vertical-align: middle;
-	line-height: 25px;
-	font-size: 25px;
-	width: 25px;
-	height: 25px;
 	float: left;
 	border: 1px solid transparent;
 	background-color: #eee;
@@ -222,6 +195,29 @@ h1 {
 .button_pressed:active {
 	padding: 12px 10px 8px 10px;
 	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
+}
+
+.button_form {
+	color: #000;
+	background-color: none;
+	border: 1px solid #bbb;
+}
+
+.button_form, .button_form:hover {
+	width: auto;
+	font-size: 14px;
+	text-decoration: none;
+	padding: 4px 10px 4px 10px;
+	margin-top: 12px;
+	margin-left: 12px;
+}
+
+.button_form:active {
+	padding: 6px 10px 2px 10px;
+	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
+}
+.button_form:hover {
+	border: 1px solid #999;
 }
 
 .rot45 {
@@ -291,6 +287,40 @@ h1 {
 	margin-bottom: 5px;
 }
 
+/* Peer pointer stuff */
+.pointer_dot {
+	position: absolute;
+	top: -3px;
+	right: -3px;
+	width: 6px;
+	height: 6px;
+	border-radius: 3px;
+	box-shadow: 0px 0px 6px 3px rgba(255,255,255,1);
+	background-color: #000;
+	z-index: 9007199254740990;
+}
+
+.pointer_label {
+	position: absolute;
+	left: 10px;
+	top: -14px;
+	color: #fff;
+	font-size: 18px;
+	line-height: 18px;
+	border-radius: 10px;
+	text-shadow:
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000,
+          1px 1px 0 #000;
+	padding: 4px;
+    background-color: rgba(0, 0, 0, 0.7);
+	white-space: nowrap;
+	font-family: ubuntuBold;
+	z-index: 9007199254740990;
+}
+
+
 /* Colour picker css tweaks */
 
 .sp-dd {
@@ -306,15 +336,64 @@ h1 {
 .sp-preview {
 	width: 45px;
 	height: 45px;
-	border: 1px solid #666;
+	border: 1px solid #aaa;
 }
 
 .sp-picker-container {
 	border: none;
 }
+
+/* SP buttons */
 .sp-container{
 	border: 1px solid #aaa;
 	background-color: #eee;
 	box-shadow: 0px 0px 10px 3px #bbb;
 }
 
+.sp-color, .sp-hue, .sp-alpha-inner { 
+	border: 1px solid #aaa; 
+}
+
+.sp-slider, .sp-alpha-handle {
+	border: 1px solid #888;
+	box-shadow: 0px 0px 3px 1px #999;
+}
+
+.sp-picker-container {
+	padding: 12px 12px 300px 12px;
+}
+
+.sp-color {
+	/*right: 100px;*/
+	width: 136px;
+}
+
+.sp-hue {
+	width: 23px;
+	left: 149px; /*# 172 - 12 - 25*/
+	/*width: 100px;*/
+}
+
+.sp-alpha { 
+	bottom: -20px; 
+}
+
+.button_form_sp, .button_form_sp:hover, .button-form_sp:active {
+	margin-top: 11px;
+	margin-bottom: 2px;
+}
+
+/*a.sp-button {
+	text-decoration: none;
+	float: right;
+	border: 1px solid #000;
+	padding: 5px 10px;
+	line-height: 20px;
+	font-family: ubuntuRegular, Helvetica, Arial, sans-serif;
+	font-size: 20px;
+	margin: 10px;
+}
+
+a.sp-button, a.sp-button:active, a.sp-button:hover {
+	color: #444;
+}*/
