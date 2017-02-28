@@ -203,12 +203,12 @@ h1 {
 }
 
 .button_form {
-	color: #000;
 	background-color: none;
 	border: 1px solid #bbb;
 }
 
 .button_form, .button_form:hover {
+	font-family: ubuntuBold;
 	width: auto;
 	height: auto;
 	font-size: 14px;
