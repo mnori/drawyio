@@ -47,8 +47,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		setupControls();
 		var body = $("body");
 
-		initBrushSizeMenu();
-
 		// Handle mouse down.
 		body.mousedown(function(ev) {
 			if (ev.which == 3) { // right click
@@ -111,6 +109,36 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		getDrawing();
 	}
 
+	function setupControls() {
+		$("#paint").on("mousedown", function() {
+			toggleButtons($(this).attr("id"));
+			tool.tool = "paint";
+		});
+		$("#flood").on("mousedown", function() {
+			toggleButtons($(this).attr("id"));
+			tool.tool = "flood";
+		});
+		$("#eyedropper").on("mousedown", function() {
+			toggleButtons($(this).attr("id"));
+			tool.tool = "eyedropper";
+		});
+		$("#line").on("mousedown", function() {
+			toggleButtons($(this).attr("id"));
+			tool.tool = "line";
+		});
+		$("#text").on("mousedown", function() {
+			toggleButtons($(this).attr("id"));
+			tool.tool = "text";
+		});
+
+		initBrushSizeMenu();
+		$("#brush_size-button").on("mousedown", function() {
+			console.log("here");
+			toggleButtons($(this).attr("id"));
+		});
+		toggleButtons("paint");
+	}
+
 	function initBrushSizeMenu() {
 		var brushSize = $("#brush_size");
 		brushSize.selectmenu({
@@ -123,7 +151,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					top: (offset.top - menu.height() + 45 + 2)+"px",
 					left: (offset.left - menu.width())+"px",
 				});
-			}
+			} // when an option has been selected, we must remove that classname
 		});
 
 		$("#brush_size-button").addClass("button_tool");
@@ -392,30 +420,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// calculate the radius from the value coming in
 		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;
-	}
-
-	function setupControls() {
-		$("#paint").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "paint";
-		});
-		$("#flood").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "flood";
-		});
-		$("#eyedropper").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "eyedropper";
-		});
-		$("#line").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "line";
-		});
-		$("#text").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "text";
-		});
-		toggleButtons("paint");
 	}
 
 	function toggleButtons(elementID) {
