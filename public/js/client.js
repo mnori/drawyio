@@ -147,8 +147,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var brushSize = $("#brush_size");
 		brushSize.selectmenu({
 
-			create: setBrushSizeLabel,
-
 			// When the menu opens, reposition to the desired location to the left of the tool
 			open: function(ev) {
 				// get button to calculate position
@@ -169,6 +167,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				button.removeClass("button_pressed");
 				button.blur();
 			},
+
+
+			create: setBrushSizeLabel,
 			select: setBrushSizeLabel
 		});
 
@@ -190,7 +191,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			showAlpha: true,
 			cancelText: "Cancel",
 	        chooseText: "OK",
-			show: function(e, tinycolor) {
+			show: function(e, tinycolor) { // when it opens, reposition to left of the element
 				var offset = $(".sp-light").first().offset();
 				var panel = $(".sp-container").first(); 
 				panel.css({
