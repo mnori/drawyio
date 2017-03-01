@@ -61,7 +61,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// key bindings
 		body.keydown(function(ev) {
 			if (ev.which == 17) { 
-				console.log("Dropper activated");
+				closeSelectMenus();
 				tool.rightClick = true; 
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
@@ -109,6 +109,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		getDrawing();
 	}
 
+	function closeSelectMenus() {
+		$("#brush_size-button").removeClass("button_pressed");
+		$("#brush_size").selectmenu("close");
+	}
+
 	function setupControls() {
 		$("#paint").on("mousedown", function() {
 			toggleButtons($(this).attr("id"));
@@ -133,8 +138,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		initBrushSizeMenu();
 		$("#brush_size-button").on("mousedown", function() {
-			console.log("here");
-			toggleButtons($(this).attr("id"));
+			// toggleButtons($(this).attr("id"));
 		});
 		toggleButtons("paint");
 	}
@@ -154,7 +158,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					"left": (offset.left - menu.width())+"px",
 					"z-index": 100000000000012
 				});
-			} // when an option has been selected, we must remove that classname
+
+				$("#brush_size-button").addClass("button_pressed");
+
+			},
+			close: function(ev) {
+				var button = $("#brush_size-button");
+				button.removeClass("button_pressed");
+				button.blur();
+			}
 		});
 
 		$("#brush_size-button").addClass("button_tool");
