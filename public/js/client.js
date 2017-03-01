@@ -44,6 +44,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		canvas.mousedown(function(ev) {
+			colourPicker.spectrum("get");
+			pickerToToolColour();
+			colourPicker.spectrum("hide");
+
 			if (ev.which == 3) { // right click
 				tool.ctrlPressed = true;
 				activateDropperToggle();
@@ -164,15 +168,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			show: function(e, tinycolor) {
 				var offset = $(".sp-light").first().offset();
 				var panel = $(".sp-container").first(); 
-
-
 				panel.css({
-					"top": (offset.top + 2)+"px",
+					"top": (offset.top)+"px",
 					"left": (offset.left - panel.width())+"px",
 					"z-index": 100000000000012
 				});
 			}
 		});
+	}
+
+	function pickerToToolColour() {
+		tool.colourFg = colourPicker.spectrum("get").toRgbString();
 	}
 
 	// Start drawing
@@ -434,7 +440,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function addToolSettings() {
-		tool.colourFg = colourPicker.spectrum("get").toRgbString();
+		pickerToToolColour();
 
 		// calculate the radius from the value coming in
 		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;
