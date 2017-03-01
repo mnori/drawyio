@@ -10,6 +10,7 @@
 	line-height: 50px;
 	text-shadow: 0px 0px 16px #000;
 	position: absolute;
+	float: left;
 	top: 20px;
 	left: 20px;
 	z-index: 2;
@@ -80,9 +81,8 @@ h1 {
 #navbar .button {
 	position: absolute;
 	bottom: 20px;
-	right: 20px;
-	float: right;
-	vertical-align: bottom;	
+	left: 210px;
+	vertical-align: middle;	
 	z-index: 9001;
 	font-weight: normal;
 }

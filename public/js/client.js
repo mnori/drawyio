@@ -50,6 +50,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Handle mouse down.
 		body.mousedown(function(ev) {
 			if (ev.which == 3) { // right click
+				tool.ctrlPressed = true;
 				activateDropperToggle();
 			}
 		    startTool(getMousePos(ev));
@@ -62,7 +63,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		body.keydown(function(ev) {
 			if (ev.which == 17) { 
 				console.log("Dropper activated");
-				tool.ctrlPressed = true; 
+				tool.rightClick = true; 
 				activateDropperToggle();
 				// var coord = getMousePos(ev);
 				// if (coord == null) { // on 
@@ -141,7 +142,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// reset after using the eye dropper tool
 		// but only if CTRL is not pressed
-		if (tool.dropperToggle && !tool.ctrlPressed) { 
+		if (tool.dropperToggle) { 
 			resetDropperToggle(ev);
 		}
 	}
@@ -222,16 +223,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	function flood(tool) {
-		// Create a flattened canvas to draw from
-		var scratchCtx = drawScratchCanvas();
-
-		// Get the colours from the background image and tool
-		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-		var newColour = parseColour(tool.colourFg);
-		floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
-	}
-
 	function eyedropper(tool) {
 		if (tool.newCoord == null) { // can happen outside of canvas area
 			return;
@@ -241,6 +232,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
 		colourPicker.spectrum("set", tool.colourFg);
+	}
+
+	function flood(tool) {
+		// Create a flattened canvas to draw from
+		var scratchCtx = drawScratchCanvas();
+
+		// Get the colours from the background image and tool
+		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
+		var newColour = parseColour(tool.colourFg);
+		floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
 	}
 
 	function drawScratchCanvas() {
