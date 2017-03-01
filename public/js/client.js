@@ -61,6 +61,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// key bindings
 		body.keydown(function(ev) {
 			if (ev.which == 17) { 
+				console.log("Dropper activated");
 				tool.ctrlPressed = true; 
 				activateDropperToggle();
 				// var coord = getMousePos(ev);
@@ -232,11 +233,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function eyedropper(tool) {
+		if (tool.newCoord == null) { // can happen outside of canvas area
+			return;
+		}
 		// get the colour from the scratch canvas at the given coordinate
 		var scratchCtx = drawScratchCanvas();
-
-		console.log(tool.newCoord);
-
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
 		colourPicker.spectrum("set", tool.colourFg);
