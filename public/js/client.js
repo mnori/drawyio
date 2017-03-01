@@ -125,6 +125,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				});
 			}
 		});
+
+		$("#brush_size-button").addClass("button_tool");
 	}
 
 	// Start drawing
