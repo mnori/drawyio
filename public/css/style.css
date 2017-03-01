@@ -189,9 +189,14 @@ h1 {
 }
 
 .button_tool:active, .button_tool:hover, .button_pressed, .button_pressed:hover {
-	background-color: #d9d9d9;
 	color: #222;
 	border: 1px solid #999;
+}
+
+.button_tool:active, .button_pressed, .button_pressed:hover {
+	color: #222;
+	/*background-color: #007fff;*/
+	background-color: #d9d9d9;
 }
 
 .button_tool:active, .button_pressed, .button_pressed:hover {
@@ -423,3 +428,16 @@ h1 {
 	margin: 0px;
 	text-overflow: initial;
 }
+
+.ui-button:focus {
+	background-color: #d9d9d9;
+	border: 1px solid #999;
+}
+
+.ui-selectmenu-button-open {
+	border: 1px solid #d9d9d9;
+}
+
+/*.ui-button {
+	background-color: #d9d9d9;
+}*/
