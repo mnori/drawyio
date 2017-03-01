@@ -47,6 +47,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		setupControls();
 		var body = $("body");
 
+		$("#brush_size").selectmenu();
+		// console.log($("#brush_size"));
+
 		// Handle mouse down.
 		body.mousedown(function(ev) {
 			if (ev.which == 3) { // right click
@@ -65,10 +68,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				console.log("Dropper activated");
 				tool.rightClick = true; 
 				activateDropperToggle();
-				// var coord = getMousePos(ev);
-				// if (coord == null) { // on 
-				// 	coord = tool.coord;
-				// }
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
 			}
 		});
@@ -84,14 +83,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		body.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
 			// if($.now() - lastEmit > mouseEmitInterval) { 
-				// if (ev.ctrlKey && tool.tool != "eyedropper") {
-				// 	// probably need to finish drawing here
-				// 	tool.state = "start";
-				// 	tool.dropperToggle = true;
-				// 	tool.tool = "eyedropper";
-				// 	tool.prevTool = tool.tool;
-				// 	toggleButtons(tool.tool);
-				// }
 				tool.newCoord = getMousePos(ev);
 				if (tool.state == "start") {
 					tool.state = "drawing";
@@ -381,7 +372,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function addToolSettings() {
 		tool.colourFg = colourPicker.spectrum("get").toRgbString();
-		tool.brushSize = parseInt($("#brush_size").val());
+
+		// calculate the radius from the value coming in
+		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;
 	}
 
 	function setupControls() {
