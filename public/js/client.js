@@ -48,7 +48,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var body = $("body");
 
 		// Handle mouse down.
-		body.mousedown(function(ev) {
+		canvas.mousedown(function(ev) {
 			if (ev.which == 3) { // right click
 				tool.ctrlPressed = true;
 				activateDropperToggle();
@@ -77,7 +77,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 
 		// Handle mouse move. 
-		body.mousemove(function(ev) {
+		canvas.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
 			// if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
@@ -142,14 +142,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function initBrushSizeMenu() {
 		var brushSize = $("#brush_size");
 		brushSize.selectmenu({
+
+			// When the menu opens, reposition to the desired location to the left of the tool
 			open: function(ev) {
 				// get button to calculate position
 				var offset = $("#brush_size-button").offset();
 				// get the parent element and reposition it
 				var menu = $("#brush_size-menu").parent();
 				menu.css({
-					top: (offset.top - menu.height() + 45 + 2)+"px",
-					left: (offset.left - menu.width())+"px",
+					"top": (offset.top - menu.height() + 45 + 2)+"px",
+					"left": (offset.left - menu.width())+"px",
+					"z-index": 100000000000012
 				});
 			} // when an option has been selected, we must remove that classname
 		});
