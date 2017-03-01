@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 5; 
+	var mouseEmitInterval = 1; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -44,10 +44,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	};
 
 	function setup() { 
-
 		setupControls();
-
-		// start drawing
 		var body = $("body");
 
 		// Handle mouse down.
@@ -69,18 +66,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});	
 
 		// Right click activates the eye dropper - not the contex menu
-		canvas.contextmenu(function(ev) {
-			// tool.rightClick = true;
-			// tool.prevTool = tool.tool;
-			// tool.tool = "eyedropper";
-			// mouseDownHandler(ev);
-			return false;
-		});
+		canvas.contextmenu(function(ev) { return false; });
 
 		// Handle mouse move. 
 		body.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
-			if($.now() - lastEmit > mouseEmitInterval) { 
+			// if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
 				if (tool.state == "start") {
 					tool.state = "drawing";
@@ -92,8 +83,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					handleAction(tool, true);
 				}
 				lastEmit = $.now();
-			}
-			tool.prevCoord = tool.newCoord;
+				tool.prevCoord = tool.newCoord;
+			// }
 		});
 
 		// stop drawing if mouse up or mouse leaves canvas
@@ -108,7 +99,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		addToolSettings();
 		getDrawing();
 	}
-
 	function makeCircle(toolIn) {
 		var radius = toolIn.brushSize;
 		var circleData = [];
@@ -487,8 +477,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function getMousePos(ev) {
 		var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
 		var mousePos = {
-			x: Math.floor(ev.clientX - rect.left),
-			y: Math.floor(ev.clientY - rect.top)
+			x: Math.round(ev.clientX - rect.left),
+			y: Math.round(ev.clientY - rect.top)
 		};
 
 		// attempt to wrap edges - troublesome since it messes up exit behaviour
