@@ -49,17 +49,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		body.mousedown(function(ev) {
-			if (ev.which == 3) {
+			if (ev.which == 3) { // right click
 				activateDropperToggle();
 			}
-		    tool.newCoord = getMousePos(ev);
-			if (tool.newCoord != null) { // make sure mouse is within canvas
-				tool.prevCoord = tool.newCoord;
-				tool.state = "start";
-				tool.layerCode = randomString(layerCodeLen);
-			}
-			addToolSettings();
-			handleAction(tool, true);
+		    startTool(getMousePos(ev));
 		});	
 
 		// Right click activates the eye dropper - not the contex menu
@@ -69,13 +62,19 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		body.keydown(function(ev) {
 			if (ev.which == 17) { 
 				tool.ctrlPressed = true; 
-				activateDropperToggle(); 
+				activateDropperToggle();
+				// var coord = getMousePos(ev);
+				// if (coord == null) { // on 
+				// 	coord = tool.coord;
+				// }
+				startTool(tool.newCoord); // use the old coord, since there is no mouse data
 			}
 		});
 		body.keyup(function(ev) {
 			if (ev.which == 17) { 
 				resetDropperToggle(ev); 
 				tool.ctrlPressed = false; 
+				stopTool();
 			}
 		});
 
@@ -98,7 +97,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				addToolSettings();
 				// outside edge of canvas
 				if (tool.newCoord == null && tool.tool != "eyedropper") { 
-					stopDrawing(ev);
+					stopTool(ev);
 				} else {
 					handleAction(tool, true);
 				}
@@ -108,8 +107,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 
 		// stop drawing if mouse up or mouse leaves canvas
-		body.mouseup(stopDrawing);
-		body.mouseleave(stopDrawing);
+		body.mouseup(stopTool);
+		body.mouseleave(stopTool);
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
@@ -118,6 +117,32 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		addToolSettings();
 		getDrawing();
+	}
+
+	// Start drawing
+	function startTool(coord) {
+		tool.newCoord = coord;
+		if (tool.newCoord != null) { // make sure mouse is within canvas
+			tool.prevCoord = tool.newCoord;
+			tool.state = "start";
+			tool.layerCode = randomString(layerCodeLen);
+		}
+		addToolSettings();
+		handleAction(tool, true);
+	}
+
+	// Stop drawing but only if already drawing
+	function stopTool(ev) {
+		if (tool.state == "drawing" || tool.state == "start") {
+			tool.state = "end";
+		}
+		handleAction(tool, true);
+
+		// reset after using the eye dropper tool
+		// but only if CTRL is not pressed
+		if (tool.dropperToggle && !tool.ctrlPressed) { 
+			resetDropperToggle(ev);
+		}
 	}
 
 	function activateDropperToggle() {
@@ -209,6 +234,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function eyedropper(tool) {
 		// get the colour from the scratch canvas at the given coordinate
 		var scratchCtx = drawScratchCanvas();
+
+		console.log(tool.newCoord);
+
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
 		colourPicker.spectrum("set", tool.colourFg);
@@ -390,20 +418,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 	}
 
-	// Stop drawing but only if already drawing
-	function stopDrawing(ev) {
-		if (tool.state == "drawing" || tool.state == "start") {
-			tool.state = "end";
-		}
-		handleAction(tool, true);
-
-		// reset after using the eye dropper tool
-		// but only if CTRL is not pressed
-		if (tool.dropperToggle && !tool.ctrlPressed) { 
-			resetDropperToggle(ev);
-		}
-	}
-
+	// this structure could potentially get quite messy
 	function handleAction(tool, emit) {
 		if (tool.state == "start" && tool.tool == "flood") { // flood fill - only on mousedown
 			flood(tool);
@@ -511,6 +526,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// returns null if the mouse is outside the canvas
 	function getMousePos(ev) {
 		var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
+
+		if (ev.clientX == undefined || ev.clientY == undefined) {
+			return null;
+		}
+		// console.log(ev.clientX, ev.clientY, rect.left, rect.top);
 		var mousePos = {
 			x: Math.round(ev.clientX - rect.left),
 			y: Math.round(ev.clientY - rect.top)
