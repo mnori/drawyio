@@ -363,6 +363,7 @@ h1 {
 	border: 1px solid #aaa;
 	background-color: #fff;
 	box-shadow: 0px 0px 10px 3px #bbb;
+	z-index: 100000000000008;
 }
 
 .sp-color, .sp-hue, .sp-alpha-inner { 

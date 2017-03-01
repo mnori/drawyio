@@ -29,11 +29,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
-	colourPicker.spectrum({
-		showAlpha: true,
-		cancelText: "Cancel",
-        chooseText: "OK"
-	});
 
 	// Metadata about the action being performed
 	var tool = {
@@ -105,6 +100,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		socket.on("add_layer", receiveLayer);
 		socket.on("receive_mouse_coords", receiveTool);
 
+		initColourPicker();
 		addToolSettings();
 		getDrawing();
 	}
@@ -158,6 +154,25 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 
 		$("#brush_size-button").addClass("button_tool");
+	}
+
+	function initColourPicker() {
+		colourPicker.spectrum({
+			showAlpha: true,
+			cancelText: "Cancel",
+	        chooseText: "OK",
+			show: function(e, tinycolor) {
+				var offset = $(".sp-light").first().offset();
+				var panel = $(".sp-container").first(); 
+
+
+				panel.css({
+					"top": (offset.top + 2)+"px",
+					"left": (offset.left - panel.width())+"px",
+					"z-index": 100000000000012
+				});
+			}
+		});
 	}
 
 	// Start drawing
