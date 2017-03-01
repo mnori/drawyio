@@ -49,11 +49,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		body.mousedown(function(ev) {
-			if (ev.which == 3) { // detect right click
-				tool.rightClick = true;
-				tool.prevTool = tool.tool;
-				tool.tool = "eyedropper";
-				toggleButtons(tool.tool);
+			if (ev.which == 3) {
+				activateDropperToggle();
 			}
 		    tool.newCoord = getMousePos(ev);
 			if (tool.newCoord != null) { // make sure mouse is within canvas
@@ -68,17 +65,40 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Right click activates the eye dropper - not the contex menu
 		canvas.contextmenu(function(ev) { return false; });
 
+		// key bindings
+		body.keydown(function(ev) {
+			if (ev.which == 17) { 
+				tool.ctrlPressed = true; 
+				activateDropperToggle(); 
+			}
+		});
+		body.keyup(function(ev) {
+			if (ev.which == 17) { 
+				resetDropperToggle(ev); 
+				tool.ctrlPressed = false; 
+			}
+		});
+
 		// Handle mouse move. 
 		body.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
 			// if($.now() - lastEmit > mouseEmitInterval) { 
+				// if (ev.ctrlKey && tool.tool != "eyedropper") {
+				// 	// probably need to finish drawing here
+				// 	tool.state = "start";
+				// 	tool.dropperToggle = true;
+				// 	tool.tool = "eyedropper";
+				// 	tool.prevTool = tool.tool;
+				// 	toggleButtons(tool.tool);
+				// }
 				tool.newCoord = getMousePos(ev);
 				if (tool.state == "start") {
 					tool.state = "drawing";
 				}
 				addToolSettings();
-				if (tool.newCoord == null) { // outside edge of canvas
-					stopDrawing();
+				// outside edge of canvas
+				if (tool.newCoord == null && tool.tool != "eyedropper") { 
+					stopDrawing(ev);
 				} else {
 					handleAction(tool, true);
 				}
@@ -99,6 +119,20 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		addToolSettings();
 		getDrawing();
 	}
+
+	function activateDropperToggle() {
+		tool.dropperToggle = true;
+		tool.prevTool = tool.tool;
+		tool.tool = "eyedropper";
+		toggleButtons(tool.tool);
+	}
+
+	function resetDropperToggle() {
+		tool.dropperToggle = false;
+		tool.tool = tool.prevTool;
+		toggleButtons(tool.tool);
+	}
+
 	function makeCircle(toolIn) {
 		var radius = toolIn.brushSize;
 		var circleData = [];
@@ -357,15 +391,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// Stop drawing but only if already drawing
-	function stopDrawing() {
+	function stopDrawing(ev) {
 		if (tool.state == "drawing" || tool.state == "start") {
 			tool.state = "end";
 		}
 		handleAction(tool, true);
-		if (tool.rightClick) { // reset after using the eye dropper tool
-			tool.rightClick = false;
-			tool.tool = tool.prevTool;
-			toggleButtons(tool.tool);
+
+		// reset after using the eye dropper tool
+		// but only if CTRL is not pressed
+		if (tool.dropperToggle && !tool.ctrlPressed) { 
+			resetDropperToggle(ev);
 		}
 	}
 
