@@ -47,8 +47,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		setupControls();
 		var body = $("body");
 
-		$("#brush_size").selectmenu();
-		// console.log($("#brush_size"));
+		initBrushSizeMenu();
 
 		// Handle mouse down.
 		body.mousedown(function(ev) {
@@ -110,6 +109,22 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		addToolSettings();
 		getDrawing();
+	}
+
+	function initBrushSizeMenu() {
+		var brushSize = $("#brush_size");
+		brushSize.selectmenu({
+			open: function(ev) {
+				// get button to calculate position
+				var offset = $("#brush_size-button").offset();
+				// get the parent element and reposition it
+				var menu = $("#brush_size-menu").parent();
+				menu.css({
+					top: (offset.top - menu.height() + 45 + 2)+"px",
+					left: (offset.left - menu.width())+"px",
+				});
+			}
+		});
 	}
 
 	// Start drawing
