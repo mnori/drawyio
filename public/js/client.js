@@ -147,6 +147,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var brushSize = $("#brush_size");
 		brushSize.selectmenu({
 
+			create: setBrushSizeLabel,
+
 			// When the menu opens, reposition to the desired location to the left of the tool
 			open: function(ev) {
 				// get button to calculate position
@@ -166,10 +168,21 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				var button = $("#brush_size-button");
 				button.removeClass("button_pressed");
 				button.blur();
-			}
+			},
+			select: setBrushSizeLabel
 		});
 
 		$("#brush_size-button").addClass("button_tool");
+	}
+
+	function setBrushSizeLabel() {
+		var brushSize = $("#brush_size");
+		var widget = brushSize.selectmenu("widget");
+		widget.html(
+			"<span class=\"ui-selectmenu-text\">"+
+				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
+			"</span>"
+		);
 	}
 
 	function initColourPicker() {
