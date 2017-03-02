@@ -435,6 +435,11 @@ h1 {
 	border: 1px solid #999;
 }
 
+.ui-button:active {
+	padding: 12px 10px 8px 10px;
+	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
+}
+
 .ui-selectmenu-button-open {
 	border: 1px solid #d9d9d9;
 }
@@ -442,7 +447,7 @@ h1 {
 .ui-selectmenu-text {
 	margin-left: -10px;
 	margin-right: -10px;
-	font-size: 15px;
+	font-size: 14px;
 	width: 45px;
 	text-align: center;
 	vertical-align: middle;
