@@ -27,6 +27,7 @@
 
 a {
     -webkit-user-drag: none;
+    outline: 0; /* disable ugly FF link outline */
 }
 
 a.logo:link, a.logo:visited, a.logo:hover, a.logo:active {
