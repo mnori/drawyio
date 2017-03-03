@@ -2,12 +2,14 @@
 
 {% block content %}
     <h1>Welcome</h1>
+    <div>
 	{% for entry in gallery %}
 		<a href="/d/{{ entry.drawing.id }}" class="thumb">
 			<img src="/d/{{ entry.drawing.id }}.png" class="thumb_img" /><br />
 			<div class="thumb_ago">{{ entry.ago }}</div>
 		</a>
 	{% endfor %}
+	</div>
 {% endblock %}
 
 {% block js %}<script>initSplash();</script>{% endblock %}

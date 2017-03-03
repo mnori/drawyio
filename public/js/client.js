@@ -137,25 +137,18 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 
 		initBrushSizeMenu();
-		$("#brush_size-button").on("mousedown", function() {
-			// toggleButtons($(this).attr("id"));
-		});
 		toggleButtons("paint");
 	}
 
 	function initBrushSizeMenu() {
 		var brushSize = $("#brush_size");
-		brushSize.selectmenu({
+		brushSize.selectmenu({ // might need a window resize handler here
 
 			// When the menu opens, reposition to the desired location to the left of the tool
 			open: function(ev) {
 				// get button to calculate position
 				// should actually be relative to the container
 				var offset = $("#brush_size-button").offset();
-
-				
-
-
 				// get the parent element and reposition it
 				var menu = $("#brush_size-menu").parent();
 				menu.css({

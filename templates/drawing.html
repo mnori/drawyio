@@ -1,53 +1,53 @@
 {% extends "wrapper.html" %}
 
 {% block content %}
-    
-    <div id="drawing_form">	
-        <div id="drawing_container">
-        	<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
-        		<canvas id="drawing_canvas" class="drawing_canvas" width="{{ width }}" height="{{ height }}">
-    	        	Canvas not supported :(
-    	        </canvas>
-        	</div>
-        	<canvas id="crop_canvas" style="display: none;"></canvas>
-            <canvas id="scratch_canvas" style="display: none;"></canvas>
-        </div>
-        <div id="controls">
-            <input id="colour_picker" value="#000" />
-            <a id="paint" class="button button_tool" href="javascript:void(0)">
-                <i class="fa fa-paint-brush" aria-hidden="true"></i>
-            </a>
-            <a id="eyedropper" class="button button_tool" href="javascript:void(0)">
-                <i class="fa fa-eyedropper" aria-hidden="true"></i>
-            </a>
-            <a id="line" class="button button_tool" href="javascript:void(0)">
-                <i class="fa fa-arrows-h rot45"  aria-hidden="true"></i>
-            </a>
-            <a id="flood" class="button button_tool" href="javascript:void(0)">
-                <i class="fa fa-database rot45" aria-hidden="true"></i>
-            </a>
-            <a id="text" class="button button_tool" href="javascript:void(0)">
-                <i class="fa fa-font" aria-hidden="true"></i>
-            </a>
-            <select name="brush_size" id="brush_size" class="controls_selectmenu">
-                <option>1px</option>
-                <option selected="selected">3px</option>
-                <option>5px</option>
-                <option>9px</option>
-                <option>15px</option>
-                <option>31px</option>
-                <option>45px</option>
-            </select>
-            <input id="nickname" type="text" value="Anonymous" />
+	
+	<div id="drawing_form">	
+		<div id="drawing_container">
+			<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
+				<canvas id="drawing_canvas" class="drawing_canvas" width="{{ width }}" height="{{ height }}">
+					Canvas not supported :(
+				</canvas>
+			</div>
+			<canvas id="crop_canvas" style="display: none;"></canvas>
+			<canvas id="scratch_canvas" style="display: none;"></canvas>
+		</div>
+		<div id="controls">
+			<input id="colour_picker" value="#000" />
+			<a id="paint" class="button button_tool" href="javascript:void(0)">
+				<i class="fa fa-paint-brush" aria-hidden="true"></i>
+			</a>
+			<a id="eyedropper" class="button button_tool" href="javascript:void(0)">
+				<i class="fa fa-eyedropper" aria-hidden="true"></i>
+			</a>
+			<a id="line" class="button button_tool" href="javascript:void(0)">
+				<i class="fa fa-arrows-h rot45"  aria-hidden="true"></i>
+			</a>
+			<a id="flood" class="button button_tool" href="javascript:void(0)">
+				<i class="fa fa-database rot45" aria-hidden="true"></i>
+			</a>
+			<a id="text" class="button button_tool" href="javascript:void(0)">
+				<i class="fa fa-font" aria-hidden="true"></i>
+			</a>
+			<select name="brush_size" id="brush_size" class="controls_selectmenu">
+				<option>1px</option>
+				<option selected="selected">3px</option>
+				<option>5px</option>
+				<option>9px</option>
+				<option>15px</option>
+				<option>31px</option>
+				<option>45px</option>
+			</select>
+			<input id="nickname" type="text" value="Anonymous" />
 
-        </div>
-    </div>
+		</div>
+	</div>
 		
 {% endblock %}
 
 {% block js %}
 	<script>
 		initSplash();
-    	initDrawing("{{ drawID }}", {{ width }}, {{ height }});
-    </script>
+		initDrawing("{{ drawID }}", {{ width }}, {{ height }});
+	</script>
 {% endblock %}
