@@ -4,6 +4,11 @@
 @font-face {font-family: ubuntuBold; src: url(/fonts/Ubuntu-B.ttf);}
 @font-face {font-family: ubuntuItalic; src: url(/fonts/Ubuntu-RI.ttf);}
 
+#page_wrapper {	
+	margin: 0 auto;
+	width: 1024px;
+}
+
 .logo {
 	font-family: ubuntuRegular;
 	font-size: 40px;
