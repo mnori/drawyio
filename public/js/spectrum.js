@@ -891,12 +891,12 @@
             alphaSlideHelperWidth = alphaSlideHelper.width();
 
             if (!flat) {
-                container.css("position", "absolute");
-                if (opts.offset) {
-                    container.offset(opts.offset);
-                } else {
-                    container.offset(getOffset(container, offsetElement));
-                }
+                // container.css("position", "absolute");
+                // if (opts.offset) {
+                //     container.offset(opts.offset);
+                // } else {
+                //     container.offset(getOffset(container, offsetElement));
+                // }
             }
 
             updateHelperLocations();
