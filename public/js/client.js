@@ -51,7 +51,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			colourPicker.spectrum("hide");
 
 			if (ev.which == 3) { // right click
-				tool.ctrlPressed = true;
 				activateDropperToggle();
 			}
 		    startTool(getMousePos(ev));
@@ -62,7 +61,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// key bindings
 		body.keydown(function(ev) {
-			if (ev.which == 17) { 
+			if (ev.which == 16) { 
 				closeSelectMenus();
 				tool.rightClick = true; 
 				activateDropperToggle();
@@ -70,9 +69,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 		});
 		body.keyup(function(ev) {
-			if (ev.which == 17) { 
+			if (ev.which == 16) { 
 				resetDropperToggle(ev); 
-				tool.ctrlPressed = false; 
 				stopTool();
 			}
 		});
@@ -387,8 +385,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var destData = destCtx.getImageData(0, 0, width, height);
 		var queue = []
 
-		console.log("floodFill()", x, y);
-
 		queue.push([x, y]);
 		while(queue.length > 0) {
 
@@ -465,16 +461,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Set colour into the image data
 	function setColour(data, x, y, colour) {
 		var base = getXYBase(x, y);
-
-		// if (x % 1 != 0 || y % 1 != 0) {
-		// 	console.log(x, y, colour);	
-		// }
-
-		// window.testTimeout = setTimeout(function() {
-		// 	console.log(x, y, colour);	
-		// 	clearTimeout(window.testTimeout);
-		// }, 1000);
-
 		data[base] = colour[0];
 		data[base + 1] = colour[1];
 		data[base + 2] = colour[2];
@@ -560,9 +546,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// only does stuff for the local user
 	function finaliseEdit(tool, emit) {
+		tool.state = "idle"
 		if (emit) { // local user, not remote user
 			if (finaliseTimeout != null) {
-				// console.log("Cancelled timeout");
 				clearTimeout(finaliseTimeout);
 			}
 
@@ -571,7 +557,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// convert canvas to png and send to the server
 				emitTool();
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
-				tool.state = "idle";
 				tool.layerCode = null;
 			}, finaliseTimeoutMs);
 		}
@@ -651,7 +636,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (ev.clientX == undefined || ev.clientY == undefined) {
 			return null;
 		}
-		// console.log(ev.clientX, ev.clientY, rect.left, rect.top);
 
 		/* round() is buggy? */
 		var mousePos = {
