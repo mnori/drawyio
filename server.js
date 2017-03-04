@@ -145,6 +145,9 @@ function receiveLayer(data, socket) {
 			drawing.timeout = null;
 		}
 		if (drawing.getNStoredLayers() > MAX_LAYERS) {
+			// setTimeout(function() { // for testing - does not do anything
+			// 	drawing.flatten();
+			// }, 1000);
 			drawing.flatten();
 		} else {
 			drawing.timeout = setTimeout(function() {

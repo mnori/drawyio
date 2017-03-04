@@ -261,13 +261,13 @@ h1 {
 	border: 1px solid #fff;
 }
 
-.thumb:nth-child(4n) {
+.thumb:nth-child(3n) {
 	margin-right: 0px;
 }
 
 .thumb_img {
 	display: block;
-	width: 303px;
+	width: 326px;
 	float: left;
 }
 
