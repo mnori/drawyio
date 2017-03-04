@@ -109,11 +109,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		getDrawing();
 	}
 
-	function closeSelectMenus() {
-		$("#brush_size-button").removeClass("button_pressed");
-		$("#brush_size").selectmenu("close");
-	}
-
 	function setupControls() {
 		$("#paint").on("mousedown", function() {
 			toggleButtons($(this).attr("id"));
@@ -138,6 +133,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		initBrushSizeMenu();
 		toggleButtons("paint");
+
+		$(window).on("resize", function() {
+			// reposition things that need repositioning
+			positionBrushSizeMenu();
+
+			// gets fired before the spectrum has at it
+			positionColourPicker();
+		});
 	}
 
 	function initBrushSizeMenu() {
@@ -145,33 +148,41 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		brushSize.selectmenu({ // might need a window resize handler here
 
 			// When the menu opens, reposition to the desired location to the left of the tool
-			open: function(ev) {
-				// get button to calculate position
-				// should actually be relative to the container
-				var offset = $("#brush_size-button").offset();
-				// get the parent element and reposition it
-				var menu = $("#brush_size-menu").parent();
-				menu.css({
-					"top": (offset.top - menu.height() + 45 + 2)+"px",
-					"left": (offset.left - menu.width())+"px",
-					"z-index": 100000000000012
-				});
-
-				$("#brush_size-button").addClass("button_pressed");
-
-			},
+			open: positionBrushSizeMenu,
 			close: function(ev) {
 				var button = $("#brush_size-button");
 				button.removeClass("button_pressed");
 				button.blur();
 			},
 
-
 			create: setBrushSizeLabel,
 			select: setBrushSizeLabel
 		});
 
 		$("#brush_size-button").addClass("button_tool");
+	}
+
+	function positionBrushSizeMenu() {
+		var button = $("#brush_size-button");
+		var menu = $("#brush_size-menu").parent();
+
+		// get button to calculate position
+		// should actually be relative to the container
+		var offset = button.offset();
+		// get the parent element and reposition it
+		var menu = 
+		menu.css({
+			"top": (offset.top - menu.height() + 45 + 2)+"px",
+			"left": (offset.left - menu.width())+"px",
+			"z-index": 100000000000012
+		});
+
+		$("#brush_size-button").addClass("button_pressed");
+	}
+
+	function closeSelectMenus() {
+		$("#brush_size-button").removeClass("button_pressed");
+		$("#brush_size").selectmenu("close");
 	}
 
 	function setBrushSizeLabel() {
@@ -189,15 +200,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			showAlpha: true,
 			cancelText: "Cancel",
 	        chooseText: "OK",
-			show: function(e, tinycolor) { // when it opens, reposition to left of the element
-				var offset = $(".sp-light").first().offset();
-				var panel = $(".sp-container").first(); 
-				panel.css({
-					"top": (offset.top)+"px",
-					"left": (offset.left - panel.width())+"px",
-					"z-index": 100000000000012
-				});
-			}
+			show: positionColourPicker
+		});
+	}
+
+	function positionColourPicker() {
+		var offset = $(".sp-light").first().offset();
+		var panel = $(".sp-container").first(); 
+		panel.css({
+			"top": (offset.top)+"px",
+			"left": (offset.left - panel.width())+"px",
+			"z-index": 100000000000012
 		});
 	}
 
