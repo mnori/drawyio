@@ -90,11 +90,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				if (tool.newCoord == null && tool.tool != "eyedropper") { 
 					stopTool(ev);
 				} else {
-					if (finaliseTimeout != null) { 
-						// prevent line drawings getting cut off by finaliser
-						clearTimeout(finaliseTimeout);
-						finaliseTimeout = null;
-					}
 					handleAction(tool, true);
 				}
 				lastEmit = $.now();
@@ -488,9 +483,21 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function rgbaEqual(query, target) {
 		for (var i = 0; i < 4; i++) {
-			if (query[i] != target[i]) {
-				return false; // not identical
+
+			// exact match
+			// if (query[i] != target[i]) {
+			// 	return false; // not identical
+			// }
+
+			// tiny differences allowed - hack to fix flood fill bug
+			if (Math.abs(query[0] - target[0]) > 1 ||
+				Math.abs(query[1] - target[1]) > 1 ||
+				Math.abs(query[2] - target[2]) > 1 ||
+				Math.abs(query[3] - target[3]) > 1
+			) {
+				return false;
 			}
+
 		}
 		return true; // identical
 	}
@@ -529,6 +536,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { // drawing stroke in progress
 			if (tool.tool == "paint") {
+				if (finaliseTimeout != null) { 
+					// prevent line drawings getting cut off by finaliser
+					clearTimeout(finaliseTimeout);
+					finaliseTimeout = null;
+				}
 				drawLine(tool, emit);
 			}
 			bumpCanvas(canvas);
@@ -553,7 +565,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 
 			finaliseTimeout = setTimeout(function() {
-				// console.log("Reached timeout");
+				console.log("Reached timeout, sending data");
 				// convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				emitTool();
