@@ -569,11 +569,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				console.log("Reached timeout, sending data");
 				// convert canvas to png and send to the server
-				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				emitTool();
+				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				tool.state = "idle";
 				tool.layerCode = null;
-				finaliseTimeout = null;
 			}, finaliseTimeoutMs);
 		}
 	}
@@ -795,6 +794,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				fr.onloadend = function() {
 					var base64 = fr.result;
 					socket.emit("add_layer", layer);
+					finaliseTimeout = null; 
 				}
 			}
 			fr.readAsDataURL(blob);
