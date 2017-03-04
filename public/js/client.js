@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 20; 
+	var mouseEmitInterval = 1; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -78,7 +78,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Handle mouse move. 
 		canvas.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
-			if($.now() - lastEmit > mouseEmitInterval) { 
+			// if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
 				if (tool.state == "start") {
 					tool.state = "drawing";
@@ -92,7 +92,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				}
 				lastEmit = $.now();
 				tool.prevCoord = tool.newCoord;
-			}
+			// }
 		});
 
 		// stop drawing if mouse up or mouse leaves canvas
@@ -284,6 +284,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		var destData = thisCtx.getImageData(0, 0, width, height);
 		plotLine(destData.data, toolIn, toolIn.prevCoord.x, toolIn.prevCoord.y, toolIn.newCoord.x, toolIn.newCoord.y);
+
+		// THIS RIGHT HERE is why it's slow
+		// When combined with grouping, we can really get the client nicely optimised
 		thisCtx.putImageData(destData, 0, 0);
 	}
 
