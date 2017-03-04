@@ -1,8 +1,8 @@
 {% extends "wrapper.html" %}
 
 {% block content %}
-    <h1>Welcome</h1>
-    <div>
+	<h1>Welcome</h1>
+	<div>
 	{% for entry in gallery %}
 		<a href="/d/{{ entry.drawing.id }}" class="thumb">
 			<img src="/d/{{ entry.drawing.id }}.png" class="thumb_img" /><br />
