@@ -566,7 +566,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// emit a tool action
-	function emitTool(prevCoord, newCoord) { 
+	function emitTool() { 
 		var nickname = $("#nickname").val();
 		socket.emit('mousemove', tool);
 	}

@@ -306,7 +306,7 @@ h1 {
 }
 
 #controls > a {
-	margin-bottom: 5px;
+	margin-bottom: 12px;
 }
 
 #colour_picker {
@@ -363,7 +363,7 @@ h1 {
 .sp-light {
 	border: 0px;
 	padding: 0px;
-	margin-bottom: 5px;
+	margin-bottom: 12px;
 }
 
 .sp-preview {
