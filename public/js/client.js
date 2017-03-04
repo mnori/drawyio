@@ -29,6 +29,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
+	var canvasTimeout = null;
+	var canvasTimeoutMs = 500;
 
 	// Metadata about the action being performed
 	var tool = {
@@ -279,8 +281,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function drawLine(toolIn, emit) {
 		var thisCtx = ctx;
 		if (!emit) { // if it came from remote user, draw on a different canvas
-			var peerCanvas = createPeerCanvas(toolIn);
-			thisCtx = peerCanvas[0].getContext("2d");
+			var remoteCanvas = createRemoteCanvas(toolIn);
+			thisCtx = remoteCanvas[0].getContext("2d");
 		}
 		var destData = thisCtx.getImageData(0, 0, width, height);
 		plotLine(destData.data, toolIn, toolIn.prevCoord.x, toolIn.prevCoord.y, toolIn.newCoord.x, toolIn.newCoord.y);
@@ -457,16 +459,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// from https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
 	function getXYBase(x, y) {
-		return (y * (width * 4)) + (x * 4);
+		return (Math.floor(y) * (width * 4)) + (Math.floor(x) * 4);
 	}
 
 	// Set colour into the image data
 	function setColour(data, x, y, colour) {
 		var base = getXYBase(x, y);
 
-		if (x % 1 != 0 || y % 1 != 0) {
-			console.log(x, y, colour);	
-		}
+		// if (x % 1 != 0 || y % 1 != 0) {
+		// 	console.log(x, y, colour);	
+		// }
 
 		// window.testTimeout = setTimeout(function() {
 		// 	console.log(x, y, colour);	
@@ -537,12 +539,21 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function processCanvasAndEmit(tool, emit) {
-		if (emit) {
-			// convert canvas to png and send to the server
-			processCanvas(canvas[0], croppingCanvas[0], tool); 
-			emitTool();
-			tool.state = "idle";
-			tool.layerCode = null;
+		if (emit) { // local user, not remote user
+			if (canvasTimeout != null) {
+				// console.log("Cancelled timeout");
+				clearTimeout(canvasTimeout);
+				canvasTimeout = null;
+			}
+
+			canvasTimeout = setTimeout(function() {
+				// console.log("Reached timeout");
+				// convert canvas to png and send to the server
+				processCanvas(canvas[0], croppingCanvas[0], tool); 
+				emitTool();
+				tool.state = "idle";
+				tool.layerCode = null;
+			}, canvasTimeoutMs);
 		}
 	}
 
@@ -624,8 +635,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		/* round() is buggy? */
 		var mousePos = {
-			x: Math.floor(ev.clientX - rect.left),
-			y: Math.floor(ev.clientY - rect.top)
+			x: Math.round(ev.clientX - rect.left),
+			y: Math.round(ev.clientY - rect.top)
 		};
 
 		// attempt to wrap edges - troublesome since it messes up exit behaviour
@@ -638,10 +649,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				mousePos.y < 0 || mousePos.y >= rect.height) {
 			return null
 		}
+
+		// // lets deliberately break it
+		// mousePos.x += 0.01;
+		// mousePos.y += 0.01;
 		return mousePos;
 	}
 
-	function createPeerCanvas(tool) {
+	function createRemoteCanvas(tool) {
 		var canvasID = "canvas_layer_"+tool.layerCode
 		var existingCanvas = $("#"+canvasID);	
 		if (existingCanvas.length == 0) {
@@ -731,7 +746,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function processCanvas(sourceCanvas, croppingCanvas, tool) {
 
 		var layerCode = tool.layerCode; // must keep copy since it gets reset to null
-
 		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas);
 
 		// First generate a png blob
@@ -752,7 +766,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				renderLayerHtml(highestLayerID + 1, layer, true);
 
 				// Clear the canvas
-				ctx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height)
+				ctx.clearRect(0, 0, width, height)
 
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
