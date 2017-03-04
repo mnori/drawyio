@@ -523,7 +523,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// this structure could potentially get quite messy
 	function handleAction(tool, emit) {
-		if (tool.state == "start" && tool.tool == "flood") { // flood fill - only on mousedown
+
+		if (tool.state == "start" && tool.tool == "flood" && finaliseTimeout == null) { 
+			// flood fill - only on mousedown
+			// only when not working on existing processing
 			flood(tool);
 			finaliseEdit(tool, emit);
 		} else if ( // eyedropper
@@ -561,7 +564,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (finaliseTimeout != null) {
 				// console.log("Cancelled timeout");
 				clearTimeout(finaliseTimeout);
-				finaliseTimeout = null;
 			}
 
 			finaliseTimeout = setTimeout(function() {
@@ -571,6 +573,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				emitTool();
 				tool.state = "idle";
 				tool.layerCode = null;
+				finaliseTimeout = null;
 			}, finaliseTimeoutMs);
 		}
 	}
