@@ -387,6 +387,9 @@ function Drawing(idIn, startLayer) {
 				componentCodes.push(overlay.code);
 				var overlayBuf = base64ToBuffer(overlay.base64);
 				var overlayParams = {top: overlay.offsets.top, left: overlay.offsets.left};
+
+				console.log(overlayParams)
+
 				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
 					function(buffer) {
 						flattenRecursive(self, buffer, ++ind);

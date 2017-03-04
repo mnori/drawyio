@@ -385,6 +385,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var destData = destCtx.getImageData(0, 0, width, height);
 		var queue = []
 
+		console.log("floodFill()", x, y);
+
 		queue.push([x, y]);
 		while(queue.length > 0) {
 
@@ -461,6 +463,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Set colour into the image data
 	function setColour(data, x, y, colour) {
 		var base = getXYBase(x, y);
+
+		if (x % 1 != 0 || y % 1 != 0) {
+			console.log(x, y, colour);	
+		}
+
+		// window.testTimeout = setTimeout(function() {
+		// 	console.log(x, y, colour);	
+		// 	clearTimeout(window.testTimeout);
+		// }, 1000);
+
 		data[base] = colour[0];
 		data[base + 1] = colour[1];
 		data[base + 2] = colour[2];
@@ -586,6 +598,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// var maxNew = null;
 		var minNew = null;
 		$.each(data, function(key, value) {
+			// could this be deleting stuff?
 			var keyInt = parseInt(key);
 			if (minNew == null || keyInt < minNew) {
 				minNew = keyInt;
@@ -608,9 +621,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			return null;
 		}
 		// console.log(ev.clientX, ev.clientY, rect.left, rect.top);
+
+		/* round() is buggy? */
 		var mousePos = {
-			x: Math.round(ev.clientX - rect.left),
-			y: Math.round(ev.clientY - rect.top)
+			x: Math.floor(ev.clientX - rect.left),
+			y: Math.floor(ev.clientY - rect.top)
 		};
 
 		// attempt to wrap edges - troublesome since it messes up exit behaviour
