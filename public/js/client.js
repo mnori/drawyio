@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 1; 
+	var mouseEmitInterval = 20; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -80,7 +80,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Handle mouse move. 
 		canvas.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
-			// if($.now() - lastEmit > mouseEmitInterval) { 
+			if($.now() - lastEmit > mouseEmitInterval) { 
 				tool.newCoord = getMousePos(ev);
 				if (tool.state == "start") {
 					tool.state = "drawing";
@@ -94,7 +94,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				}
 				lastEmit = $.now();
 				tool.prevCoord = tool.newCoord;
-			// }
+			}
 		});
 
 		// stop drawing if mouse up or mouse leaves canvas
