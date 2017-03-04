@@ -29,8 +29,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
-	var canvasTimeout = null;
-	var canvasTimeoutMs = 500;
+	var finaliseTimeout = null;
+	var finaliseTimeoutMs = 250;
 
 	// Metadata about the action being performed
 	var tool = {
@@ -90,6 +90,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				if (tool.newCoord == null && tool.tool != "eyedropper") { 
 					stopTool(ev);
 				} else {
+					if (finaliseTimeout != null) { 
+						// prevent line drawings getting cut off by finaliser
+						clearTimeout(finaliseTimeout);
+						finaliseTimeout = null;
+					}
 					handleAction(tool, true);
 				}
 				lastEmit = $.now();
@@ -513,7 +518,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function handleAction(tool, emit) {
 		if (tool.state == "start" && tool.tool == "flood") { // flood fill - only on mousedown
 			flood(tool);
-			processCanvasAndEmit(tool, emit);
+			finaliseEdit(tool, emit);
 		} else if ( // eyedropper
 			(tool.state == "start" || tool.state == "drawing") && 
 			tool.tool == "eyedropper"
@@ -532,28 +537,29 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.state == "end" && // mouseup or other stroke end event
 			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { 
-			processCanvasAndEmit(tool, emit);
+			finaliseEdit(tool, emit);
 		} else { // if state = "idle", do nothing except emit data with mouse coords
 			if (emit) emitTool();
 		}
 	}
 
-	function processCanvasAndEmit(tool, emit) {
+	// only does stuff for the local user
+	function finaliseEdit(tool, emit) {
 		if (emit) { // local user, not remote user
-			if (canvasTimeout != null) {
+			if (finaliseTimeout != null) {
 				// console.log("Cancelled timeout");
-				clearTimeout(canvasTimeout);
-				canvasTimeout = null;
+				clearTimeout(finaliseTimeout);
+				finaliseTimeout = null;
 			}
 
-			canvasTimeout = setTimeout(function() {
+			finaliseTimeout = setTimeout(function() {
 				// console.log("Reached timeout");
 				// convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				emitTool();
 				tool.state = "idle";
 				tool.layerCode = null;
-			}, canvasTimeoutMs);
+			}, finaliseTimeoutMs);
 		}
 	}
 
