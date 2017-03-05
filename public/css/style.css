@@ -4,11 +4,6 @@
 @font-face {font-family: ubuntuBold; src: url(/fonts/Ubuntu-B.ttf);}
 @font-face {font-family: ubuntuItalic; src: url(/fonts/Ubuntu-RI.ttf);}
 
-/*#page_wrapper {	
-	margin: 0 auto;
-	width: 1024px;
-}*/
-
 #navbar_wrapper {
 	background-color: #333;
 	height: 90px;
@@ -86,12 +81,8 @@ body {
 	font-size: 22px;
 	background-color: #fff;
 	color: #333;
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	bottom: 0px;
-	left: 0px;
 	margin: 0px;
+	width: 100%;
 
 	/* disable text selection */
 	-webkit-touch-callout: none;
