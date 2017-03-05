@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 20; 
+	var mouseEmitInterval = 50; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -304,6 +304,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 
 		// Write data to canvas. Quite slow so should be done sparingly
+		// also this copies the whole image! Could it be done faster using a slice?
 		thisCtx.putImageData(destData, 0, 0);
 
 		// Reset the coordinates cache
@@ -560,8 +561,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					var toolOut = JSON.parse(JSON.stringify(tool));
 
 					if ($.now() - lastEmit > mouseEmitInterval) { 
-						// reached inteval
-						drawLine(tool, emit); // inside here, we should clear out the old values
+						// reached interval
+						drawLine(tool, emit); // draw onto canvas
 						lastEmit = $.now();
 						emitTool(toolOut); // version of tool with line coords array
 
@@ -599,7 +600,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var toolOut = JSON.parse(JSON.stringify(tool));
 			toolOut.state = "end";
 			emitTool(toolOut);
-			drawLine(tool, true); // close the line last edit - resets line array
+
+			if (tool.lineEntries != null) {
+				drawLine(tool, true); // close the line last edit - resets line array	
+			}
 			if (finaliseTimeout != null) {
 				clearTimeout(finaliseTimeout);
 			}
@@ -626,13 +630,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var sockID = tool.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
 
-		// if (tool.newCoord == null) { // TODO put this back using new system
-		// 	// also fades out when the mouse is not drawing
-		// 	pointerElement.fadeOut(labelFadeOutMs, function() {
-		// 		pointerElement.remove();
-		// 	});
-		// 	return;
-		// }
+		if (tool.newCoord == null) { // TODO put this back using new system
+			// also fades out when the mouse is not drawing
+			pointerElement.fadeOut(labelFadeOutMs, function() {
+				pointerElement.remove();
+			});
+			return;
+		}
 
 		if (pointerElement.length == 0) { // avoid a duplicate element
 			var divBuf = 
