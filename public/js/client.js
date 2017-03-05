@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 1; 
+	var mouseEmitInterval = 50; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -25,7 +25,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var drawID = drawIdIn;
 	var layerCodeLen = 32;
 	var highestLayerID = 1;
-	var lastEmit = $.now();
+	var lastEmit = $.now(); // part of general purpose intervalling system
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
@@ -80,9 +80,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.newCoord = getMousePos(ev);
 
 			// keep high resolution map of line entries for processing at intervals
-			if (tool.tool == "paint" && tool.state != "idle") {
+			if (tool.tool == "paint" && tool.state == "drawing") {
 				tool.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
-				console.log("len: "+tool.lineEntries.length);
 			}
 			if (tool.state == "start") {
 				tool.state = "drawing";
@@ -119,7 +118,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			toggleButtons($(this).attr("id"));
 			tool.tool = "flood";
 		});
-		$("#eyedropper").on("mousedown", function() {
+		$("#eyedropper").on("mousedown", function(f) {
 			toggleButtons($(this).attr("id"));
 			tool.tool = "eyedropper";
 		});
@@ -229,6 +228,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		if (tool.tool == "paint") { // paints have a list of entries
 			tool.lineEntries = [{"state": tool.state, "coord": tool.newCoord}]
+			lastEmit = $.now();
 		} else {
 			tool.lineEntries = null;
 		}
@@ -289,11 +289,26 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			thisCtx = remoteCanvas[0].getContext("2d");
 		}
 		var destData = thisCtx.getImageData(0, 0, width, height);
-		plotLine(destData.data, toolIn, toolIn.newCoord.x, toolIn.newCoord.y, toolIn.newCoord.x, toolIn.newCoord.y);
 
-		// THIS RIGHT HERE is why it's slow
-		// When combined with grouping, we can really get the client nicely optimised
+		var entries = toolIn.lineEntries;
+		var firstCoord = entries[0].coord;
+
+		// draw a dot to start off
+		plotLine(destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+
+		// now draw the rest of the line
+		for (var i = 1; i < entries.length; i++) {
+			var prevCoord = entries[i - 1].coord;
+			var thisCoord = entries[i].coord;
+			plotLine(destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+		}
+
+		// Write data to canvas. Quite slow so should be done sparingly
 		thisCtx.putImageData(destData, 0, 0);
+
+		// Reset the coordinates cache
+		var lastEntry = toolIn.lineEntries[toolIn.lineEntries.length - 1];
+		toolIn.lineEntries = [lastEntry]
 	}
 
 	// Plot a line using non-antialiased circle
@@ -533,16 +548,38 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			(tool.state == "start" || tool.state == "drawing") && 
 			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { // drawing stroke in progress
+
+			// create a copy of object
 			if (tool.tool == "paint") {
-				if (finaliseTimeout != null) { 
+
+				if (emit) { // local user
 					// prevent line drawings getting cut off by finaliser
-					clearTimeout(finaliseTimeout);
-					finaliseTimeout = null;
-				}
-				drawLine(tool, emit);
+					if (finaliseTimeout != null) {
+						clearTimeout(finaliseTimeout);
+						finaliseTimeout = null;
+					}
+					if ($.now() - lastEmit > mouseEmitInterval) { 
+						// reached inteval
+						drawLine(tool, emit); // inside here, we should clear out the old values
+						lastEmit = $.now();
+						emitTool(tool)
+					} else { 
+						// remove line entries before sending to remote user
+						var toolOut = JSON.parse(JSON.stringify(tool));
+						toolOut.lineEntries;
+						emitTool(toolOut)
+					}
+
+				} else { // remote user
+					if (tool.lineEntries != null) {
+						drawLine(tool, emit);
+					}
+				} 
+			} else if (emit) {
+				emitTool(tool);	
 			}
 			bumpCanvas(canvas);
-			if (emit) emitTool(tool);
+
 		} else if (
 			tool.state == "end" && // mouseup or other stroke end event
 			tool.tool != "flood" && tool.tool != "eyedropper"
@@ -557,12 +594,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function finaliseEdit(tool, emit) {
 		tool.state = "idle"
 		if (emit) { // local user, not remote user
+			drawLine(tool, true); // close the line last edit
 			if (finaliseTimeout != null) {
 				clearTimeout(finaliseTimeout);
 			}
 
 			finaliseTimeout = setTimeout(function() {
-				console.log("Reached timeout, sending data");
 				// convert canvas to png and send to the server
 				emitTool(tool);
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
