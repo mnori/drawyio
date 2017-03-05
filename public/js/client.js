@@ -34,7 +34,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Metadata about the action being performed
 	var tool = {
-		coords: [],
+		lineEntries: null,
 		state: "idle",
 		tool: "paint"
 	};
@@ -230,7 +230,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (tool.tool == "paint") { // paints have a list of entries
 			tool.lineEntries = [{"state": tool.state, "coord": tool.newCoord}]
 		} else {
-			delete tool.lineEntries;
+			tool.lineEntries = null;
 		}
 		addToolSettings();
 		handleAction(tool, true);
