@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 50; 
+	var mouseEmitInterval = 20; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -549,7 +549,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { // drawing stroke in progress
 
-			// create a copy of object
 			if (tool.tool == "paint") {
 
 				if (emit) { // local user
@@ -558,19 +557,22 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 						clearTimeout(finaliseTimeout);
 						finaliseTimeout = null;
 					}
+					var toolOut = JSON.parse(JSON.stringify(tool));
+
 					if ($.now() - lastEmit > mouseEmitInterval) { 
 						// reached inteval
 						drawLine(tool, emit); // inside here, we should clear out the old values
 						lastEmit = $.now();
-						emitTool(tool)
+						emitTool(toolOut); // version of tool with line coords array
+
 					} else { 
+						// not reached interval
 						// remove line entries before sending to remote user
-						var toolOut = JSON.parse(JSON.stringify(tool));
-						toolOut.lineEntries;
+						toolOut.lineEntries = null;
 						emitTool(toolOut)
 					}
 
-				} else { // remote user
+				} else { // remote user - draw the line using the data
 					if (tool.lineEntries != null) {
 						drawLine(tool, emit);
 					}
@@ -594,17 +596,22 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function finaliseEdit(tool, emit) {
 		tool.state = "idle"
 		if (emit) { // local user, not remote user
-			drawLine(tool, true); // close the line last edit
+			var toolOut = JSON.parse(JSON.stringify(tool));
+			toolOut.state = "end";
+			emitTool(toolOut);
+			drawLine(tool, true); // close the line last edit - resets line array
 			if (finaliseTimeout != null) {
 				clearTimeout(finaliseTimeout);
 			}
 
 			finaliseTimeout = setTimeout(function() {
 				// convert canvas to png and send to the server
-				emitTool(tool);
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				tool.layerCode = null;
 			}, finaliseTimeoutMs);
+
+		} else { // remote user
+			drawLine(tool, false); // complete the line edit only
 		}
 	}
 
