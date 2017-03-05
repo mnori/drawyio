@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 50; 
+	var mouseEmitInterval = 25; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -197,7 +197,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function initColourPicker() {
 		colourPicker.spectrum({
-			showAlpha: true,
+			showAlpha: false,
 			cancelText: "Cancel",
 	        chooseText: "OK",
 			show: positionColourPicker
