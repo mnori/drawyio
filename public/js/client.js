@@ -34,8 +34,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Metadata about the action being performed
 	var tool = {
-		prevCoord: null,
-		newCoord: null,
+		coords: [],
 		state: "idle",
 		tool: "paint"
 	};
@@ -78,26 +77,28 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Handle mouse move. 
 		canvas.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
-			// if($.now() - lastEmit > mouseEmitInterval) { 
-				tool.newCoord = getMousePos(ev);
-				if (tool.state == "start") {
-					tool.state = "drawing";
-				}
-				addToolSettings();
-				// outside edge of canvas
-				if (tool.newCoord == null && tool.tool != "eyedropper") { 
-					stopTool(ev);
-				} else {
-					handleAction(tool, true);
-				}
-				lastEmit = $.now();
-				tool.prevCoord = tool.newCoord;
-			// }
+			tool.newCoord = getMousePos(ev);
+
+			// keep high resolution map of line entries for processing at intervals
+			if (tool.tool == "paint" && tool.state != "idle") {
+				tool.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
+				console.log("len: "+tool.lineEntries.length);
+			}
+			if (tool.state == "start") {
+				tool.state = "drawing";
+			}
+			addToolSettings();
+			// outside edge of canvas
+			if (tool.newCoord == null && tool.tool != "eyedropper") { 
+				stopTool(ev);
+			} else {
+				handleAction(tool, true);
+			}
 		});
 
 		// stop drawing if mouse up or mouse leaves canvas
 		body.mouseup(stopTool);
-		body.mouseleave(stopTool);
+		canvas.mouseleave(stopTool);
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
@@ -222,9 +223,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function startTool(coord) {
 		tool.newCoord = coord;
 		if (tool.newCoord != null) { // make sure mouse is within canvas
-			tool.prevCoord = tool.newCoord;
+			// tool.prevCoord = tool.newCoord;
 			tool.state = "start";
 			tool.layerCode = randomString(layerCodeLen);
+		}
+		if (tool.tool == "paint") { // paints have a list of entries
+			tool.lineEntries = [{"state": tool.state, "coord": tool.newCoord}]
+		} else {
+			delete tool.lineEntries;
 		}
 		addToolSettings();
 		handleAction(tool, true);
@@ -283,7 +289,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			thisCtx = remoteCanvas[0].getContext("2d");
 		}
 		var destData = thisCtx.getImageData(0, 0, width, height);
-		plotLine(destData.data, toolIn, toolIn.prevCoord.x, toolIn.prevCoord.y, toolIn.newCoord.x, toolIn.newCoord.y);
+		plotLine(destData.data, toolIn, toolIn.newCoord.x, toolIn.newCoord.y, toolIn.newCoord.x, toolIn.newCoord.y);
 
 		// THIS RIGHT HERE is why it's slow
 		// When combined with grouping, we can really get the client nicely optimised
@@ -536,14 +542,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				drawLine(tool, emit);
 			}
 			bumpCanvas(canvas);
-			if (emit) emitTool();
+			if (emit) emitTool(tool);
 		} else if (
 			tool.state == "end" && // mouseup or other stroke end event
 			tool.tool != "flood" && tool.tool != "eyedropper"
 		) { 
 			finaliseEdit(tool, emit);
 		} else { // if state = "idle", do nothing except emit data with mouse coords
-			if (emit) emitTool();
+			if (emit) emitTool(tool);
 		}
 	}
 
@@ -558,7 +564,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				console.log("Reached timeout, sending data");
 				// convert canvas to png and send to the server
-				emitTool();
+				emitTool(tool);
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				tool.layerCode = null;
 			}, finaliseTimeoutMs);
@@ -566,22 +572,23 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// emit a tool action
-	function emitTool() { 
+	function emitTool(toolIn) { 
 		var nickname = $("#nickname").val();
-		socket.emit('mousemove', tool);
+		socket.emit('mousemove', toolIn);
 	}
 
 	// receive a tool action from another user
 	function receiveTool(tool) {
 		var sockID = tool.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
-		if (tool.newCoord == null) {
-			// also fades out when the mouse is not drawing
-			pointerElement.fadeOut(labelFadeOutMs, function() {
-				pointerElement.remove();
-			});
-			return;
-		}
+
+		// if (tool.newCoord == null) { // TODO put this back using new system
+		// 	// also fades out when the mouse is not drawing
+		// 	pointerElement.fadeOut(labelFadeOutMs, function() {
+		// 		pointerElement.remove();
+		// 	});
+		// 	return;
+		// }
 
 		if (pointerElement.length == 0) { // avoid a duplicate element
 			var divBuf = 
