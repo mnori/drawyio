@@ -769,6 +769,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Get duplicate layer with same ID and rename its ID
 		context.duplicate = getLayerByCode(context.layer.code);	
 		if (context.duplicate != null) {
+			console.log("Will remove "+context.duplicate.code);
 			context.duplicate.attr("id", "duplicate_temp");
 		}
 
@@ -794,6 +795,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				for (var i = 0; i < codes.length; i++) {
 					var layer = getLayerByCode(codes[i]);
 					if (layer != null) {
+						console.log("Removed "+codes[i]);
 						layer.remove();
 					}
 				}

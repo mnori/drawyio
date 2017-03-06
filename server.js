@@ -381,6 +381,7 @@ function Drawing(idIn, startLayer) {
 
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
+				console.log("Added component code "+overlay.code);
 				var overlayBuf = base64ToBuffer(overlay.base64);
 				var overlayParams = {top: overlay.offsets.top,  left: overlay.offsets.left};
 				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
