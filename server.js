@@ -22,7 +22,7 @@ const LAYER_CODE_LEN = 32; // Length of layer codes
 const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
 const FLATTEN_TIMEOUT = 1000; // after n ms since last edit, flatten the image
 const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 640,
+	width: 720,
 	height: 480,
 	channels: 4,
 	rgbaPixel: 0xFFFFFFFF
@@ -79,7 +79,7 @@ function configureDrawingSocket(drawing) {
 		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
 
 		// Update drawing with mouse cursor info
-		socket.on("mousemove", function(data) { receiveTool(data, socket); });
+		socket.on("receive_tool", function(data) { receiveTool(data, socket); });
 
 		// Receive new png draw data as base64 encoded string and add to the Drawing
 		socket.on("add_layer", function(data) { receiveLayer(data, socket); });
@@ -321,7 +321,7 @@ function Drawing(idIn, startLayer) {
 	// layer is a base64 encoded PNG string from the client
 	this.addLayer = function(layerObj) {
 		this.nLayers++;
-		console.log("["+this.nLayers+"] layer added");
+		console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		this.updateEdited();
 		return this.nLayers;
@@ -342,7 +342,6 @@ function Drawing(idIn, startLayer) {
 
 	// store timestamp of the most recent edit
 	this.updateEdited = function() {
-		console.log("updateEdited() invoked");
 		this.lastEdited = new Date();
 	}
 

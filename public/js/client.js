@@ -30,7 +30,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 250;
+	var finaliseTimeoutMs = 100; // for line drawing
 
 	// Metadata about the action being performed
 	var tool = {
@@ -221,11 +221,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Start drawing
 	function startTool(coord) {
 		tool.newCoord = coord;
-		if (tool.newCoord != null) { // make sure mouse is within canvas
-			// tool.prevCoord = tool.newCoord;
-			tool.state = "start";
+		if (tool.newCoord == null) { // make sure mouse is within canvas
+			return;
+		}
+		// only when outside the timeout
+		tool.state = "start";
+		if (finaliseTimeout == null) { // only create new layer code when outside rolling timeout
 			tool.layerCode = randomString(layerCodeLen);
 		}
+
 		if (tool.tool == "paint") { // paints have a list of entries
 			tool.lineEntries = [{"state": tool.state, "coord": tool.newCoord}]
 			lastEmit = $.now();
@@ -535,9 +539,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// this structure could potentially get quite messy
 	function handleAction(tool, emit) {
 
-		if (tool.state == "start" && tool.tool == "flood" && finaliseTimeout == null) { 
+		if (emit && tool.state == "start" && tool.tool == "flood" && finaliseTimeout == null) { 
 			// flood fill - only on mousedown
 			// only when not working on existing processing
+			// only for local user
 			flood(tool);
 			finaliseEdit(tool, emit);
 		} else if ( // eyedropper
@@ -573,12 +578,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 						emitTool(toolOut)
 					}
 
-				} else { // remote user - draw the line using the data
-					if (tool.lineEntries != null) {
-						drawLine(tool, emit);
-					}
+				} else if (tool.lineEntries != null) {
+					// remote user - draw the line using the data
+					drawLine(tool, emit);
 				} 
-			} else if (emit) {
+			} else if (emit) { // some other tool - probably not actually reached
 				emitTool(tool);	
 			}
 			bumpCanvas(canvas);
@@ -622,7 +626,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// emit a tool action
 	function emitTool(toolIn) { 
 		var nickname = $("#nickname").val();
-		socket.emit('mousemove', toolIn);
+		socket.emit('receive_tool', toolIn);
 	}
 
 	// receive a tool action from another user
