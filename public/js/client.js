@@ -14,7 +14,7 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 25; 
+	var mouseEmitInterval = 33; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
