@@ -2,7 +2,7 @@
   "name": "drawcloud",
   "version": "0.1.0",
   "description": "Collab drawing app",
-  "author": "Matthew Norris",
+  "author": "drawy.io",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
