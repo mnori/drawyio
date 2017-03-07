@@ -540,27 +540,23 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// this structure could potentially get quite messy
 	function handleAction(tool, emit) {
 
-		if (emit && tool.state == "start" && tool.tool == "flood" && finaliseTimeout == null) { 
+		if (tool.tool == "flood" && emit && tool.state == "start" && finaliseTimeout == null) { 
 			// flood fill - only on mousedown
 			// only when not working on existing processing
 			// only for local user
 			flood(tool);
 			finaliseEdit(tool, emit);
-		} else if ( // eyedropper
-			(tool.state == "start" || tool.state == "drawing") && 
-			tool.tool == "eyedropper"
+
+		} else if ( // eyedropper - only does stuff for local user
+			tool.tool == "eyedropper" && emit && 
+			(tool.state == "start" || tool.state == "drawing")
 		) { 
-			if (emit) {
-				eyedropper(tool); // eyedropper is user only - not remote
-				emitTool(tool);
-			}
-		} else if (
-			(tool.state == "start" || tool.state == "drawing") && 
-			tool.tool != "flood" && tool.tool != "eyedropper"
-		) { // drawing stroke in progress
+			eyedropper(tool); // eyedropper is user only - not remote
+			emitTool(tool);
 
-			if (tool.tool == "paint") {
-
+		} else if (tool.tool == "paint") { 
+			if (tool.state == "start" || tool.state == "drawing") {
+				// drawing stroke in progress
 				if (emit) { // local user
 					// prevent line drawings getting cut off by finaliser
 					if (finaliseTimeout != null) {
@@ -586,17 +582,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					// remote user - draw the line using the data
 					drawLine(tool, emit);
 				} 
-			} else if (emit) { // some other tool - probably not actually reached
-				emitTool(tool);	
-			}
-			bumpCanvas(canvas);
+				bumpCanvas(canvas);
 
-		} else if (
-			tool.state == "end" && // mouseup or other stroke end event
-			tool.tool != "flood" && tool.tool != "eyedropper"
-		) { 
-			finaliseEdit(tool, emit);
-		} else { // if state = "idle", do nothing except emit data with mouse coords
+			} else if (tool.state == "end") {
+				finaliseEdit(tool, emit);
+			} else { // Tool state is idle - send coords
+				if (emit) emitTool(tool);
+			}
+
+		} else { // some other tool that hasn't been implemented yet
 			if (emit) emitTool(tool);
 		}
 	}
