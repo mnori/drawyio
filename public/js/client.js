@@ -163,17 +163,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function positionBrushSizeMenu() {
-		var button = $("#brush_size-button");
 		var menu = $("#brush_size-menu").parent();
+		if (menu.css("display") == "none") {
+			return; // menu not active, nothing to do
+		}
+		var button = $("#brush_size-button");
 
-		// var alreadyHidden = menu.css("")
-		// menu.hide(); // prevents offset bug
-
-		// get button to calculate position
-		// should actually be relative to the container
-		var offset = button.offset();
-
-		// menu.show();
+		menu.hide(); // hide to avoid scroll bar problem
+		var offset = button.offset(); // the offset will now be consistent
+		menu.show();
 
 		console.log("offset", offset);
 
