@@ -550,7 +550,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			(tool.state == "start" || tool.state == "drawing") && 
 			tool.tool == "eyedropper"
 		) { 
-			if (emit) eyedropper(tool); // eyedropper is user only - not remote
+			if (emit) {
+				eyedropper(tool); // eyedropper is user only - not remote
+				emitTool(tool);
+			}
 		} else if (
 			(tool.state == "start" || tool.state == "drawing") && 
 			tool.tool != "flood" && tool.tool != "eyedropper"
