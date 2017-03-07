@@ -166,16 +166,24 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var button = $("#brush_size-button");
 		var menu = $("#brush_size-menu").parent();
 
+		// var alreadyHidden = menu.css("")
+		// menu.hide(); // prevents offset bug
+
 		// get button to calculate position
 		// should actually be relative to the container
 		var offset = button.offset();
+
+		// menu.show();
+
+		console.log("offset", offset);
+
 		// get the parent element and reposition it
-		var menu = 
 		menu.css({
 			"top": (offset.top - menu.height() + 45 + 2)+"px",
 			"left": (offset.left - menu.width())+"px",
 			"z-index": 100000000000012
 		});
+		// menu.show(); // prevents offset bug
 
 		$("#brush_size-button").addClass("button_pressed");
 	}
@@ -426,12 +434,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			
 			var sourceColour = getColour(sourceData.data, x, y);
 			var destColour = getColour(destData.data, x, y);
+			var tolerance = 3;
 
 	        if( // Found different colour in original image?
-	        	!rgbaEqual(sourceColour, oldColour) ||
+	        	!rgbaEqual(sourceColour, oldColour, tolerance) ||
 
 	        	// Are we hitting an area that has already been filled?
-	        	rgbaEqual(destColour, newColour)
+	        	rgbaEqual(destColour, newColour, tolerance)
 	        ) { 
 	            continue;
 	        }
@@ -497,7 +506,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		data[base + 3] = colour[3];
 	}
 
-	function rgbaEqual(query, target) {
+	function rgbaEqual(query, target, tolerance) {
 		for (var i = 0; i < 4; i++) {
 
 			// exact match
@@ -506,10 +515,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			// }
 
 			// tiny differences allowed - hack to fix flood fill bug
-			if (Math.abs(query[0] - target[0]) > 1 ||
-				Math.abs(query[1] - target[1]) > 1 ||
-				Math.abs(query[2] - target[2]) > 1 ||
-				Math.abs(query[3] - target[3]) > 1
+			if (Math.abs(query[0] - target[0]) > tolerance ||
+				Math.abs(query[1] - target[1]) > tolerance ||
+				Math.abs(query[2] - target[2]) > tolerance ||
+				Math.abs(query[3] - target[3]) > tolerance
 			) {
 				return false;
 			}
@@ -540,16 +549,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// this structure could potentially get quite messy
 	function handleAction(tool, emit) {
 
-		if (tool.tool == "flood" && emit && tool.state == "start" && finaliseTimeout == null) { 
+		if (tool.tool == "flood" && 
+			emit && tool.state == "start" && finaliseTimeout == null
+		) { 
 			// flood fill - only on mousedown
 			// only when not working on existing processing
 			// only for local user
 			flood(tool);
 			finaliseEdit(tool, emit);
 
-		} else if ( // eyedropper - only does stuff for local user
-			tool.tool == "eyedropper" && emit && 
-			(tool.state == "start" || tool.state == "drawing")
+		} else if (tool.tool == "eyedropper" && 
+			emit && (tool.state == "start" || tool.state == "drawing")
 		) { 
 			eyedropper(tool); // eyedropper is user only - not remote
 			emitTool(tool);
@@ -596,6 +606,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// only does stuff for the local user
+	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
 		tool.state = "idle"
 		if (emit) { // local user, not remote user
@@ -611,7 +622,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 
 			finaliseTimeout = setTimeout(function() {
-				// convert canvas to png and send to the server
+				// Processing step
+				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				tool.layerCode = null;
 			}, finaliseTimeoutMs);
