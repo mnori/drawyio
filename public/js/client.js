@@ -552,7 +552,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 	}
 
-	// this structure could potentially get quite messy
+	// Takes a tool and does stuff based on its data, representing what the user wants to do
+	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
 
 		if (tool.tool == "flood" && 
@@ -560,7 +561,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		) { 
 			// flood fill - only on mousedown
 			// only when not working on existing processing
-			// only for local user
+			// only for local user - remote user receives png rather than tool action
 			flood(tool);
 			finaliseEdit(tool, emit);
 
@@ -624,7 +625,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			toolOut.state = "end";
 			emitTool(toolOut);
 
-			if (tool.tool = "paint" && tool.data != null && tool.data.lineEntries != null) {
+			if (tool.tool == "paint" && tool.data != null && tool.data.lineEntries != null) {
 				drawLine(tool, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {

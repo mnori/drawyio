@@ -53,7 +53,7 @@ function configureRoutes(app) {
 	// Render a drawing's page or its image
 	app.get("/d/:id", function(req, res) {
 		req.params.id.includes(".png") ? 
-			getDrawingImage(req, res) : 
+			sendDrawingImage(req, res) : 
 			renderDrawingPage(req, res);
 	});
 
@@ -173,7 +173,7 @@ function renderDrawingPage(req, res) {
 }
 
 // Return png image as buffer
-function getDrawingImage(req, res) {
+function sendDrawingImage(req, res) {
 	var drawID = req.params.id.replace(".png", "");
 	var drawing = drawings.get(drawID)
 	if (drawing == null) { // drawing missing
