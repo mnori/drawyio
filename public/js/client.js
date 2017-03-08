@@ -630,7 +630,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var endCoord = tool.newCoord;
 
 		if (tool.state == "start" || tool.state == "drawing") {
-			console.log("drawing with "+startCoord+" => "+endCoord)
+			console.log(
+				"drawing with "+
+				startCoord.x+", "+startCoord.y+" => "+
+				endCoord.x+", "+endCoord.y
+			)
 		} else if (tool.state == "end") {
 			finaliseEdit(tool, emit);
 		}
