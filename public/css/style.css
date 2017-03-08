@@ -103,6 +103,7 @@ h1 {
 #drawing_form {
 	background-color: #eee;
 	float: left;
+	margin-bottom: 20px;
 }
 
 .drawing_pointer {

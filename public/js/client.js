@@ -34,7 +34,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Metadata about the action being performed
 	var tool = {
-		lineEntries: null,
+		data: null, // .data.lineEntries: null,
 		state: "idle",
 		tool: "paint"
 	};
@@ -81,7 +81,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 			// keep high resolution map of line entries for processing at intervals
 			if (tool.tool == "paint" && tool.state == "drawing") {
-				tool.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
+				tool.data.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
 			}
 			if (tool.state == "start") {
 				tool.state = "drawing";
@@ -173,8 +173,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var offset = button.offset(); // the offset will now be consistent
 		menu.show();
 
-		console.log("offset", offset);
-
 		// get the parent element and reposition it
 		menu.css({
 			"top": (offset.top - menu.height() + 45 + 2)+"px",
@@ -236,11 +234,18 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 
 		if (tool.tool == "paint") { // paints have a list of entries
-			tool.lineEntries = [{"state": tool.state, "coord": tool.newCoord}]
+			// TODO put this in a "data" property
+			tool.data = {"lineEntries": [{"state": tool.state, "coord": tool.newCoord}]};
 			lastEmit = $.now();
+		} else if (tool.tool == "line") {
+			tool.data = {
+				"startCoord": tool.newCoord
+			}
 		} else {
-			tool.lineEntries = null;
+			// eventually we'll put the paint line data in here as well
+			tool.data = null;
 		}
+
 		addToolSettings();
 		handleAction(tool, true);
 	}
@@ -292,6 +297,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	/* TOOL METHODS */
 	function drawLine(toolIn, emit) {
+		if (toolIn.data == null) {
+			console.log("Warning -> drawLine called without data!");
+			return;
+		}
+
 		var thisCtx = ctx;
 		if (!emit) { // if it came from remote user, draw on a different canvas
 			var remoteCanvas = createRemoteCanvas(toolIn);
@@ -299,7 +309,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		var destData = thisCtx.getImageData(0, 0, width, height);
 
-		var entries = toolIn.lineEntries;
+		var entries = toolIn.data.lineEntries;
 		var firstCoord = entries[0].coord;
 
 		// draw a dot to start off
@@ -317,8 +327,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.putImageData(destData, 0, 0);
 
 		// Reset the coordinates cache
-		var lastEntry = toolIn.lineEntries[toolIn.lineEntries.length - 1];
-		toolIn.lineEntries = [lastEntry]
+		var lastEntry = toolIn.data.lineEntries[toolIn.data.lineEntries.length - 1];
+		toolIn.data.lineEntries = [lastEntry]
 	}
 
 	// Plot a line using non-antialiased circle
@@ -587,11 +597,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				} else { 
 					// not reached interval
 					// remove line entries before sending to remote user
-					toolOut.lineEntries = null;
+					toolOut.data.lineEntries = null;
 					emitTool(toolOut)
 				}
 
-			} else if (tool.lineEntries != null) {
+			} else if (tool.data.lineEntries != null) {
 				// remote user - draw the line using the data
 				drawLine(tool, emit);
 			} 
@@ -614,7 +624,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			toolOut.state = "end";
 			emitTool(toolOut);
 
-			if (tool.lineEntries != null) {
+			if (tool.tool = "paint" && tool.data != null && tool.data.lineEntries != null) {
 				drawLine(tool, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
