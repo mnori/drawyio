@@ -599,7 +599,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				}
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
-				if ($.now() - lastEmit > drawEmitInterval) { 
+				if ($.now() - lastEmit > paintEmitInterval) { 
 					// reached interval
 					drawPaint(tool, emit); // draw onto canvas
 					lastEmit = $.now();
