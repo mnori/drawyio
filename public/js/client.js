@@ -295,17 +295,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	/* TOOL METHODS */
-	function drawLine(toolIn, emit) {
+	function drawPaint(toolIn, emit) {
 		if (toolIn.meta == null) {
-			console.log("Warning -> drawLine called without data!");
+			console.log("Warning -> drawPaint called without data!");
 			return;
 		}
-
-		var thisCtx = ctx;
-		if (!emit) { // if it came from remote user, draw on a different canvas
-			var remoteCanvas = createRemoteCanvas(toolIn);
-			thisCtx = remoteCanvas[0].getContext("2d");
-		}
+		var thisCtx = getCanvasCtx(toolIn, emit);
 		var destData = thisCtx.getImageData(0, 0, width, height);
 
 		var entries = toolIn.meta.lineEntries;
@@ -330,7 +325,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		toolIn.meta.lineEntries = [lastEntry]
 	}
 
+	function getCanvasCtx(toolIn, emit) {
+		var thisCtx = ctx;
+		if (!emit) { // if it came from remote user, draw on a different canvas
+			var remoteCanvas = createRemoteCanvas(toolIn);
+			thisCtx = remoteCanvas[0].getContext("2d");
+		}
+		return thisCtx;
+	}
+
 	// Plot a line using non-antialiased circle
+	// TODO pass in coord obj instead of seperate xy
 	function plotLine(data, toolIn, x0, y0, x1, y1) {
 		var circleData = makeCircle(toolIn);
 		var colour = parseColour(toolIn.colourFg);
@@ -595,7 +600,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 				if ($.now() - lastEmit > mouseEmitInterval) { 
 					// reached interval
-					drawLine(tool, emit); // draw onto canvas
+					drawPaint(tool, emit); // draw onto canvas
 					lastEmit = $.now();
 					emitTool(toolOut); // version of tool with line coords array
 
@@ -608,7 +613,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 			} else if (tool.meta.lineEntries != null) {
 				// remote user - draw the line using the data
-				drawLine(tool, emit);
+				drawPaint(tool, emit);
 			} 
 			bumpCanvas(canvas);
 
@@ -635,6 +640,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				startCoord.x+", "+startCoord.y+" => "+
 				endCoord.x+", "+endCoord.y
 			)
+			var thisCtx = getCanvasCtx(tool, emit);
+			var destData = thisCtx.getImageData(0, 0, width, height);
+			plotLine(destData.data, tool, startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+			thisCtx.putImageData(destData, 0, 0);
+			
 		} else if (tool.state == "end") {
 			finaliseEdit(tool, emit);
 		}
@@ -658,7 +668,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			emitTool(toolOut);
 
 			if (tool.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
-				drawLine(tool, true); // close the line last edit - resets line array	
+				drawPaint(tool, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
 				clearTimeout(finaliseTimeout);
@@ -672,7 +682,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}, finaliseTimeoutMs);
 
 		} else if (tool.tool == "paint") { // if got this far, we are the remote user
-			drawLine(tool, false); // complete the line edit only
+			drawPaint(tool, false); // complete the line edit only
 		}
 	}
 
