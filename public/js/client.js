@@ -14,7 +14,8 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var mouseEmitInterval = 33; 
+	var paintEmitInterval = 33; 
+	var lineEmitInterval = 33; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -598,7 +599,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				}
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
-				if ($.now() - lastEmit > mouseEmitInterval) { 
+				if ($.now() - lastEmit > drawEmitInterval) { 
 					// reached interval
 					drawPaint(tool, emit); // draw onto canvas
 					lastEmit = $.now();
@@ -630,32 +631,38 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) emitTool(tool);
 			return; // nothing to do when idle
 		}
-
-		var startCoord = tool.meta.startCoord
-		var endCoord = tool.newCoord;
-
 		if (tool.state == "start" || tool.state == "drawing") {
-			console.log(
-				"drawing with "+
-				startCoord.x+", "+startCoord.y+" => "+
-				endCoord.x+", "+endCoord.y
-			)
-			var thisCtx = getCanvasCtx(tool, emit);
-			var destData = thisCtx.getImageData(0, 0, width, height);
-			plotLine(destData.data, tool, startCoord.x, startCoord.y, endCoord.x, endCoord.y);
-			thisCtx.putImageData(destData, 0, 0);
+
+			if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
+				drawLine(tool, emit);
+				lastEmit = $.now();
+			}
 			
 		} else if (tool.state == "end") {
 			finaliseEdit(tool, emit);
 		}
 		if (emit) emitTool(tool);
+	}
 
-		// get the coordinates
-		// use coords to generate preview on the drawing canvas
-		// be sure to clear it first
-		// how fast is this going to be
+	// Draw line onto a canvas
+	function drawLine(tool, emit) {
+		var startCoord = tool.meta.startCoord
+		var endCoord = tool.newCoord;
 
-		// reuse code from drawLine
+		// decides whether local or remote canvas
+		var thisCtx = getCanvasCtx(tool, emit); 
+
+		// Clear the canvas
+		thisCtx.clearRect(0, 0, width, height); 
+
+		// Get data
+		var destData = thisCtx.getImageData(0, 0, width, height);
+
+		// Draw a line using the data
+		plotLine(destData.data, tool, startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+
+		// Put the image data back into canvas DOM element
+		thisCtx.putImageData(destData, 0, 0);
 	}
 
 	// only does stuff for the local user
@@ -697,9 +704,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var sockID = tool.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
 
-		if (tool.newCoord == null) { // TODO put this back using new system
-			// also fades out when the mouse is not drawing
-			pointerElement.fadeOut(labelFadeOutMs, function() {
+		if (tool.newCoord == null) { // This pointer fading is broken, will fix later
+			fpointerElement.fadeOut(labelFadeOutMs, function() {
 				pointerElement.remove();
 			});
 			return;
