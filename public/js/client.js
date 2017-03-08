@@ -181,8 +181,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			"left": (offset.left - menu.width())+"px",
 			"z-index": 100000000000012
 		});
-		// menu.show(); // prevents offset bug
-
 		$("#brush_size-button").addClass("button_pressed");
 	}
 
@@ -563,42 +561,46 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			emitTool(tool);
 
 		} else if (tool.tool == "paint") { 
-			if (tool.state == "start" || tool.state == "drawing") {
-				// drawing stroke in progress
-				if (emit) { // local user
-					// prevent line drawings getting cut off by finaliser
-					if (finaliseTimeout != null) {
-						clearTimeout(finaliseTimeout);
-						finaliseTimeout = null;
-					}
-					var toolOut = JSON.parse(JSON.stringify(tool));
-
-					if ($.now() - lastEmit > mouseEmitInterval) { 
-						// reached interval
-						drawLine(tool, emit); // draw onto canvas
-						lastEmit = $.now();
-						emitTool(toolOut); // version of tool with line coords array
-
-					} else { 
-						// not reached interval
-						// remove line entries before sending to remote user
-						toolOut.lineEntries = null;
-						emitTool(toolOut)
-					}
-
-				} else if (tool.lineEntries != null) {
-					// remote user - draw the line using the data
-					drawLine(tool, emit);
-				} 
-				bumpCanvas(canvas);
-
-			} else if (tool.state == "end") {
-				finaliseEdit(tool, emit);
-			} else { // Tool state is idle - send coords
-				if (emit) emitTool(tool);
-			}
+			handlePaint(tool, emit);
 
 		} else { // some other tool that hasn't been implemented yet
+			if (emit) emitTool(tool);
+		}
+	}
+
+	function handlePaint(tool, emit) {
+		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
+			if (emit) { // local user
+				// prevent line drawings getting cut off by finaliser
+				if (finaliseTimeout != null) {
+					clearTimeout(finaliseTimeout);
+					finaliseTimeout = null;
+				}
+				var toolOut = JSON.parse(JSON.stringify(tool));
+
+				if ($.now() - lastEmit > mouseEmitInterval) { 
+					// reached interval
+					drawLine(tool, emit); // draw onto canvas
+					lastEmit = $.now();
+					emitTool(toolOut); // version of tool with line coords array
+
+				} else { 
+					// not reached interval
+					// remove line entries before sending to remote user
+					toolOut.lineEntries = null;
+					emitTool(toolOut)
+				}
+
+			} else if (tool.lineEntries != null) {
+				// remote user - draw the line using the data
+				drawLine(tool, emit);
+			} 
+			bumpCanvas(canvas);
+
+		} else if (tool.state == "end") { // mouseup or other line end event
+			finaliseEdit(tool, emit);
+
+		} else { // Tool state is idle - just send coords
 			if (emit) emitTool(tool);
 		}
 	}
