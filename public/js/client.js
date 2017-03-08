@@ -34,7 +34,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Metadata about the action being performed
 	var tool = {
-		data: null, // .data.lineEntries: null,
+		data: null, // .meta.lineEntries: null,
 		state: "idle",
 		tool: "paint"
 	};
@@ -81,13 +81,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 			// keep high resolution map of line entries for processing at intervals
 			if (tool.tool == "paint" && tool.state == "drawing") {
-				tool.data.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
+				tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
 			}
 			if (tool.state == "start") {
 				tool.state = "drawing";
 			}
 			addToolSettings();
-			// outside edge of canvas
+
+			// this is where processing occurs
 			if (tool.newCoord == null && tool.tool != "eyedropper") { 
 				stopTool(ev);
 			} else {
@@ -233,17 +234,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.layerCode = randomString(layerCodeLen);
 		}
 
+		// do we need to set the tool data?
 		if (tool.tool == "paint") { // paints have a list of entries
 			// TODO put this in a "data" property
-			tool.data = {"lineEntries": [{"state": tool.state, "coord": tool.newCoord}]};
+			tool.meta = {"lineEntries": [{"state": tool.state, "coord": tool.newCoord}]};
 			lastEmit = $.now();
 		} else if (tool.tool == "line") {
-			tool.data = {
-				"startCoord": tool.newCoord
-			}
-		} else {
-			// eventually we'll put the paint line data in here as well
-			tool.data = null;
+			tool.meta = {startCoord: tool.newCoord}
+		} else { // tool does not have a data attribute
+			tool.meta = null;
 		}
 
 		addToolSettings();
@@ -297,7 +296,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	/* TOOL METHODS */
 	function drawLine(toolIn, emit) {
-		if (toolIn.data == null) {
+		if (toolIn.meta == null) {
 			console.log("Warning -> drawLine called without data!");
 			return;
 		}
@@ -309,7 +308,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		var destData = thisCtx.getImageData(0, 0, width, height);
 
-		var entries = toolIn.data.lineEntries;
+		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
 		// draw a dot to start off
@@ -327,8 +326,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.putImageData(destData, 0, 0);
 
 		// Reset the coordinates cache
-		var lastEntry = toolIn.data.lineEntries[toolIn.data.lineEntries.length - 1];
-		toolIn.data.lineEntries = [lastEntry]
+		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
+		toolIn.meta.lineEntries = [lastEntry]
 	}
 
 	// Plot a line using non-antialiased circle
@@ -556,7 +555,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
 
-		if (tool.tool == "flood" && 
+		if (
+			tool.tool == "flood" && 
 			emit && tool.state == "start" && finaliseTimeout == null
 		) { 
 			// flood fill - only on mousedown
@@ -565,14 +565,18 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			flood(tool);
 			finaliseEdit(tool, emit);
 
-		} else if (tool.tool == "eyedropper" && 
+		} else if (
+			tool.tool == "eyedropper" && // eyedropper, is local user only - not remote
 			emit && (tool.state == "start" || tool.state == "drawing")
 		) { 
-			eyedropper(tool); // eyedropper is user only - not remote
-			emitTool(tool);
+			eyedropper(tool); 
+			emitTool(tool); // still need to emit those mouse coords though
 
-		} else if (tool.tool == "paint") { 
+		} else if (tool.tool == "paint") { // wobbly line
 			handlePaint(tool, emit);
+
+		} else if (tool.tool == "line") { // straight line
+			handleLine(tool, emit);
 
 		} else { // some other tool that hasn't been implemented yet
 			if (emit) emitTool(tool);
@@ -598,11 +602,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				} else { 
 					// not reached interval
 					// remove line entries before sending to remote user
-					toolOut.data.lineEntries = null;
+					toolOut.meta.lineEntries = null;
 					emitTool(toolOut)
 				}
 
-			} else if (tool.data.lineEntries != null) {
+			} else if (tool.meta.lineEntries != null) {
 				// remote user - draw the line using the data
 				drawLine(tool, emit);
 			} 
@@ -616,6 +620,30 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
+	function handleLine(tool, emit) {
+		if (tool.state == "idle") {
+			if (emit) emitTool(tool);
+			return; // nothing to do when idle
+		}
+
+		var startCoord = tool.meta.startCoord
+		var endCoord = tool.newCoord;
+
+		if (tool.state == "start" || tool.state == "drawing") {
+			console.log("drawing with "+startCoord+" => "+endCoord)
+		} else if (tool.state == "end") {
+			finaliseEdit(tool, emit);
+		}
+		if (emit) emitTool(tool);
+
+		// get the coordinates
+		// use coords to generate preview on the drawing canvas
+		// be sure to clear it first
+		// how fast is this going to be
+
+		// reuse code from drawLine
+	}
+
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
@@ -625,7 +653,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			toolOut.state = "end";
 			emitTool(toolOut);
 
-			if (tool.tool == "paint" && tool.data != null && tool.data.lineEntries != null) {
+			if (tool.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
 				drawLine(tool, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
@@ -639,7 +667,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				tool.layerCode = null;
 			}, finaliseTimeoutMs);
 
-		} else { // remote user
+		} else if (tool.tool == "paint") { // if got this far, we are the remote user
 			drawLine(tool, false); // complete the line edit only
 		}
 	}
