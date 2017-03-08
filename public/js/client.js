@@ -584,7 +584,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		} else if (tool.tool == "line") { // straight line
 			handleLine(tool, emit);
 
-		} else { // some other tool that hasn't been implemented yet
+		} else { // always emit those mouse coords
 			if (emit) emitTool(tool);
 		}
 	}
@@ -637,6 +637,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				drawLine(tool, emit);
 				lastEmit = $.now();
 			}
+			bumpCanvas(canvas);
 			
 		} else if (tool.state == "end") {
 			drawLine(tool, emit);
