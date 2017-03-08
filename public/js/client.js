@@ -639,6 +639,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 			
 		} else if (tool.state == "end") {
+			drawLine(tool, emit);
 			finaliseEdit(tool, emit);
 		}
 		if (emit) emitTool(tool);
