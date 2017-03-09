@@ -31,7 +31,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 500; // for line drawing
+	var finaliseTimeoutMs = 1000; // for brush and line drawing
 
 	// Metadata about the action being performed
 	var tool = {
@@ -185,17 +185,25 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) emitTool(tool);
 			return; // nothing to do when idle
 		}
+
+		var thisCtx = getCanvasCtx(tool, emit); 
 		if (tool.state == "start" || tool.state == "drawing") {
 
-			if (tool.state == "start") {
-				// decides whether local or remote canvas
-				var thisCtx = getCanvasCtx(tool, emit); 
-				if (typeof(thisCtx.baseData) == "undefined") {
-					// Clear the canvas
-					thisCtx.clearRect(0, 0, width, height); 
+			if (typeof(thisCtx.baseData) == "undefined") {
 
-					// Initialise the base data cache
-					thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+				console.log("Creating new base data!");
+
+				// Clear the canvas
+				thisCtx.clearRect(0, 0, width, height); 
+
+				// Initialise the base data cache
+				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+			}
+			
+			if (emit) {
+				if (finaliseTimeout != null) { // prevent stuff getting overwritten
+					clearTimeout(finaliseTimeout);
+					finaliseTimeout = null;
 				}
 			}
 
@@ -206,8 +214,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			bumpCanvas(canvas);
 			
 		} else if (tool.state == "end") {
+			console.log("reached tool end");
 			drawLine(tool, emit);
-			console.log("!! finalised");
+			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
 		}
 		if (emit) emitTool(tool);
@@ -230,6 +239,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Put the cached image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
+		// thisCtx.baseData = previewData; // no - do this at the end
 	}
 
 	function setupControls() {
@@ -690,11 +700,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function finaliseEdit(tool, emit) {
 		tool.state = "idle"
 
-		if (tool.tool == "line") { // line is not on rolling timeout
-			processCanvas(canvas[0], croppingCanvas[0], tool); 
-			tool.layerCode = null;
-			return;
-		}
+		// if (tool.tool == "line") { // clean up mess potentially generated during line drawing
+		// 	var thisCtx = getCanvasCtx(tool, emit); 
+		// 	delete thisCtx.baseData;
+		// }
+
+		// Don't do this - much better to use the rolling system
+		// if (tool.tool == "line") { // line is not on rolling timeout
+		// 	processCanvas(canvas[0], croppingCanvas[0], tool); 
+		// 	tool.layerCode = null;
+		// 	return;
+		// }
 
 		if (emit) { // local user, not remote user
 			var toolOut = JSON.parse(JSON.stringify(tool));
@@ -709,6 +725,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 
 			finaliseTimeout = setTimeout(function() {
+				console.log("reached finalise");
+
 				// Processing step
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
@@ -930,6 +948,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Clear the canvas
 				ctx.clearRect(0, 0, width, height)
 
+				// Clear the baseData (for straight line drawings)
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
 				fr.readAsDataURL(blob); 
