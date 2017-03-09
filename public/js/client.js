@@ -31,7 +31,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 100; // for line drawing
+	var finaliseTimeoutMs = 500; // for line drawing
 
 	// Metadata about the action being performed
 	var tool = {
