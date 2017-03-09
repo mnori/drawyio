@@ -199,7 +199,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Initialise the base data cache
 				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			}
-			
+
 			if (emit) {
 				if (finaliseTimeout != null) { // prevent stuff getting overwritten
 					clearTimeout(finaliseTimeout);
@@ -214,7 +214,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			bumpCanvas(canvas);
 			
 		} else if (tool.state == "end") {
-			console.log("reached tool end");
 			drawLine(tool, emit);
 			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
@@ -239,7 +238,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Put the cached image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
-		// thisCtx.baseData = previewData; // no - do this at the end
 	}
 
 	function setupControls() {
@@ -700,18 +698,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function finaliseEdit(tool, emit) {
 		tool.state = "idle"
 
-		// if (tool.tool == "line") { // clean up mess potentially generated during line drawing
-		// 	var thisCtx = getCanvasCtx(tool, emit); 
-		// 	delete thisCtx.baseData;
-		// }
-
-		// Don't do this - much better to use the rolling system
-		// if (tool.tool == "line") { // line is not on rolling timeout
-		// 	processCanvas(canvas[0], croppingCanvas[0], tool); 
-		// 	tool.layerCode = null;
-		// 	return;
-		// }
-
 		if (emit) { // local user, not remote user
 			var toolOut = JSON.parse(JSON.stringify(tool));
 			toolOut.state = "end";
@@ -725,12 +711,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 
 			finaliseTimeout = setTimeout(function() {
-				console.log("reached finalise");
-
 				// Processing step
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				tool.layerCode = null;
+				if (tool.tool == "line") {
+					delete ctx.baseData; // clean out the base data 
+				}
 			}, finaliseTimeoutMs);
 
 		} else if (tool.tool == "paint") { // if got this far, we are the remote user
