@@ -148,49 +148,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	function handleText(tool, emit) {
-		console.log("handleText() invoked"); 
-		// if start or moving, clear canvas and draw the text
-		var thisCtx = getCanvasCtx(tool, emit); 
-
-		if (tool.state == "idle" || tool.state == "start" || tool.state == "drawing") {
-			initBaseData(thisCtx); // only does it if there is no base data
-
-			drawText(tool, emit);
-			if ($.now() - lastEmit > textEmitInterval) { // throttle the line preview
-				lastEmit = $.now();
-				if (emit) emitTool(tool);
-			}
-			
-			bumpCanvas(canvas);
-		}
-	}
-
-	function drawText(tool, emit) {
-		// This decides whether to use a local or a remote canvas
-		var thisCtx = getCanvasCtx(tool, emit); 
-
-		// console.log("tool", tool);
-		// console.log("emit", emit);
-		// console.log("thisCtx", thisCtx);
-
-
-		// // Create a copy of the base data
-		// var previewData = thisCtx.createImageData(width, height);
-		// previewData.data.set(thisCtx.baseData.data.slice()); // slice() makes a copy of the array
-
-		// // Draw a line over the cached data
-		// var start = tool.meta.startCoord
-		// var end = tool.newCoord;
-		// plotLine(previewData.data, tool, start.x, start.y, end.x, end.y);
-
-		// Put the cached image data back into canvas DOM element, overwriting previous text
-		// preview
-		thisCtx.putImageData(thisCtx.baseData, 0, 0);
-		thisCtx.font = "30px Arial";
-		thisCtx.fillText("Hello world", tool.newCoord.x, tool.newCoord.y)
-	}
-
 	// free form drawing
 	function handlePaint(tool, emit) {
 		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
@@ -264,14 +221,34 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (emit) emitTool(tool);
 	}
 
-	function initBaseData(thisCtx) {
-		if (typeof(thisCtx.baseData) == "undefined") {
-			// Initialise the base data cache
-			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+	function handleText(tool, emit) {
+		// if start or moving, clear canvas and draw the text
+		var thisCtx = getCanvasCtx(tool, emit); 
+
+		if (tool.state == "idle" || tool.state == "start" || tool.state == "drawing") {
+			initBaseData(thisCtx); // only does it if there is no base data
+
+			drawText(tool, emit);
+			if ($.now() - lastEmit > textEmitInterval) { // throttle the line preview
+				lastEmit = $.now();
+				if (emit) emitTool(tool);
+			}
+			
+			bumpCanvas(canvas);
 		}
 	}
 
-	// Draw line onto a canvas
+	function drawText(tool, emit) {
+		// This decides whether to use a local or a remote canvas
+		var thisCtx = getCanvasCtx(tool, emit); 
+
+		// Put cached image data back into canvas DOM element, overwriting earlier text preview
+		thisCtx.putImageData(thisCtx.baseData, 0, 0);
+		thisCtx.font = "30px Arial";
+		thisCtx.fillText("Hello world", tool.newCoord.x, tool.newCoord.y)
+	}
+
+	// Draw a straight line onto a canvas
 	function drawLine(tool, emit) {
 
 		// This decides whether to use a local or a remote canvas
@@ -288,6 +265,53 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Put the cached image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
+	}
+
+	/* TOOL METHODS */
+	function drawPaint(toolIn, emit) {
+		if (toolIn.meta == null) {
+			console.log("Warning -> drawPaint called without data!");
+			return;
+		}
+		var thisCtx = getCanvasCtx(toolIn, emit);
+		var destData = thisCtx.getImageData(0, 0, width, height);
+
+		var entries = toolIn.meta.lineEntries;
+		var firstCoord = entries[0].coord;
+
+		// draw a dot to start off
+		plotLine(destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+
+		// now draw the rest of the line
+		for (var i = 1; i < entries.length; i++) {
+			var prevCoord = entries[i - 1].coord;
+			var thisCoord = entries[i].coord;
+			plotLine(destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+		}
+
+		// Write data to canvas. Quite slow so should be done sparingly
+		// also this copies the whole image! Could it be done faster using a slice?
+		thisCtx.putImageData(destData, 0, 0);
+
+		// Reset the coordinates cache
+		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
+		toolIn.meta.lineEntries = [lastEntry]
+	}
+
+	function getCanvasCtx(toolIn, emit) {
+		var thisCtx = ctx;
+		if (!emit) { // if it came from remote user, draw on a different canvas
+			var remoteCanvas = createRemoteCanvas(toolIn);
+			thisCtx = remoteCanvas[0].getContext("2d");
+		}
+		return thisCtx;
+	}
+
+	function initBaseData(thisCtx) {
+		if (typeof(thisCtx.baseData) == "undefined") {
+			// Initialise the base data cache
+			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+		}
 	}
 
 	function setupControls() {
@@ -479,46 +503,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			circleData.push(yData)
 		}
 		return circleData;
-	}
-
-	/* TOOL METHODS */
-	function drawPaint(toolIn, emit) {
-		if (toolIn.meta == null) {
-			console.log("Warning -> drawPaint called without data!");
-			return;
-		}
-		var thisCtx = getCanvasCtx(toolIn, emit);
-		var destData = thisCtx.getImageData(0, 0, width, height);
-
-		var entries = toolIn.meta.lineEntries;
-		var firstCoord = entries[0].coord;
-
-		// draw a dot to start off
-		plotLine(destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
-
-		// now draw the rest of the line
-		for (var i = 1; i < entries.length; i++) {
-			var prevCoord = entries[i - 1].coord;
-			var thisCoord = entries[i].coord;
-			plotLine(destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
-		}
-
-		// Write data to canvas. Quite slow so should be done sparingly
-		// also this copies the whole image! Could it be done faster using a slice?
-		thisCtx.putImageData(destData, 0, 0);
-
-		// Reset the coordinates cache
-		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
-		toolIn.meta.lineEntries = [lastEntry]
-	}
-
-	function getCanvasCtx(toolIn, emit) {
-		var thisCtx = ctx;
-		if (!emit) { // if it came from remote user, draw on a different canvas
-			var remoteCanvas = createRemoteCanvas(toolIn);
-			thisCtx = remoteCanvas[0].getContext("2d");
-		}
-		return thisCtx;
 	}
 
 	// Plot a line using non-antialiased circle
