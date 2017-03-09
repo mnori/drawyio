@@ -111,6 +111,96 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		getDrawing();
 	}
 
+	// Takes a tool and does stuff based on its data, representing what the user wants to do
+	// This is used for both local and remote users when tool data is received
+	function handleAction(tool, emit) {
+
+		if (
+			tool.tool == "flood" && 
+			emit && tool.state == "start" && finaliseTimeout == null
+		) { 
+			// flood fill - only on mousedown
+			// only when not working on existing processing
+			// only for local user - remote user receives png rather than tool action
+			flood(tool);
+			finaliseEdit(tool, emit);
+
+		} else if (
+			tool.tool == "eyedropper" && // eyedropper, is local user only - not remote
+			emit && (tool.state == "start" || tool.state == "drawing")
+		) { 
+			eyedropper(tool); 
+			emitTool(tool); // still need to emit those mouse coords though
+
+		} else if (tool.tool == "paint") { // wobbly line
+			handlePaint(tool, emit);
+
+		} else if (tool.tool == "line") { // straight line
+			handleLine(tool, emit);
+
+		} else { // always emit those mouse coords
+			if (emit) emitTool(tool);
+		}
+	}
+
+	function handlePaint(tool, emit) {
+		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
+			if (emit) { // local user
+				// prevent line drawings getting cut off by finaliser
+				if (finaliseTimeout != null) {
+					clearTimeout(finaliseTimeout);
+					finaliseTimeout = null;
+				}
+				var toolOut = JSON.parse(JSON.stringify(tool));
+
+				if ($.now() - lastEmit > paintEmitInterval) { 
+					// reached interval
+					drawPaint(tool, emit); // draw onto canvas
+					lastEmit = $.now();
+					emitTool(toolOut); // version of tool with line coords array
+
+				} else { 
+					// not reached interval
+					// remove line entries before sending to remote user
+					toolOut.meta.lineEntries = null;
+					emitTool(toolOut)
+				}
+
+			} else if (tool.meta.lineEntries != null) {
+				// remote user - draw the line using the data
+				drawPaint(tool, emit);
+			} 
+			bumpCanvas(canvas);
+
+		} else if (tool.state == "end") { // mouseup or other line end event
+			finaliseEdit(tool, emit);
+
+		} else { // Tool state is idle - just send coords
+			if (emit) emitTool(tool);
+		}
+	}
+
+	function handleLine(tool, emit) {
+		if (tool.state == "idle") {
+			if (emit) emitTool(tool);
+			return; // nothing to do when idle
+		}
+		if (tool.state == "start" || tool.state == "drawing") {
+
+			if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
+				drawLine(tool, emit);
+				lastEmit = $.now();
+			}
+			bumpCanvas(canvas);
+			
+		} else if (tool.state == "end") {
+			drawLine(tool, emit);
+			console.log("finalised");
+			finaliseEdit(tool, emit);
+		}
+		if (emit) emitTool(tool);
+	}
+
 	function setupControls() {
 		$("#paint").on("mousedown", function() {
 			toggleButtons($(this).attr("id"));
@@ -555,95 +645,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				element.removeClass("button_pressed")
 			}
 		});
-	}
-
-	// Takes a tool and does stuff based on its data, representing what the user wants to do
-	// This is used for both local and remote users when tool data is received
-	function handleAction(tool, emit) {
-
-		if (
-			tool.tool == "flood" && 
-			emit && tool.state == "start" && finaliseTimeout == null
-		) { 
-			// flood fill - only on mousedown
-			// only when not working on existing processing
-			// only for local user - remote user receives png rather than tool action
-			flood(tool);
-			finaliseEdit(tool, emit);
-
-		} else if (
-			tool.tool == "eyedropper" && // eyedropper, is local user only - not remote
-			emit && (tool.state == "start" || tool.state == "drawing")
-		) { 
-			eyedropper(tool); 
-			emitTool(tool); // still need to emit those mouse coords though
-
-		} else if (tool.tool == "paint") { // wobbly line
-			handlePaint(tool, emit);
-
-		} else if (tool.tool == "line") { // straight line
-			handleLine(tool, emit);
-
-		} else { // always emit those mouse coords
-			if (emit) emitTool(tool);
-		}
-	}
-
-	function handlePaint(tool, emit) {
-		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
-			if (emit) { // local user
-				// prevent line drawings getting cut off by finaliser
-				if (finaliseTimeout != null) {
-					clearTimeout(finaliseTimeout);
-					finaliseTimeout = null;
-				}
-				var toolOut = JSON.parse(JSON.stringify(tool));
-
-				if ($.now() - lastEmit > paintEmitInterval) { 
-					// reached interval
-					drawPaint(tool, emit); // draw onto canvas
-					lastEmit = $.now();
-					emitTool(toolOut); // version of tool with line coords array
-
-				} else { 
-					// not reached interval
-					// remove line entries before sending to remote user
-					toolOut.meta.lineEntries = null;
-					emitTool(toolOut)
-				}
-
-			} else if (tool.meta.lineEntries != null) {
-				// remote user - draw the line using the data
-				drawPaint(tool, emit);
-			} 
-			bumpCanvas(canvas);
-
-		} else if (tool.state == "end") { // mouseup or other line end event
-			finaliseEdit(tool, emit);
-
-		} else { // Tool state is idle - just send coords
-			if (emit) emitTool(tool);
-		}
-	}
-
-	function handleLine(tool, emit) {
-		if (tool.state == "idle") {
-			if (emit) emitTool(tool);
-			return; // nothing to do when idle
-		}
-		if (tool.state == "start" || tool.state == "drawing") {
-
-			if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
-				drawLine(tool, emit);
-				lastEmit = $.now();
-			}
-			bumpCanvas(canvas);
-			
-		} else if (tool.state == "end") {
-			drawLine(tool, emit);
-			finaliseEdit(tool, emit);
-		}
-		if (emit) emitTool(tool);
 	}
 
 	// Draw line onto a canvas
