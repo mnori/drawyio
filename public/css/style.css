@@ -120,13 +120,6 @@ h1 {
 }
 
 #drawing_canvas {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-}
-
-/* canvas that the local user is drawing onto. Remote users draw onto seperate canvases */
-.drawing_canvas {
 	z-index: 100000000000009;
 	position: absolute;
 	top: 0px;

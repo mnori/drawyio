@@ -20,7 +20,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
 	var croppingCanvas = $("#crop_canvas");
-	var scratchCanvas = $("#scratch_canvas");
+	var scratchCanvas = $("#scratch_canvas"); // used by flood
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
@@ -187,6 +187,18 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		if (tool.state == "start" || tool.state == "drawing") {
 
+			if (tool.state == "start") {
+				// decides whether local or remote canvas
+				var thisCtx = getCanvasCtx(tool, emit); 
+				if (typeof(thisCtx.baseData) == "undefined") {
+					// Clear the canvas
+					thisCtx.clearRect(0, 0, width, height); 
+
+					// Initialise the base data cache
+					thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+				}
+			}
+
 			if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
 				drawLine(tool, emit);
 				lastEmit = $.now();
@@ -199,6 +211,25 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseEdit(tool, emit);
 		}
 		if (emit) emitTool(tool);
+	}
+
+	// Draw line onto a canvas
+	function drawLine(tool, emit) {
+
+		// This decides whether to use a local or a remote canvas
+		var thisCtx = getCanvasCtx(tool, emit); 
+
+		// Create a copy of the base data
+		var previewData = thisCtx.createImageData(width, height);
+		previewData.data.set(thisCtx.baseData.data.slice()); // slice() makes a copy of the array
+
+		// Draw a line over the cached data
+		var start = tool.meta.startCoord
+		var end = tool.newCoord;
+		plotLine(previewData.data, tool, start.x, start.y, end.x, end.y);
+
+		// Put the cached image data back into canvas DOM element
+		thisCtx.putImageData(previewData, 0, 0);
 	}
 
 	function setupControls() {
@@ -654,27 +685,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 	}
 
-	// Draw line onto a canvas
-	function drawLine(tool, emit) {
-		var startCoord = tool.meta.startCoord
-		var endCoord = tool.newCoord;
-
-		// decides whether local or remote canvas
-		var thisCtx = getCanvasCtx(tool, emit); 
-
-		// Clear the canvas
-		thisCtx.clearRect(0, 0, width, height); 
-
-		// Get data
-		var destData = thisCtx.getImageData(0, 0, width, height);
-
-		// Draw a line using the data
-		plotLine(destData.data, tool, startCoord.x, startCoord.y, endCoord.x, endCoord.y);
-
-		// Put the image data back into canvas DOM element
-		thisCtx.putImageData(destData, 0, 0);
-	}
-
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
@@ -722,7 +732,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var pointerElement = $("#drawing_pointer_"+sockID);
 
 		if (tool.newCoord == null) { // This pointer fading is broken, will fix later
-			fpointerElement.fadeOut(labelFadeOutMs, function() {
+			pointerElement.fadeOut(labelFadeOutMs, function() {
 				pointerElement.remove();
 			});
 			return;
