@@ -195,7 +195,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			
 		} else if (tool.state == "end") {
 			drawLine(tool, emit);
-			console.log("finalised");
+			console.log("!! finalised");
 			finaliseEdit(tool, emit);
 		}
 		if (emit) emitTool(tool);
@@ -331,13 +331,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.meta = {"lineEntries": [{"state": tool.state, "coord": tool.newCoord}]};
 			lastEmit = $.now();
 		} else if (tool.tool == "line") {
-			tool.meta = {startCoord: tool.newCoord}
+			initLine(tool);
 		} else { // tool does not have a data attribute
 			tool.meta = null;
 		}
 
 		addToolSettings();
 		handleAction(tool, true);
+	}
+
+	function initLine(tool) {
+		tool.meta = {startCoord: tool.newCoord}
 	}
 
 	// Stop drawing but only if already drawing
@@ -364,6 +368,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function resetDropperToggle() {
 		tool.dropperToggle = false;
 		tool.tool = tool.prevTool;
+		if (tool.tool == "line") {
+			initLine(tool)
+		}
 		toggleButtons(tool.tool);
 	}
 
@@ -672,6 +679,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
 		tool.state = "idle"
+
+		if (tool.tool == "line") { // line is not on rolling timeout
+			processCanvas(canvas[0], croppingCanvas[0], tool); 
+			tool.layerCode = null;
+			return;
+		}
+
 		if (emit) { // local user, not remote user
 			var toolOut = JSON.parse(JSON.stringify(tool));
 			toolOut.state = "end";
