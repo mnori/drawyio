@@ -14,8 +14,10 @@ function initSplash() {
 
 // Initialise the drawing image UI
 function initDrawing(drawIdIn, widthIn, heightIn) {
-	var paintEmitInterval = 33; 
-	var lineEmitInterval = 33; 
+	var emitInterval = 33;
+	var paintEmitInterval = emitInterval; 
+	var lineEmitInterval = emitInterval; 
+	var textEmitInterval = emitInterval; 
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -147,7 +149,46 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function handleText(tool, emit) {
-		console.log("handleText() invoked");
+		console.log("handleText() invoked"); 
+		// if start or moving, clear canvas and draw the text
+		var thisCtx = getCanvasCtx(tool, emit); 
+
+		if (tool.state == "idle" || tool.state == "start" || tool.state == "drawing") {
+			initBaseData(thisCtx); // only does it if there is no base data
+
+			drawText(tool, emit);
+			if ($.now() - lastEmit > textEmitInterval) { // throttle the line preview
+				lastEmit = $.now();
+				if (emit) emitTool(tool);
+			}
+			
+			bumpCanvas(canvas);
+		}
+	}
+
+	function drawText(tool, emit) {
+		// This decides whether to use a local or a remote canvas
+		var thisCtx = getCanvasCtx(tool, emit); 
+
+		// console.log("tool", tool);
+		// console.log("emit", emit);
+		// console.log("thisCtx", thisCtx);
+
+
+		// // Create a copy of the base data
+		// var previewData = thisCtx.createImageData(width, height);
+		// previewData.data.set(thisCtx.baseData.data.slice()); // slice() makes a copy of the array
+
+		// // Draw a line over the cached data
+		// var start = tool.meta.startCoord
+		// var end = tool.newCoord;
+		// plotLine(previewData.data, tool, start.x, start.y, end.x, end.y);
+
+		// Put the cached image data back into canvas DOM element, overwriting previous text
+		// preview
+		thisCtx.putImageData(thisCtx.baseData, 0, 0);
+		thisCtx.font = "30px Arial";
+		thisCtx.fillText("Hello world", tool.newCoord.x, tool.newCoord.y)
 	}
 
 	// free form drawing
@@ -198,10 +239,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var thisCtx = getCanvasCtx(tool, emit); 
 		if (tool.state == "start" || tool.state == "drawing") {
 
-			if (typeof(thisCtx.baseData) == "undefined") {
-				// Initialise the base data cache
-				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
-			}
+			initBaseData(thisCtx); // only does it if there is no base data
 
 			// This fix comes from the handlePaint method - stops the canvas from being
 			// cleared between clicks
@@ -224,6 +262,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseEdit(tool, emit);
 		}
 		if (emit) emitTool(tool);
+	}
+
+	function initBaseData(thisCtx) {
+		if (typeof(thisCtx.baseData) == "undefined") {
+			// Initialise the base data cache
+			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+		}
 	}
 
 	// Draw line onto a canvas
