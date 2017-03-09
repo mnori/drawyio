@@ -31,7 +31,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 1000; // for brush and line drawing
+	var finaliseTimeoutMs = 100; // for brush and line drawing
 
 	// Metadata about the action being performed
 	var tool = {
@@ -138,11 +138,19 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		} else if (tool.tool == "line") { // straight line
 			handleLine(tool, emit);
 
+		} else if (tool.tool == "text") { // text
+			handleText(tool, emit);
+
 		} else { // always emit those mouse coords
 			if (emit) emitTool(tool);
 		}
 	}
 
+	function handleText(tool, emit) {
+		console.log("handleText() invoked");
+	}
+
+	// free form drawing
 	function handlePaint(tool, emit) {
 		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
@@ -180,6 +188,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
+	// drawing a straight line
 	function handleLine(tool, emit) {
 		if (tool.state == "idle") {
 			if (emit) emitTool(tool);
@@ -190,16 +199,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (tool.state == "start" || tool.state == "drawing") {
 
 			if (typeof(thisCtx.baseData) == "undefined") {
-
-				console.log("Creating new base data!");
-
-				// Clear the canvas
-				thisCtx.clearRect(0, 0, width, height); 
-
 				// Initialise the base data cache
 				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			}
 
+			// This fix comes from the handlePaint method - stops the canvas from being
+			// cleared between clicks
 			if (emit) {
 				if (finaliseTimeout != null) { // prevent stuff getting overwritten
 					clearTimeout(finaliseTimeout);
