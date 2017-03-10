@@ -229,9 +229,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		initBaseData(thisCtx); // only does it if there is no base data
 
 		if (tool.state == "idle" || tool.state == "start") {
+			if (tool.state == "start") { // clear base data at the beginning
+				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+				if (emit) emitTool(tool); 
+			}
+
 			drawText(tool, emit);
 			if (emit) {
-				if (tool.state != "idle" && finaliseTimeout != null) { 
+				if (finaliseTimeout != null) { 
 					// prevent stuff getting overwritten
 					clearTimeout(finaliseTimeout);
 					finaliseTimeout = null;
@@ -245,7 +250,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		if (tool.state == "start") {
 			tool.state = "end"
-			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
 		}
 	}
