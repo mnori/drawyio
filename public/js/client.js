@@ -229,20 +229,20 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		if (tool.state == "idle" || tool.state == "start" || tool.state == "drawing") {
 			initBaseData(thisCtx); // only does it if there is no base data
-
 			drawText(tool, emit);
-			if ($.now() - lastEmit > textEmitInterval) { // throttle the line preview
-				lastEmit = $.now();
-				if (emit) emitTool(tool);
+			if (emit) {
+				if ($.now() - lastEmit > textEmitInterval) { // throttle preview
+					lastEmit = $.now();
+					emitTool(tool);
+				}
 			}
-			
 			bumpCanvas(canvas);
 		}
 	}
 
 	function drawText(tool, emit) {
-		if (tool.newCoord == null) {
-
+		if (tool.newCoord == null) { // mouse outside boundaries
+			return;
 		}
 
 		// This decides whether to use a local or a remote canvas
