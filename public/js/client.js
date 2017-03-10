@@ -238,6 +238,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 			bumpCanvas(canvas);
 		}
+		if (tool.state == "start") {
+			tool.state = "end"
+			// thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+			finaliseEdit(tool, emit);
+		}
 	}
 
 	function drawText(tool, emit) {
