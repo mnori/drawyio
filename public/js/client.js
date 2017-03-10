@@ -33,7 +33,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 1000; // for brush and line drawing
+	var finaliseTimeoutMs = 250; // mainly for brush and line drawing
 
 	// Metadata about the action being performed
 	var tool = {
@@ -300,7 +300,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Processing step
 				// Convert canvas to png and send to the server
 
-				if (tool.tool == "text") { // change canvas to the snapshot
+				if (tool.tool == "text" && typeof(ctx.baseData) !== "undefined") { 
+					// change canvas to the snapshot
+					// important to avoid preview issues
 					ctx.putImageData(ctx.baseData, 0, 0);
 				}
 
