@@ -33,7 +33,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 100; // for brush and line drawing
+	var finaliseTimeoutMs = 1000; // for brush and line drawing
 
 	// Metadata about the action being performed
 	var tool = {
@@ -756,6 +756,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 
 			finaliseTimeout = setTimeout(function() {
+				console.log("Reached finalise");
 				// Processing step
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
