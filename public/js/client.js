@@ -238,14 +238,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					clearTimeout(finaliseTimeout);
 					finaliseTimeout = null;
 				}
-				drawText(tool, emit);
-				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+
+				// draw text and save the snapshot
+				writeText(tool, emit);
 				if ($.now() - lastEmit > textEmitInterval) { // throttle preview
 					lastEmit = $.now();
 					emitTool(tool);
 				}
 			} else {
-				drawText(tool, emit);
+				writeText(tool, emit);
 			}
 			bumpCanvas(canvas);
 			tool.state = "end";
@@ -256,6 +257,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// 	finaliseEdit(tool, emit);
 		// 	thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 		// }
+	}
+
+	// write text to canvas, not for use with previews
+	function writeText(tool, emit) {
+		var thisCtx = drawText(tool, emit);
+		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 	}
 
 	function drawText(tool, emit) {
@@ -270,6 +277,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.putImageData(thisCtx.baseData, 0, 0);
 		thisCtx.font = "30px Arial";
 		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
+		return thisCtx;
 	}
 
 	// only does stuff for the local user
