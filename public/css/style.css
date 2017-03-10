@@ -229,16 +229,20 @@ h1 {
 }
 
 .button_form, .button_form:hover {
-	font-family: ubuntuBold;
+	font-family: ubuntuRegular;
 	width: auto;
 	height: auto;
-	font-size: 14px;
-	line-height: 14px;
+	font-size: 18px;
+	line-height: 18px;
 	vertical-align: middle;
 	text-decoration: none;
 	padding: 6px 10px 6px 10px;
 	margin-top: 12px;
 	margin-left: 12px;
+}
+
+.button_form_bold, .button_form_bold:hover, .button_form_bold:active {
+	font-family: ubuntuBold;
 }
 
 .button_form:active {

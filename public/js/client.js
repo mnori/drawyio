@@ -239,6 +239,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function drawText(tool, emit) {
+		if (tool.newCoord == null) {
+			
+		}
+
 		// This decides whether to use a local or a remote canvas
 		var thisCtx = getCanvasCtx(tool, emit); 
 
