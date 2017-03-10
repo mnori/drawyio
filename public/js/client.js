@@ -226,11 +226,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function handleText(tool, emit) {
 		// if start or moving, clear canvas and draw the text
 		var thisCtx = getCanvasCtx(tool, emit); 
+		initBaseData(thisCtx); // only does it if there is no base data
 
-		if (tool.state == "idle" || tool.state == "start" || tool.state == "drawing") {
-			initBaseData(thisCtx); // only does it if there is no base data
+		if (tool.state == "idle" || tool.state == "start") {
 			drawText(tool, emit);
 			if (emit) {
+				if (tool.state != "idle" && finaliseTimeout != null) { 
+					// prevent stuff getting overwritten
+					clearTimeout(finaliseTimeout);
+					finaliseTimeout = null;
+				}
 				if ($.now() - lastEmit > textEmitInterval) { // throttle preview
 					lastEmit = $.now();
 					emitTool(tool);
@@ -240,7 +245,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		if (tool.state == "start") {
 			tool.state = "end"
-			// thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
 		}
 	}
@@ -256,7 +261,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		thisCtx.putImageData(thisCtx.baseData, 0, 0);
 		thisCtx.font = "30px Arial";
-		thisCtx.fillText("Hello world", tool.newCoord.x, tool.newCoord.y)
+		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
 	}
 
 	// Draw a straight line onto a canvas
@@ -747,21 +752,24 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var toolOut = JSON.parse(JSON.stringify(tool));
 			toolOut.state = "end";
 			emitTool(toolOut);
-
 			if (tool.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
 				drawPaint(tool, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
 				clearTimeout(finaliseTimeout);
 			}
-
 			finaliseTimeout = setTimeout(function() {
 				console.log("Reached finalise");
 				// Processing step
 				// Convert canvas to png and send to the server
+
+				if (tool.tool == "text") { // change canvas to the snapshot
+					ctx.putImageData(ctx.baseData, 0, 0);
+				}
+
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				tool.layerCode = null;
-				if (tool.tool == "line") {
+				if (tool.tool == "line" || tool.tool == "text") {
 					delete ctx.baseData; // clean out the base data 
 				}
 			}, finaliseTimeoutMs);
