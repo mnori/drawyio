@@ -195,7 +195,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		var thisCtx = getCanvasCtx(tool, emit); 
 		if (tool.state == "start" || tool.state == "drawing") {
-
 			initBaseData(thisCtx); // only does it if there is no base data
 
 			// This fix comes from the handlePaint method - stops the canvas from being
@@ -224,34 +223,39 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// drawing text on the canvas
 	function handleText(tool, emit) {
+		if (tool.state == "idle") {
+			if (emit) emitTool(tool);
+			return; // nothing to do when idle, just emit the mouse coords
+		}
+
 		// if start or moving, clear canvas and draw the text
 		var thisCtx = getCanvasCtx(tool, emit); 
-		initBaseData(thisCtx); // only does it if there is no base data
-
-		if (tool.state == "idle" || tool.state == "start") {
-			if (tool.state == "start") { // clear base data at the beginning
-				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
-				if (emit) emitTool(tool); 
-			}
-
-			drawText(tool, emit);
+		if (tool.state == "start") {
+			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				if (finaliseTimeout != null) { 
 					// prevent stuff getting overwritten
 					clearTimeout(finaliseTimeout);
 					finaliseTimeout = null;
 				}
+				drawText(tool, emit);
+				thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 				if ($.now() - lastEmit > textEmitInterval) { // throttle preview
 					lastEmit = $.now();
 					emitTool(tool);
 				}
+			} else {
+				drawText(tool, emit);
 			}
 			bumpCanvas(canvas);
-		}
-		if (tool.state == "start") {
-			tool.state = "end"
+			tool.state = "end";
 			finaliseEdit(tool, emit);
 		}
+		// if (tool.state == "start") {
+		// 	tool.state = "end"
+		// 	finaliseEdit(tool, emit);
+		// 	thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+		// }
 	}
 
 	function drawText(tool, emit) {
@@ -266,6 +270,42 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.putImageData(thisCtx.baseData, 0, 0);
 		thisCtx.font = "30px Arial";
 		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
+	}
+
+	// only does stuff for the local user
+	// the actual processing step is on a rolling timeout
+	function finaliseEdit(tool, emit) {
+		tool.state = "idle"
+
+		if (emit) { // local user, not remote user
+			var toolOut = JSON.parse(JSON.stringify(tool));
+			toolOut.state = "end";
+			emitTool(toolOut);
+			if (tool.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
+				drawPaint(tool, true); // close the line last edit - resets line array	
+			}
+			if (finaliseTimeout != null) {
+				clearTimeout(finaliseTimeout);
+			}
+			finaliseTimeout = setTimeout(function() {
+				console.log("Reached finalise");
+				// Processing step
+				// Convert canvas to png and send to the server
+
+				if (tool.tool == "text") { // change canvas to the snapshot
+					ctx.putImageData(ctx.baseData, 0, 0);
+				}
+
+				processCanvas(canvas[0], croppingCanvas[0], tool); 
+				tool.layerCode = null;
+				if (tool.tool == "line" || tool.tool == "text") {
+					delete ctx.baseData; // clean out the base data 
+				}
+			}, finaliseTimeoutMs);
+
+		} else if (tool.tool == "paint") { // if got this far, we are the remote user
+			drawPaint(tool, false); // complete the line edit only
+		}
 	}
 
 	// Draw a straight line onto a canvas
@@ -745,42 +785,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				element.removeClass("button_pressed")
 			}
 		});
-	}
-
-	// only does stuff for the local user
-	// the actual processing step is on a rolling timeout
-	function finaliseEdit(tool, emit) {
-		tool.state = "idle"
-
-		if (emit) { // local user, not remote user
-			var toolOut = JSON.parse(JSON.stringify(tool));
-			toolOut.state = "end";
-			emitTool(toolOut);
-			if (tool.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
-				drawPaint(tool, true); // close the line last edit - resets line array	
-			}
-			if (finaliseTimeout != null) {
-				clearTimeout(finaliseTimeout);
-			}
-			finaliseTimeout = setTimeout(function() {
-				console.log("Reached finalise");
-				// Processing step
-				// Convert canvas to png and send to the server
-
-				if (tool.tool == "text") { // change canvas to the snapshot
-					ctx.putImageData(ctx.baseData, 0, 0);
-				}
-
-				processCanvas(canvas[0], croppingCanvas[0], tool); 
-				tool.layerCode = null;
-				if (tool.tool == "line" || tool.tool == "text") {
-					delete ctx.baseData; // clean out the base data 
-				}
-			}, finaliseTimeoutMs);
-
-		} else if (tool.tool == "paint") { // if got this far, we are the remote user
-			drawPaint(tool, false); // complete the line edit only
-		}
 	}
 
 	// emit a tool action
