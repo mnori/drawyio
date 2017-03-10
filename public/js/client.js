@@ -205,11 +205,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					clearTimeout(finaliseTimeout);
 					finaliseTimeout = null;
 				}
-			}
-
-			if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
+				drawLine(tool, emit); // always draw - gives smooth local
+				if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
+					emitTool(tool);
+					lastEmit = $.now();
+				}
+			} else { // not emitting - remote user
 				drawLine(tool, emit);
-				lastEmit = $.now();
 			}
 			bumpCanvas(canvas);
 			
@@ -218,9 +220,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
 		}
-		if (emit) emitTool(tool);
 	}
 
+	// drawing text on the canvas
 	function handleText(tool, emit) {
 		// if start or moving, clear canvas and draw the text
 		var thisCtx = getCanvasCtx(tool, emit); 
@@ -240,7 +242,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function drawText(tool, emit) {
 		if (tool.newCoord == null) {
-			
+
 		}
 
 		// This decides whether to use a local or a remote canvas
