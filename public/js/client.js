@@ -132,7 +132,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			emit && (tool.state == "start" || tool.state == "drawing")
 		) { 
 			eyedropper(tool); 
-			emitTool(tool); // still need to emit those mouse coords though
+			if (emit) emitTool(tool); // still need to emit those mouse coords though
 
 		} else if (tool.tool == "paint") { // wobbly line
 			handlePaint(tool, emit);
@@ -156,6 +156,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
+				// must put drawPaint in the interval, since it's quite a slow operation
 				if ($.now() - lastEmit > paintEmitInterval) { 
 					// reached interval
 					drawPaint(tool, emit); // draw onto canvas
@@ -201,8 +202,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				drawLine(tool, emit); // always draw - gives smooth local
 				if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
-					emitTool(tool);
 					lastEmit = $.now();
+					emitTool(tool);
 				}
 			} else { // not emitting - remote user
 				drawLine(tool, emit);
@@ -243,34 +244,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.state = "end";
 			finaliseEdit(tool, emit);
 		}
-		// if (tool.state == "start") {
-		// 	tool.state = "end"
-		// 	finaliseEdit(tool, emit);
-		// 	thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
-		// }
-	}
-
-	// write text to canvas, not for use with previews
-	function writeText(tool, emit) {
-		var thisCtx = drawText(tool, emit);
-		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
-	}
-
-	function drawText(tool, emit) {
-		if (tool.newCoord == null) { // mouse outside boundaries
-			return;
-		}
-
-		// This decides whether to use a local or a remote canvas
-		var thisCtx = getCanvasCtx(tool, emit); 
-
-		// Put cached image data back into canvas DOM element, overwriting earlier text preview
-		thisCtx.globalAlpha = 0.4; // just for testing
-		thisCtx.putImageData(thisCtx.baseData, 0, 0);
-		thisCtx.font = "30px Arial";
-		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
-		// thisCtx.globalAlpha = 1; // just for testing
-		return thisCtx;
 	}
 
 	// only does stuff for the local user
@@ -307,6 +280,30 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}, finaliseTimeoutMs);
 
 		}
+	}
+
+	// write text to canvas, not for use with previews
+	function writeText(tool, emit) {
+		var thisCtx = drawText(tool, emit);
+		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+	}
+
+	// Draw the text onto the canvas, only
+	function drawText(tool, emit) {
+		if (tool.newCoord == null) { // mouse outside boundaries
+			return;
+		}
+
+		// This decides whether to use a local or a remote canvas
+		var thisCtx = getCanvasCtx(tool, emit); 
+
+		// Put cached image data back into canvas DOM element, overwriting earlier text preview
+		thisCtx.globalAlpha = 0.4; // just for testing
+		thisCtx.putImageData(thisCtx.baseData, 0, 0);
+		thisCtx.font = "30px Arial";
+		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
+		// thisCtx.globalAlpha = 1; // just for testing
+		return thisCtx;
 	}
 
 	// Draw a straight line onto a canvas
