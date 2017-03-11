@@ -33,7 +33,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 250; // mainly for brush and line drawing
+	var finaliseTimeoutMs = 500; // mainly for brush and line drawing
 
 	// Metadata about the action being performed
 	var tool = {
@@ -153,10 +153,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
 				// prevent line drawings getting cut off by finaliser
-				if (finaliseTimeout != null) {
-					clearTimeout(finaliseTimeout);
-					finaliseTimeout = null;
-				}
+				clearFinalise();
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
 				if ($.now() - lastEmit > paintEmitInterval) { 
@@ -200,10 +197,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			// This fix comes from the handlePaint method - stops the canvas from being
 			// cleared between clicks
 			if (emit) {
-				if (finaliseTimeout != null) { // prevent stuff getting overwritten
-					clearTimeout(finaliseTimeout);
-					finaliseTimeout = null;
-				}
+				clearFinalise();
 				drawLine(tool, emit); // always draw - gives smooth local
 				if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
 					emitTool(tool);
@@ -233,11 +227,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (tool.state == "start") {
 			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
-				if (finaliseTimeout != null) { 
-					// prevent stuff getting overwritten
-					clearTimeout(finaliseTimeout);
-					finaliseTimeout = null;
-				}
+				clearFinalise();
 
 				// draw text and save the snapshot
 				writeText(tool, emit);
@@ -274,10 +264,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var thisCtx = getCanvasCtx(tool, emit); 
 
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
+		thisCtx.globalAlpha = 0.4; // just for testing
 		thisCtx.putImageData(thisCtx.baseData, 0, 0);
 		thisCtx.font = "30px Arial";
 		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
+		thisCtx.globalAlpha = 1; // just for testing
 		return thisCtx;
+
+
 	}
 
 	// only does stuff for the local user
@@ -366,6 +360,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Reset the coordinates cache
 		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
 		toolIn.meta.lineEntries = [lastEntry]
+	}
+
+	function clearFinalise() {
+		if (finaliseTimeout != null) { 
+			// prevent stuff getting overwritten
+			clearTimeout(finaliseTimeout);
+			finaliseTimeout = null;
+		}
 	}
 
 	function getCanvasCtx(toolIn, emit) {
