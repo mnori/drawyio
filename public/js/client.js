@@ -156,10 +156,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
-				drawPaint(tool, emit); // draw onto canvas
-
 				if ($.now() - lastEmit > paintEmitInterval) { 
 					// reached interval
+					drawPaint(tool, emit); // draw onto canvas
 					lastEmit = $.now();
 					emitTool(toolOut); // version of tool with line coords array
 
