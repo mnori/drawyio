@@ -156,9 +156,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
+				drawPaint(tool, emit); // draw onto canvas
+
 				if ($.now() - lastEmit > paintEmitInterval) { 
 					// reached interval
-					drawPaint(tool, emit); // draw onto canvas
 					lastEmit = $.now();
 					emitTool(toolOut); // version of tool with line coords array
 
@@ -176,6 +177,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			bumpCanvas(canvas);
 
 		} else if (tool.state == "end") { // mouseup or other line end event
+			drawPaint(tool, emit);
 			finaliseEdit(tool, emit);
 
 		} else { // Tool state is idle - just send coords
@@ -268,10 +270,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		thisCtx.putImageData(thisCtx.baseData, 0, 0);
 		thisCtx.font = "30px Arial";
 		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
-		thisCtx.globalAlpha = 1; // just for testing
+		// thisCtx.globalAlpha = 1; // just for testing
 		return thisCtx;
-
-
 	}
 
 	// only does stuff for the local user
@@ -307,8 +307,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				}
 			}, finaliseTimeoutMs);
 
-		} else if (tool.tool == "paint") { // if got this far, we are the remote user
-			drawPaint(tool, false); // complete the line edit only
 		}
 	}
 
