@@ -223,7 +223,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function handleText(tool, emit) {
 		if (tool.state == "idle") {
 			if (emit) emitTool(tool);
-			// console.log("state is idle!");
 			return; // nothing to do when idle, just emit the mouse coords
 		}
 
@@ -253,10 +252,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
 		if (emit) { // local user, not remote user
-			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
 			var thisCtx = getCanvasCtx(tool, emit); 
-			
-			toolOut.state = "end";
+			tool.state = "end";
+			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
+
 			emitTool(toolOut);
 			if (toolOut.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
 				drawPaint(toolOut, true); // close the line last edit - resets line array	
@@ -265,13 +264,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearTimeout(finaliseTimeout);
 			}
 			finaliseTimeout = setTimeout(function() {
-				console.log("Reached finalise with "+toolOut.tool);
-				console.log("meta", toolOut.meta);
 				// Processing step
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
 				toolOut.layerCode = null;
-				if (toolOut.tool == "text") {
+				if (toolOut.tool == "text" || toolOut.tool == "line") {
 					delete thisCtx.baseData; // clean out the base data 
 				}
 			}, finaliseTimeoutMs);
