@@ -189,7 +189,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		initBaseData(thisCtx); // only does it if there is no base data
 
 		if (toolIn.state == "idle") {
-			// if (emit) emitTool(toolIn);
+			if (emit) emitTool(toolIn);
 			drawText(toolIn, emit);
 			return; // nothing to do when idle, just emit the mouse coords
 		}
