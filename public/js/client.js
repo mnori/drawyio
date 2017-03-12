@@ -271,9 +271,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], toolOut); 
 				toolOut.layerCode = null;
-				if (/*toolOut.tool == "text" || */toolOut.tool == "line") {
-					delete thisCtx.baseData; // clean out the base data 
-				}
 			}, finaliseTimeoutMs);
 		}
 	}
@@ -979,9 +976,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
-	function processCanvas(sourceCanvas, croppingCanvas, tool) {
+	function processCanvas(sourceCanvas, croppingCanvas, toolIn) {
 
-		var layerCode = tool.layerCode; // must keep copy since it gets reset to null
+		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas);
 
 		// First generate a png blob
@@ -1005,7 +1002,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				ctx.clearRect(0, 0, width, height)
 
 				// Clear the baseData (for straight line drawings)
-				if (tool.tool == "line") {
+				if (toolIn.tool == "text" || toolIn.tool == "line") {
 					delete ctx.baseData; // clean out the base data 
 				}
 
