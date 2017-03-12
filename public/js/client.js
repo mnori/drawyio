@@ -150,44 +150,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	// free form drawing
-	function handlePaint(tool, emit) {
-		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
-			if (emit) { // local user
-				// prevent line drawings getting cut off by finaliser
-				clearFinalise();
-				var toolOut = JSON.parse(JSON.stringify(tool));
-
-				// must put drawPaint in the interval, since it's quite a slow operation
-				if ($.now() - lastEmit > paintEmitInterval) { 
-					// reached interval
-					drawPaint(tool, emit); // draw onto canvas
-					lastEmit = $.now();
-					emitTool(toolOut); // version of tool with line coords array
-
-				} else { 
-					// not reached interval
-					// remove line entries before sending to remote user
-					toolOut.meta.lineEntries = null;
-					emitTool(toolOut)
-				}
-
-			} else if (tool.meta.lineEntries != null) {
-				// remote user - draw the line using the data
-				drawPaint(tool, emit);
-			} 
-			bumpCanvas(canvas);
-
-		} else if (tool.state == "end") { // mouseup or other line end event
-			drawPaint(tool, emit);
-			finaliseEdit(tool, emit);
-			tool.state = "idle";
-
-		} else { // Tool state is idle - just send coords
-			if (emit) emitTool(tool);
-		}
-	}
-
 	// drawing a straight line
 	function handleLine(tool, emit) {
 		if (tool.state == "idle") {
@@ -253,6 +215,44 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
+	// free form drawing
+	function handlePaint(tool, emit) {
+		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
+			if (emit) { // local user
+				// prevent line drawings getting cut off by finaliser
+				clearFinalise();
+				var toolOut = JSON.parse(JSON.stringify(tool));
+
+				// must put drawPaint in the interval, since it's quite a slow operation
+				if ($.now() - lastEmit > paintEmitInterval) { 
+					// reached interval
+					drawPaint(tool, emit); // draw onto canvas
+					lastEmit = $.now();
+					emitTool(toolOut); // version of tool with line coords array
+
+				} else { 
+					// not reached interval
+					// remove line entries before sending to remote user
+					toolOut.meta.lineEntries = null;
+					emitTool(toolOut)
+				}
+
+			} else if (tool.meta.lineEntries != null) {
+				// remote user - draw the line using the data
+				drawPaint(tool, emit);
+			} 
+			bumpCanvas(canvas);
+
+		} else if (tool.state == "end") { // mouseup or other line end event
+			drawPaint(tool, emit);
+			finaliseEdit(tool, emit);
+			tool.state = "idle";
+
+		} else { // Tool state is idle - just send coords
+			if (emit) emitTool(tool);
+		}
+	}
+
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
@@ -307,10 +307,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// Draw a straight line onto a canvas
-	function drawLine(tool, emit) {
+	function drawLine(toolIn, emit) {
 
 		// This decides whether to use a local or a remote canvas
-		var thisCtx = getCanvasCtx(tool, emit); 
+		var thisCtx = getCanvasCtx(toolIn, emit); 
 
 		// Create a copy of the base data
 		var previewData = thisCtx.createImageData(width, height);
@@ -320,9 +320,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 
 		// Draw a line over the cached data
-		var start = tool.meta.startCoord
-		var end = tool.newCoord;
-		plotLine(previewData.data, tool, start.x, start.y, end.x, end.y);
+		var start = toolIn.meta.startCoord
+		var end = toolIn.newCoord;
+		plotLine(previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
 		// Put the cached image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
