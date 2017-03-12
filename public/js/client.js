@@ -184,20 +184,20 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// drawing text on the canvas
-	function handleText(tool, emit) {
-		if (tool.state == "idle") {
-			if (emit) emitTool(tool);
+	function handleText(toolIn, emit) {
+		if (toolIn.state == "idle") {
+			if (emit) emitTool(toolIn);
 			return; // nothing to do when idle, just emit the mouse coords
 		}
 
 		// if start or moving, clear canvas and draw the text
-		var thisCtx = getCanvasCtx(tool, emit); 
-		if (tool.state == "start") {
+		var thisCtx = getCanvasCtx(toolIn, emit); 
+		if (toolIn.state == "start") {
 			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				clearFinalise();
-				writeText(tool, emit); // draw text and save the snapshot
-				emitTool(tool); // emit the data as well
+				writeText(toolIn, emit); // draw text and save the snapshot
+				emitTool(toolIn); // emit the data as well
 
 				// We need a seperate preview method here for idling
 				// if ($.now() - lastEmit > textEmitInterval) { // throttle preview
@@ -205,14 +205,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					// emitTool(tool);
 				// }
 			} else {
-				writeText(tool, emit);
+				writeText(toolIn, emit);
 			}
 			bumpCanvas(canvas);
-			tool.state = "end";
-			finaliseEdit(tool, emit);
+			toolIn.state = "end";
+			finaliseEdit(toolIn, emit);
+		} else if (tool.state == "idle") {
+
 		}
-		if (tool.state == "end") {
-			tool.state = "idle";
+		if (toolIn.state == "end") {
+			toolIn.state = "idle";
 		}
 	}
 
@@ -259,7 +261,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
 		if (emit) { // local user, not remote user
-			console.log("finaliseEdit() emitting");
 			var thisCtx = getCanvasCtx(tool, emit); 
 			tool.state = "end";
 			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
@@ -280,7 +281,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					delete thisCtx.baseData; // clean out the base data 
 				}
 			}, finaliseTimeoutMs);
-
 		}
 	}
 
@@ -496,7 +496,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		tool.colourFg = colourPicker.spectrum("get").toRgbString();
 	}
 
-	// Start drawing
+	// Start drawing using the local tool
 	function startTool(coord) {
 		tool.newCoord = coord;
 		if (tool.newCoord == null) { // make sure mouse is within canvas
@@ -517,6 +517,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		} else if (tool.tool == "line") {
 			initLine(tool);
 		} else { // tool does not have a data attribute
+			console.log("startTool called with "+tool.tool)
 			tool.meta = null;
 		}
 
