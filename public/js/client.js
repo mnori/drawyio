@@ -244,6 +244,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			bumpCanvas(canvas);
 
 		} else if (tool.state == "end") { // mouseup or other line end event
+			if (emit) emitTool(tool);
 			drawPaint(tool, emit);
 			finaliseEdit(tool, emit);
 			tool.state = "idle";
