@@ -216,6 +216,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			drawLine(tool, emit);
 			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
+			tool.state = "idle";
 		}
 	}
 
@@ -254,6 +255,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (emit) { // local user, not remote user
 			var thisCtx = getCanvasCtx(tool, emit); 
 			tool.state = "end";
+			console.log("Is end!");
 			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
 
 			emitTool(toolOut);
