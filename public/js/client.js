@@ -223,7 +223,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function handleText(tool, emit) {
 		if (tool.state == "idle") {
 			if (emit) emitTool(tool);
-			console.log("state is idle!");
+			// console.log("state is idle!");
 			return; // nothing to do when idle, just emit the mouse coords
 		}
 
@@ -1000,10 +1000,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Clear the canvas
 				ctx.clearRect(0, 0, width, height)
 
-				// // Clear the baseData (for straight line drawings)
-				// if (tool.tool == "line" || tool.tool == "text") {
-				// 	delete ctx.baseData; // clean out the base data 
-				// }
+				// Clear the baseData (for straight line drawings)
+				if (tool.tool == "line") {
+					delete ctx.baseData; // clean out the base data 
+				}
 
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
