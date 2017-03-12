@@ -179,7 +179,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			drawLine(tool, emit);
 			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
-			tool.state = "idle";
+			tool.state = "idle"; // pretty important to avoid issues
 		}
 	}
 
@@ -196,13 +196,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				clearFinalise();
+				writeText(tool, emit); // draw text and save the snapshot
+				emitTool(tool); // emit the data as well
 
-				// draw text and save the snapshot
-				writeText(tool, emit);
-				if ($.now() - lastEmit > textEmitInterval) { // throttle preview
-					lastEmit = $.now();
-					emitTool(tool);
-				}
+				// We need a seperate preview method here for idling
+				// if ($.now() - lastEmit > textEmitInterval) { // throttle preview
+					// lastEmit = $.now();
+					// emitTool(tool);
+				// }
 			} else {
 				writeText(tool, emit);
 			}
@@ -244,10 +245,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			bumpCanvas(canvas);
 
 		} else if (tool.state == "end") { // mouseup or other line end event
-			if (emit) emitTool(tool);
+			if (emit) emitTool(tool); // be sure to emit the end event
 			drawPaint(tool, emit);
 			finaliseEdit(tool, emit);
-			tool.state = "idle";
+			tool.state = "idle"; // pretty important to avoid issues
 
 		} else { // Tool state is idle - just send coords
 			if (emit) emitTool(tool);
