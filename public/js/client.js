@@ -185,33 +185,27 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// drawing text on the canvas
 	function handleText(toolIn, emit) {
+		var thisCtx = getCanvasCtx(toolIn, emit); 
+		initBaseData(thisCtx); // only does it if there is no base data
+
 		if (toolIn.state == "idle") {
-			if (emit) emitTool(toolIn);
+			// if (emit) emitTool(toolIn);
+			drawText(toolIn, emit);
 			return; // nothing to do when idle, just emit the mouse coords
 		}
 
 		// if start or moving, clear canvas and draw the text
-		var thisCtx = getCanvasCtx(toolIn, emit); 
 		if (toolIn.state == "start") {
-			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				clearFinalise();
 				writeText(toolIn, emit); // draw text and save the snapshot
 				emitTool(toolIn); // emit the data as well
-
-				// We need a seperate preview method here for idling
-				// if ($.now() - lastEmit > textEmitInterval) { // throttle preview
-					// lastEmit = $.now();
-					// emitTool(tool);
-				// }
 			} else {
 				writeText(toolIn, emit);
 			}
 			bumpCanvas(canvas);
 			toolIn.state = "end";
 			finaliseEdit(toolIn, emit);
-		} else if (tool.state == "idle") {
-
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
@@ -277,7 +271,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], toolOut); 
 				toolOut.layerCode = null;
-				if (toolOut.tool == "text" || toolOut.tool == "line") {
+				if (/*toolOut.tool == "text" || */toolOut.tool == "line") {
 					delete thisCtx.baseData; // clean out the base data 
 				}
 			}, finaliseTimeoutMs);
@@ -983,7 +977,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	// Converts canvas to various useful things
+	// Turn a canvas into an image which is then sent to the server
+	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(sourceCanvas, croppingCanvas, tool) {
 
 		var layerCode = tool.layerCode; // must keep copy since it gets reset to null
