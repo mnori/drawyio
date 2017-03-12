@@ -181,6 +181,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		} else if (tool.state == "end") { // mouseup or other line end event
 			drawPaint(tool, emit);
 			finaliseEdit(tool, emit);
+			tool.state = "idle";
 
 		} else { // Tool state is idle - just send coords
 			if (emit) emitTool(tool);
@@ -247,19 +248,22 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.state = "end";
 			finaliseEdit(tool, emit);
 		}
+		if (tool.state == "end") {
+			tool.state = "idle";
+		}
 	}
 
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
 		if (emit) { // local user, not remote user
+			console.log("finaliseEdit() emitting");
 			var thisCtx = getCanvasCtx(tool, emit); 
 			tool.state = "end";
-			console.log("Is end!");
 			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
 
 			emitTool(toolOut);
-			if (toolOut.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
+			if (toolOut.tool == "paint" && toolOut.meta != null && toolOut.meta.lineEntries != null) {
 				drawPaint(toolOut, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
@@ -268,7 +272,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				// Processing step
 				// Convert canvas to png and send to the server
-				processCanvas(canvas[0], croppingCanvas[0], tool); 
+				processCanvas(canvas[0], croppingCanvas[0], toolOut); 
 				toolOut.layerCode = null;
 				if (toolOut.tool == "text" || toolOut.tool == "line") {
 					delete thisCtx.baseData; // clean out the base data 
@@ -310,7 +314,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Create a copy of the base data
 		var previewData = thisCtx.createImageData(width, height);
-		previewData.data.set(thisCtx.baseData.data.slice()); // slice() makes a copy of the array
+
+		if (typeof(thisCtx.baseData) !== "undefined") {
+			previewData.data.set(thisCtx.baseData.data.slice()); // slice() makes a copy of the array
+		}
 
 		// Draw a line over the cached data
 		var start = tool.meta.startCoord
