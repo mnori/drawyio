@@ -132,7 +132,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			emit && (tool.state == "start" || tool.state == "drawing")
 		) { 
 			eyedropper(tool); 
-			if (emit) emitTool(tool); // still need to emit those mouse coords though
+
+			// still need to emit those mouse coords though - for the cursor update on the remote
+			if (emit) emitTool(tool); 
 
 		} else if (tool.tool == "paint") { // wobbly line
 			handlePaint(tool, emit);
@@ -221,6 +223,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function handleText(tool, emit) {
 		if (tool.state == "idle") {
 			if (emit) emitTool(tool);
+			console.log("state is idle!");
 			return; // nothing to do when idle, just emit the mouse coords
 		}
 
@@ -249,33 +252,27 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
-		tool.state = "idle"
-
 		if (emit) { // local user, not remote user
-			var toolOut = JSON.parse(JSON.stringify(tool));
+			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
+			var thisCtx = getCanvasCtx(tool, emit); 
+			
 			toolOut.state = "end";
 			emitTool(toolOut);
-			if (tool.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
-				drawPaint(tool, true); // close the line last edit - resets line array	
+			if (toolOut.tool == "paint" && tool.meta != null && tool.meta.lineEntries != null) {
+				drawPaint(toolOut, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
 				clearTimeout(finaliseTimeout);
 			}
 			finaliseTimeout = setTimeout(function() {
-				console.log("Reached finalise");
+				console.log("Reached finalise with "+toolOut.tool);
+				console.log("meta", toolOut.meta);
 				// Processing step
 				// Convert canvas to png and send to the server
-
-				if (tool.tool == "text" && typeof(ctx.baseData) !== "undefined") { 
-					// change canvas to the snapshot
-					// important to avoid preview issues
-					ctx.putImageData(ctx.baseData, 0, 0);
-				}
-
 				processCanvas(canvas[0], croppingCanvas[0], tool); 
-				tool.layerCode = null;
-				if (tool.tool == "line" || tool.tool == "text") {
-					delete ctx.baseData; // clean out the base data 
+				toolOut.layerCode = null;
+				if (toolOut.tool == "text") {
+					delete thisCtx.baseData; // clean out the base data 
 				}
 			}, finaliseTimeoutMs);
 
@@ -1003,7 +1000,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Clear the canvas
 				ctx.clearRect(0, 0, width, height)
 
-				// Clear the baseData (for straight line drawings)
+				// // Clear the baseData (for straight line drawings)
+				// if (tool.tool == "line" || tool.tool == "text") {
+				// 	delete ctx.baseData; // clean out the base data 
+				// }
+
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
 				fr.readAsDataURL(blob); 
