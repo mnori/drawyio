@@ -206,9 +206,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 
 		if (toolIn.state == "idle") {
-			initBaseData(thisCtx); // only does it if there is no base data
+			// initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) emitTool(toolIn);
-			drawText(toolIn, emit);
+			// drawText(toolIn, emit);
 			return; // nothing to do when idle, just emit the mouse coords
 		}
 	}
@@ -1036,27 +1036,17 @@ function cropCanvas(sourceCanvas, destCanvas, toolIn) {
     var imgWidth = sourceCanvas.width, 
     	imgHeight = sourceCanvas.height;
 
- //    // gotta swap the data around to get the correct crop when it's the text tool
-	// if (toolIn.tool == "text") {
-	// 	var previewData = ctx.getImageData(0, 0, width, height);
-	// 	ctx.putImageData(ctx.baseData, 0, 0);
+	var imageData = context.getImageData(0, 0, imgWidth, imgHeight);
+	
+	// attempt at getting text to work	
+	// if (toolIn.tool == "text") { 
+	// 	// with text, we have to be careful to avoid copying preview data
+	// 	// so use the baseData - only contains written edits
+	// 	imageData = context.baseData; 
+	// } else {
+	// 	// for other tools, just grab the canvas data
+	// 	imageData = context.getImageData(0, 0, width, height);
 	// }
-	// var cropCoords = cropCanvas(sourceCanvas, croppingCanvas, toolIn);
-
-	// // swap data back, preserving the preview - prevents preview from flickering
-	// if (toolIn.tool == "text") {
-	// 	ctx.putImageData(previewData, 0, 0);
-	// }
-
-	var imageData;
-	if (toolIn.tool == "text") { 
-		// with text, we have to be careful to avoid copying preview data
-		// so use the baseData - only contains written edits
-		imageData = context.baseData; 
-	} else {
-		// for other tools, just grab the canvas data
-		imageData = context.getImageData(0, 0, width, height);
-	}
 
     var data = imageData.data,
         hasData = function (x, y) {
