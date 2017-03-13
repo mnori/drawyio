@@ -120,11 +120,8 @@ h1 {
 }
 
 /* canvas that the local user is drawing onto. Remote users draw onto seperate canvases */
-#drawing_canvas, #preview_canvas {
+#drawing_canvas, #drawing_canvas_preview {
 	z-index: 100000000000009; /* same z-index, but preview will draw on top of drawing canvas */
-	position: absolute;
-	top: 0px;
-	left: 0px;
 }
 
 .drawing_canvas {

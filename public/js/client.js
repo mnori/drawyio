@@ -21,7 +21,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
-	var previewCanvas = $("#preview_canvas");
+	var previewCanvas = $("#drawing_canvas_preview");
 	var croppingCanvas = $("#crop_canvas");
 	var scratchCanvas = $("#scratch_canvas"); // used by flood
 	var ctx = canvas[0].getContext('2d'); // the user editable element
@@ -158,7 +158,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			return; // nothing to do when idle
 		}
 
-		var thisCtx = getCanvasCtx(tool, emit); 
+		var thisCtx = getDrawCtx(tool, emit); 
 		if (tool.state == "start" || tool.state == "drawing") {
 			initBaseData(thisCtx); // only does it if there is no base data
 
@@ -186,7 +186,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// drawing text on the canvas
 	function handleText(toolIn, emit) {
-		var thisCtx = getCanvasCtx(toolIn, emit); 
+		var thisCtx = getDrawCtx(toolIn, emit); 
 
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
@@ -257,7 +257,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(tool, emit) {
 		if (emit) { // local user, not remote user
-			var thisCtx = getCanvasCtx(tool, emit); 
+			var thisCtx = getDrawCtx(tool, emit); 
 			tool.state = "end";
 			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
 
@@ -293,7 +293,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 
 		// This decides whether to use a local or a remote canvas
-		// var thisCtx = getCanvasCtx(tool, emit); 
+		// var thisCtx = getDrawCtx(tool, emit); 
 
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		thisCtx.globalAlpha = 0.4; // just for testing
@@ -308,7 +308,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function drawLine(toolIn, emit) {
 
 		// This decides whether to use a local or a remote canvas
-		var thisCtx = getCanvasCtx(toolIn, emit); 
+		var thisCtx = getDrawCtx(toolIn, emit); 
 
 		// Create a copy of the base data
 		var previewData = thisCtx.createImageData(width, height);
@@ -332,7 +332,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			console.log("Warning -> drawPaint called without data!");
 			return;
 		}
-		var thisCtx = getCanvasCtx(toolIn, emit);
+		var thisCtx = getDrawCtx(toolIn, emit);
 		var destData = thisCtx.getImageData(0, 0, width, height);
 
 		var entries = toolIn.meta.lineEntries;
@@ -365,14 +365,26 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	function getCanvasCtx(toolIn, emit) {
+	function getDrawCtx(toolIn, emit, suffix) {
+		if (typeof(suffix) == "undefined") {
+			suffix = "";
+		}
 		var thisCtx = ctx;
 		if (!emit) { // if it came from remote user, draw on a different canvas
-			var remoteCanvas = createRemoteCanvas(toolIn);
+			var remoteCanvas = getRemoteCanvas(toolIn, suffix);
 			thisCtx = remoteCanvas[0].getContext("2d");
 		}
 		return thisCtx;
 	}
+
+	// function getPreviewCtx(toolIn, emit) {
+	// 	var thisCtx = ctx;
+	// 	if (!emit) { // if it came from remote user, draw on a different canvas
+	// 		var remoteCanvas = getRemoteCanvas(toolIn+"_preview");
+	// 		thisCtx = remoteCanvas[0].getContext("2d");
+	// 	}
+	// 	return thisCtx;	
+	// }
 
 	function initBaseData(thisCtx) {
 		if (typeof(thisCtx.baseData) == "undefined") {
@@ -893,28 +905,46 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		return mousePos;
 	}
 
-	function createRemoteCanvas(tool) {
+	// Return existing remote canvas. Also bumps the canvas's z-index
+	function getRemoteCanvas(tool, suffix) {
 		var canvasID = "canvas_layer_"+tool.layerCode
 		var existingCanvas = $("#"+canvasID);	
-		if (existingCanvas.length == 0) {
-			var buf = 
-				"<canvas id=\""+canvasID+"\" "+
-					"width=\""+width+"\" height=\""+height+"\" "+
-					"style=\"z-index: 9000;\" "+
-					"class=\"drawing_canvas\"> "+
-				"</canvas>";
-			$("#drawing_layers").append(buf)
-			existingCanvas = $("#"+canvasID);
+		if (existingCanvas.length == 0) { // canva
+			createRemoteCanvas();
+			existingCanvas = $("#"+canvasID+suffix);	
 		}
-		bumpCanvas(existingCanvas);
+		bumpCanvas(existingCanvas); // also bumps preview canvas
 		return existingCanvas;
 	}
 
+	function createRemoteCanvas() {
+		var buf = 
+			"<canvas id=\""+canvasID+"\" "+
+				"width=\""+width+"\" height=\""+height+"\" "+
+				"style=\"z-index: 0;\" "+ // bumpCanvas will take care of the z-index
+				"class=\"drawing_canvas\"> "+
+			"</canvas>"+
+
+			// this is the preview canvas
+			// because it's situated above the drawing canvas, it will always be displayed
+			// above it in the stacking order. So we don't need to worry about making space
+			// in the z-indexes.
+			"<canvas id=\""+canvasID+"_preview\" "+
+				"width=\""+width+"\" height=\""+height+"\" "+
+				"style=\"z-index: 0;\" "+ // bumpCanvas will take care of the z-index
+				"class=\"drawing_canvas\"> "+
+			"</canvas>";
+		$("#drawing_layers").append(buf)
+	}
+
 	function bumpCanvas(canvasElement) {
+		var previewElement = $("#"+canvasElement.attr("id")+"_preview");
+
 		$(".drawing_canvas").each(function() { // shift everything else -1 on zindex
 			var element = $(this);
 			var zIndex = parseInt(element.css("z-index")) - 1;
 			element.css("z-index", zIndex);
+			previewElement.css("z-index", zIndex);
 		});
 		canvasElement.css("z-index", canvasCeiling);
 	}
