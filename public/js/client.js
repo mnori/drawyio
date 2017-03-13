@@ -85,6 +85,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			tool.newCoord = getMousePos(ev);
 
 			// create new layer code if required
+			// note this should be in mousemove, since we need to generate a new layer code
+			// for idle previews, like with the text
 			if (tool.layerCode == null) { 
 				tool.layerCode = randomString(layerCodeLen);
 				console.log(tool.layerCode);
@@ -324,6 +326,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Draw a line over the cached data
 		var start = toolIn.meta.startCoord
+		if (start == null) {
+			return;
+		}
 		var end = toolIn.newCoord;
 		plotLine(previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
