@@ -194,39 +194,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	// drawing text on the canvas
-	function handleText(toolIn, emit) {
-		var thisCtx = getDrawCtx(toolIn, emit); 
-
-		// if start or moving, clear canvas and draw the text
-		if (toolIn.state == "start") {
-
-			if (!emit) console.log("handleText() remote start");
-
-			initBaseData(thisCtx); // only does it if there is no base data
-			if (emit) {
-				clearFinalise();
-				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
-				emitTool(toolIn); // put back
-				bumpCanvas(canvas);
-			} else {
-				drawText(toolIn, emit, thisCtx);
-			} 
-			toolIn.state = "end";
-			finaliseEdit(toolIn, emit);
-
-		} else if (tool.state == "idle") {
-			// initBaseData(thisCtx); // only does it if there is no base data
-			if (emit) emitTool(toolIn); // put back
-			var previewCtx = getDrawCtx(toolIn, emit, "_preview");
-			previewCtx.clearRect(0, 0, width, height); // Clear the canvas
-			drawText(toolIn, emit, previewCtx);
-		}
-		if (toolIn.state == "end") {
-			toolIn.state = "idle";
-		}
-	}
-
 	// free form drawing
 	function handlePaint(tool, emit) {
 		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
@@ -266,6 +233,39 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
+		// drawing text on the canvas
+	function handleText(toolIn, emit) {
+		var thisCtx = getDrawCtx(toolIn, emit); 
+
+		// if start or moving, clear canvas and draw the text
+		if (toolIn.state == "start") {
+			if (!emit) console.log("handleText() remote start");
+			
+			// initBaseData(thisCtx); // only does it if there is no base data
+			if (emit) {
+				clearFinalise();
+				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
+				emitTool(toolIn); // put back
+				bumpCanvas(canvas);
+			} else {
+				if (!emit) console.log("handleText remote drawText()");
+				drawText(toolIn, emit, thisCtx);
+			} 
+			toolIn.state = "end";
+			finaliseEdit(toolIn, emit);
+
+		} else if (tool.state == "idle") {
+			// initBaseData(thisCtx); // only does it if there is no base data
+			if (emit) emitTool(toolIn); // put back
+			var previewCtx = getDrawCtx(toolIn, emit, "_preview");
+			previewCtx.clearRect(0, 0, width, height); // Clear the canvas
+			drawText(toolIn, emit, previewCtx);
+		}
+		if (toolIn.state == "end") {
+			toolIn.state = "idle";
+		}
+	}
+
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(toolIn, emit) {
@@ -283,9 +283,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				// Processing step
 				// Convert canvas to png and send to the server
-
-				// must set to basedata to avoid a ghost text
-				processCanvas(canvas[0], croppingCanvas[0], toolOut, thisCtx); 
+				processCanvas(canvas[0], croppingCanvas[0], toolOut, thisCtx);
 				toolIn.layerCode = null;
 			}, finaliseTimeoutMs);
 		}
@@ -536,7 +534,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		} else if (tool.tool == "line") {
 			initLine(tool);
 		} else { // tool does not have a data attribute
-			console.log("startTool called with "+tool.tool)
 			tool.meta = null;
 		}
 
@@ -984,6 +981,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Get duplicate layer with same ID and rename its ID
 		context.duplicate = getLayerByCode(context.layer.code);	
+		context.previewDuplicate = getLayerByCode(context.layer.code+"_preview");
 		if (context.duplicate != null) {
 			context.duplicate.attr("id", "duplicate_temp");
 		}
@@ -1008,14 +1006,24 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (typeof(context.layer["components"]) !== "undefined") {
 				var codes = context.layer["components"]
 				for (var i = 0; i < codes.length; i++) {
+
+					// Delete component layers
 					var layer = getLayerByCode(codes[i]);
 					if (layer != null) {
 						layer.remove();
 					}
+					var previewLayer = getLayerByCode(codes[i]);
+					if (previewLayer != null) {
+						previewLayer.remove();
+					}
 				}
 			}
 			if (context.duplicate != null) {
+				// Delete duplicate layer
 				context.duplicate.remove();
+			}
+			if (context.previewDuplicate != null) {
+				context.previewDuplicate.remove();
 			}
 		});
 
