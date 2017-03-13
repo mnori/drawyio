@@ -7,12 +7,13 @@
 	<div id="drawing_form">	
 		<div id="drawing_container">
 			<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
-				<canvas id="drawing_canvas" class="drawing_canvas" width="{{ width }}" height="{{ height }}">
-					Canvas not supported :(
-				</canvas>
+				<canvas id="drawing_canvas" class="drawing_canvas" width="{{ width }}" height="{{ height }}"></canvas>
+				<!-- because preview_canvas is after drawing canvas, it will display over the top -->
+				<canvas id="preview_canvas" style="display: none;"></canvas>
 			</div>
 			<canvas id="crop_canvas" style="display: none;"></canvas>
 			<canvas id="scratch_canvas" style="display: none;"></canvas>
+
 		</div>
 		<div id="controls">
 			<input id="colour_picker" value="#000" />

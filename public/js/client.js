@@ -21,6 +21,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
+	var previewCanvas = $("#preview_canvas");
 	var croppingCanvas = $("#crop_canvas");
 	var scratchCanvas = $("#scratch_canvas"); // used by flood
 	var ctx = canvas[0].getContext('2d'); // the user editable element
@@ -192,10 +193,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				clearFinalise();
-				writeText(toolIn, emit); // draw text and save the snapshot
-				emitTool(toolIn); // emit the data as well
+				writeText(toolIn, emit, thisCtx); // draw text and save the snapshot
+				// emitTool(toolIn); // put back
 			} else {
-				writeText(toolIn, emit);
+				writeText(toolIn, emit, thisCtx);
 			} 
 			bumpCanvas(canvas);
 			toolIn.state = "end";
@@ -207,8 +208,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		if (toolIn.state == "idle") {
 			// initBaseData(thisCtx); // only does it if there is no base data
-			if (emit) emitTool(toolIn);
-			// drawText(toolIn, emit);
+			// if (emit) emitTool(toolIn); // put back
+			drawText(toolIn, emit, thisCtx);
 			return; // nothing to do when idle, just emit the mouse coords
 		}
 	}
@@ -279,23 +280,24 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// write text to canvas, not for use with previews
-	function writeText(tool, emit) {
-		var thisCtx = drawText(tool, emit);
-		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+	function writeText(tool, emit, thisCtx) {
+		drawText(tool, emit, thisCtx);
+		// thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 	}
 
+	// can pass in either a preview or a drawing canvas context
 	// Draw the text onto the canvas, only
-	function drawText(tool, emit) {
+	function drawText(tool, emit, thisCtx) {
 		if (tool.newCoord == null) { // mouse outside boundaries
 			return;
 		}
 
 		// This decides whether to use a local or a remote canvas
-		var thisCtx = getCanvasCtx(tool, emit); 
+		// var thisCtx = getCanvasCtx(tool, emit); 
 
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		thisCtx.globalAlpha = 0.4; // just for testing
-		thisCtx.putImageData(thisCtx.baseData, 0, 0);
+		// thisCtx.putImageData(thisCtx.baseData, 0, 0);
 		thisCtx.font = "30px Arial";
 		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
 		// thisCtx.globalAlpha = 1; // just for testing
