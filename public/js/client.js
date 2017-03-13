@@ -90,7 +90,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			// for idle previews, like with the text
 			if (tool.layerCode == null) { 
 				tool.layerCode = randomString(layerCodeLen);
-				console.log(tool.layerCode);
 			}
 
 			// keep high resolution map of line entries for processing at intervals
@@ -232,29 +231,24 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-		// drawing text on the canvas
+	// drawing text on the canvas
 	function handleText(toolIn, emit) {
 		var thisCtx = getDrawCtx(toolIn, emit); 
 
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
-			if (!emit) console.log("handleText() remote start");
-			
-			// initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
-				emitTool(toolIn); // put back
+				emitTool(toolIn);
 			} else {
-				if (!emit) console.log("handleText remote drawText()");
 				drawText(toolIn, emit, thisCtx);
 			} 
 			toolIn.state = "end";
 			finaliseEdit(toolIn, emit);
 
 		} else if (tool.state == "idle") {
-			// initBaseData(thisCtx); // only does it if there is no base data
-			if (emit) emitTool(toolIn); // put back
+			if (emit) emitTool(toolIn);
 			var previewCtx = getDrawCtx(toolIn, emit, "_preview");
 			previewCtx.clearRect(0, 0, width, height); // Clear the canvas
 			drawText(toolIn, emit, previewCtx);
@@ -291,6 +285,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Draw the text onto the canvas, only
 	function drawText(tool, emit, thisCtx) {
 		if (tool.newCoord == null) { // mouse outside boundaries
+			thisCtx.clearRect(0, 0, width, height); // Clear the canvas
 			return;
 		}
 
@@ -387,14 +382,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		return thisCtx;
 	}
 
-	// function getPreviewCtx(toolIn, emit) {
-	// 	var thisCtx = ctx;
-	// 	if (!emit) { // if it came from remote user, draw on a different canvas
-	// 		var remoteCanvas = getRemoteCanvas(toolIn+"_preview");
-	// 		thisCtx = remoteCanvas[0].getContext("2d");
-	// 	}
-	// 	return thisCtx;	
-	// }
+	// Return existing remote canvas. Also bumps the canvas's z-index
+	function getRemoteCanvas(tool, suffix) {
+		var canvasID = "canvas_layer_"+tool.layerCode+suffix;
+		var existingCanvas = $("#"+canvasID);
+		if (existingCanvas.length == 0) {
+			createRemoteCanvas(canvasID);
+			existingCanvas = $("#"+canvasID);	
+		}
+		bumpCanvas(existingCanvas); // also bumps preview canvas
+		return existingCanvas;
+	}
 
 	function initBaseData(thisCtx) {
 		if (typeof(thisCtx.baseData) == "undefined") {
@@ -909,18 +907,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// mousePos.x += 0.01;
 		// mousePos.y += 0.01;
 		return mousePos;
-	}
-
-	// Return existing remote canvas. Also bumps the canvas's z-index
-	function getRemoteCanvas(tool, suffix) {
-		var canvasID = "canvas_layer_"+tool.layerCode
-		var existingCanvas = $("#"+canvasID);	
-		if (existingCanvas.length == 0) { // canva
-			createRemoteCanvas(canvasID);
-			existingCanvas = $("#"+canvasID+suffix);	
-		}
-		bumpCanvas(existingCanvas); // also bumps preview canvas
-		return existingCanvas;
 	}
 
 	function createRemoteCanvas(canvasID) {
