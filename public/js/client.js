@@ -25,6 +25,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var croppingCanvas = $("#crop_canvas");
 	var scratchCanvas = $("#scratch_canvas"); // used by flood
 	var ctx = canvas[0].getContext('2d'); // the user editable element
+	var previewCtx = previewCanvas[0].getContext('2d'); // the user editable element
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
 	var layerCodeLen = 32;
@@ -38,7 +39,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Metadata about the action being performed
 	var tool = {
-		data: null, // .meta.lineEntries: null,
+		data: null,
 		state: "idle",
 		tool: "paint"
 	};
@@ -48,7 +49,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var body = $("body");
 
 		// Handle mouse down.
-		canvas.mousedown(function(ev) {
+		previewCanvas.mousedown(function(ev) {
 			colourPicker.spectrum("get");
 			pickerToToolColour();
 			colourPicker.spectrum("hide");
@@ -60,7 +61,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});	
 
 		// Right click activates the eye dropper - not the contex menu
-		canvas.contextmenu(function(ev) { return false; });
+		previewCanvas.contextmenu(function(ev) { return false; });
 
 		// key bindings
 		body.keydown(function(ev) {
@@ -79,7 +80,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 
 		// Handle mouse move. 
-		canvas.mousemove(function(ev) {
+		previewCanvas.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
 			tool.newCoord = getMousePos(ev);
 
@@ -100,9 +101,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 		});
 
-		// stop drawing if mouse up or mouse leaves canvas
+		// stop drawing if mouse up or mouse leaves previewCanvas
 		body.mouseup(stopTool);
-		canvas.mouseleave(stopTool);
+		previewCanvas.mouseleave(stopTool);
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
@@ -194,23 +195,23 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) {
 				clearFinalise();
 				writeText(toolIn, emit, thisCtx); // draw text and save the snapshot
-				// emitTool(toolIn); // put back
+				emitTool(toolIn); // put back
 			} else {
 				writeText(toolIn, emit, thisCtx);
 			} 
 			bumpCanvas(canvas);
 			toolIn.state = "end";
 			finaliseEdit(toolIn, emit);
+
+		} else if (tool.state == "idle") {
+			// initBaseData(thisCtx); // only does it if there is no base data
+			if (emit) emitTool(toolIn); // put back
+			var previewCtx = getDrawCtx(toolIn, emit, "_preview");
+			previewCtx.clearRect(0, 0, width, height); // Clear the canvas
+			writeText(toolIn, emit, previewCtx);
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
-		}
-
-		if (toolIn.state == "idle") {
-			// initBaseData(thisCtx); // only does it if there is no base data
-			// if (emit) emitTool(toolIn); // put back
-			drawText(toolIn, emit, thisCtx);
-			return; // nothing to do when idle, just emit the mouse coords
 		}
 	}
 
@@ -369,8 +370,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (typeof(suffix) == "undefined") {
 			suffix = "";
 		}
-		var thisCtx = ctx;
-		if (!emit) { // if it came from remote user, draw on a different canvas
+		var thisCtx;
+		if (emit) {
+			thisCtx = ctx; // the local user's drawing context
+			if (suffix == "_preview") {
+				thisCtx = previewCtx; // local user's preview context
+			}
+		} else { // if it came from remote user, draw on a different canvas
 			var remoteCanvas = getRemoteCanvas(toolIn, suffix);
 			thisCtx = remoteCanvas[0].getContext("2d");
 		}
@@ -910,14 +916,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var canvasID = "canvas_layer_"+tool.layerCode
 		var existingCanvas = $("#"+canvasID);	
 		if (existingCanvas.length == 0) { // canva
-			createRemoteCanvas();
+			createRemoteCanvas(canvasID);
 			existingCanvas = $("#"+canvasID+suffix);	
 		}
 		bumpCanvas(existingCanvas); // also bumps preview canvas
 		return existingCanvas;
 	}
 
-	function createRemoteCanvas() {
+	function createRemoteCanvas(canvasID) {
 		var buf = 
 			"<canvas id=\""+canvasID+"\" "+
 				"width=\""+width+"\" height=\""+height+"\" "+
@@ -927,8 +933,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 			// this is the preview canvas
 			// because it's situated above the drawing canvas, it will always be displayed
-			// above it in the stacking order. So we don't need to worry about making space
-			// in the z-indexes.
+			// above it in the stacking order. So we don't need to worry about z-index being
+			// the same as the preview element.
+			// Good explanation can be found here
+			// https://philipwalton.com/articles/what-no-one-told-you-about-z-index/
 			"<canvas id=\""+canvasID+"_preview\" "+
 				"width=\""+width+"\" height=\""+height+"\" "+
 				"style=\"z-index: 0;\" "+ // bumpCanvas will take care of the z-index
@@ -944,7 +952,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			var element = $(this);
 			var zIndex = parseInt(element.css("z-index")) - 1;
 			element.css("z-index", zIndex);
-			previewElement.css("z-index", zIndex);
+			// previewElement.css("z-index", zIndex);
 		});
 		canvasElement.css("z-index", canvasCeiling);
 	}
