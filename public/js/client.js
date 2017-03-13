@@ -283,7 +283,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// write text to canvas, not for use with previews
 	function writeText(tool, emit, thisCtx) {
 		drawText(tool, emit, thisCtx);
-		// thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 	}
 
 	// can pass in either a preview or a drawing canvas context
@@ -1047,7 +1046,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				ctx.clearRect(0, 0, width, height)
 
 				// Clear the baseData
-				if (toolIn.tool == "text" || toolIn.tool == "line") {
+				if (toolIn.tool == "line") {
 					delete ctx.baseData;
 				}
 
