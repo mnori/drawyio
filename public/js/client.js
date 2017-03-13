@@ -32,7 +32,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var highestLayerID = 1;
 	var lastEmit = $.now(); // part of general purpose intervalling system
 	var labelFadeOutMs = 120;
-	var canvasCeiling = 1000000000;
+	var canvasCeiling = 999999999;
+	// var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
 	var finaliseTimeoutMs = 500; // mainly for brush and line drawing
@@ -180,7 +181,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					lastEmit = $.now();
 					emitTool(tool);
 				}
-				bumpCanvas(canvas);
 			} else { // not emitting - remote user
 				drawLine(tool, emit);
 			}
@@ -215,7 +215,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					toolOut.meta.lineEntries = null;
 					emitTool(toolOut)
 				}
-				bumpCanvas(canvas);
 
 			} else if (tool.meta.lineEntries != null) {
 				// remote user - draw the line using the data
@@ -246,7 +245,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				emitTool(toolIn); // put back
-				bumpCanvas(canvas);
 			} else {
 				if (!emit) console.log("handleText remote drawText()");
 				drawText(toolIn, emit, thisCtx);
