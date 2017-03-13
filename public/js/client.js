@@ -177,7 +177,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			
 		} else if (tool.state == "end") {
 			drawLine(tool, emit);
-			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);/**/
 			finaliseEdit(tool, emit);
 			tool.state = "idle"; // pretty important to avoid issues
 		}
@@ -186,29 +186,30 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// drawing text on the canvas
 	function handleText(toolIn, emit) {
 		var thisCtx = getCanvasCtx(toolIn, emit); 
-		initBaseData(thisCtx); // only does it if there is no base data
-
-		if (toolIn.state == "idle") {
-			// if (emit) emitTool(toolIn);
-			drawText(toolIn, emit);
-			return; // nothing to do when idle, just emit the mouse coords
-		}
 
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
+			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				clearFinalise();
 				writeText(toolIn, emit); // draw text and save the snapshot
 				emitTool(toolIn); // emit the data as well
 			} else {
 				writeText(toolIn, emit);
-			}
+			} 
 			bumpCanvas(canvas);
 			toolIn.state = "end";
 			finaliseEdit(toolIn, emit);
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
+		}
+
+		if (toolIn.state == "idle") {
+			initBaseData(thisCtx); // only does it if there is no base data
+			if (emit) emitTool(toolIn);
+			drawText(toolIn, emit);
+			return; // nothing to do when idle, just emit the mouse coords
 		}
 	}
 
@@ -269,7 +270,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				// Processing step
 				// Convert canvas to png and send to the server
-				processCanvas(canvas[0], croppingCanvas[0], toolOut); 
+
+				// must set to basedata to avoid a ghost text
+				processCanvas(canvas[0], croppingCanvas[0], toolOut, thisCtx); 
 				toolOut.layerCode = null;
 			}, finaliseTimeoutMs);
 		}
@@ -979,7 +982,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function processCanvas(sourceCanvas, croppingCanvas, toolIn) {
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
-		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas);
+
+		// gotta swap the data around to get the correct crop when it's the text tool
+		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas, toolIn);
 
 		// First generate a png blob
 		var blob = croppingCanvas.toBlob(function(blob) {
@@ -1001,9 +1006,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// Clear the canvas
 				ctx.clearRect(0, 0, width, height)
 
-				// Clear the baseData (for straight line drawings)
+				// Clear the baseData
 				if (toolIn.tool == "text" || toolIn.tool == "line") {
-					delete ctx.baseData; // clean out the base data 
+					delete ctx.baseData;
 				}
 
 				// Now convert to base64 - this will be send back to the server
@@ -1025,14 +1030,35 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 // Crop a sourceCanvas by alpha=0. Results are written to destCanvas.
 // Adapted from https://stackoverflow.com/questions/12175991/crop-image-white-space-automatically-using-jquery
-function cropCanvas(sourceCanvas, destCanvas) {
+function cropCanvas(sourceCanvas, destCanvas, toolIn) {
     var context = sourceCanvas.getContext("2d");
 
     var imgWidth = sourceCanvas.width, 
     	imgHeight = sourceCanvas.height;
 
-    var imageData = context.getImageData(0, 0, imgWidth, imgHeight),
-        data = imageData.data,
+ //    // gotta swap the data around to get the correct crop when it's the text tool
+	// if (toolIn.tool == "text") {
+	// 	var previewData = ctx.getImageData(0, 0, width, height);
+	// 	ctx.putImageData(ctx.baseData, 0, 0);
+	// }
+	// var cropCoords = cropCanvas(sourceCanvas, croppingCanvas, toolIn);
+
+	// // swap data back, preserving the preview - prevents preview from flickering
+	// if (toolIn.tool == "text") {
+	// 	ctx.putImageData(previewData, 0, 0);
+	// }
+
+	var imageData;
+	if (toolIn.tool == "text") { 
+		// with text, we have to be careful to avoid copying preview data
+		// so use the baseData - only contains written edits
+		imageData = context.baseData; 
+	} else {
+		// for other tools, just grab the canvas data
+		imageData = context.getImageData(0, 0, width, height);
+	}
+
+    var data = imageData.data,
         hasData = function (x, y) {
         	var offset = imgWidth * y + x;
         	var value = data[offset * 4 + 3]; // this fetches the opacity value
