@@ -180,10 +180,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					lastEmit = $.now();
 					emitTool(tool);
 				}
+				bumpCanvas(canvas);
 			} else { // not emitting - remote user
 				drawLine(tool, emit);
 			}
-			bumpCanvas(canvas);
+			
 			
 		} else if (tool.state == "end") {
 			drawLine(tool, emit);
@@ -199,15 +200,18 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
+
+			if (!emit) console.log("handleText() remote start");
+
 			initBaseData(thisCtx); // only does it if there is no base data
 			if (emit) {
 				clearFinalise();
-				writeText(toolIn, emit, thisCtx); // draw text and save the snapshot
+				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				emitTool(toolIn); // put back
+				bumpCanvas(canvas);
 			} else {
-				writeText(toolIn, emit, thisCtx);
+				drawText(toolIn, emit, thisCtx);
 			} 
-			bumpCanvas(canvas);
 			toolIn.state = "end";
 			finaliseEdit(toolIn, emit);
 
@@ -216,7 +220,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) emitTool(toolIn); // put back
 			var previewCtx = getDrawCtx(toolIn, emit, "_preview");
 			previewCtx.clearRect(0, 0, width, height); // Clear the canvas
-			writeText(toolIn, emit, previewCtx);
+			drawText(toolIn, emit, previewCtx);
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
@@ -244,12 +248,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					toolOut.meta.lineEntries = null;
 					emitTool(toolOut)
 				}
+				bumpCanvas(canvas);
 
 			} else if (tool.meta.lineEntries != null) {
 				// remote user - draw the line using the data
 				drawPaint(tool, emit);
 			} 
-			bumpCanvas(canvas);
 
 		} else if (tool.state == "end") { // mouseup or other line end event
 			if (emit) emitTool(tool); // be sure to emit the end event
@@ -285,11 +289,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				toolIn.layerCode = null;
 			}, finaliseTimeoutMs);
 		}
-	}
-
-	// write text to canvas, not for use with previews
-	function writeText(tool, emit, thisCtx) {
-		drawText(tool, emit, thisCtx);
 	}
 
 	// can pass in either a preview or a drawing canvas context
@@ -952,15 +951,17 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function bumpCanvas(canvasElement) {
-		var previewElement = $("#"+canvasElement.attr("id")+"_preview");
-
 		$(".drawing_canvas").each(function() { // shift everything else -1 on zindex
 			var element = $(this);
 			var zIndex = parseInt(element.css("z-index")) - 1;
 			element.css("z-index", zIndex);
 			// previewElement.css("z-index", zIndex);
 		});
+
+		// move the canvas of interest to the top position
+		var previewElement = $("#"+canvasElement.attr("id")+"_preview");
 		canvasElement.css("z-index", canvasCeiling);
+		previewElement.css("z-index", canvasCeiling);
 	}
 
 	function getLayerByCode(code) {
