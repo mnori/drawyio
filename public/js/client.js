@@ -84,6 +84,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			// Sync with the tick so coords send are the same used for drawing
 			tool.newCoord = getMousePos(ev);
 
+			// create new layer code if required
+			if (tool.layerCode == null) { 
+				tool.layerCode = randomString(layerCodeLen);
+				console.log(tool.layerCode);
+			}
+
 			// keep high resolution map of line entries for processing at intervals
 			if (tool.tool == "paint" && tool.state == "drawing") {
 				tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
@@ -256,12 +262,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
-	function finaliseEdit(tool, emit) {
+	function finaliseEdit(toolIn, emit) {
 		if (emit) { // local user, not remote user
-			var thisCtx = getDrawCtx(tool, emit); 
-			tool.state = "end";
-			var toolOut = JSON.parse(JSON.stringify(tool)); // don't use tool, use this!
-
+			var thisCtx = getDrawCtx(toolIn, emit); 
+			toolIn.state = "end";
+			var toolOut = JSON.parse(JSON.stringify(toolIn)); // don't use tool, use this!
 			emitTool(toolOut);
 			if (toolOut.tool == "paint" && toolOut.meta != null && toolOut.meta.lineEntries != null) {
 				drawPaint(toolOut, true); // close the line last edit - resets line array	
@@ -275,7 +280,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 				// must set to basedata to avoid a ghost text
 				processCanvas(canvas[0], croppingCanvas[0], toolOut, thisCtx); 
-				toolOut.layerCode = null;
+				toolIn.layerCode = null;
 			}, finaliseTimeoutMs);
 		}
 	}
@@ -518,9 +523,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// only when outside the timeout
 		tool.state = "start";
 		// only create new layer code when outside rolling timeout, or when there is no layer code yet
-		if (finaliseTimeout == null || tool.layerCode == null) { 
-			tool.layerCode = randomString(layerCodeLen);
-		}
 
 		// do we need to set the tool data?
 		if (tool.tool == "paint") { // paints have a list of entries
