@@ -26,6 +26,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var scratchCanvas = $("#scratch_canvas"); // used by flood
 	var ctx = canvas[0].getContext('2d'); // the user editable element
 	var previewCtx = previewCanvas[0].getContext('2d'); // the user editable element
+	var doc = $(document);
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
 	var drawID = drawIdIn;
 	var layerCodeLen = 32;
@@ -81,7 +82,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 
 		// Handle mouse move. 
-		previewCanvas.mousemove(function(ev) {
+		body.mousemove(function(ev) {
 			// Sync with the tick so coords send are the same used for drawing
 			tool.newCoord = getMousePos(ev);
 
@@ -109,9 +110,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 		});
 
-		// stop drawing if mouse up or mouse leaves previewCanvas
-		body.mouseup(stopTool);
-		previewCanvas.mouseleave(stopTool);
+		// stop the tool on mouseup
+		doc.mouseup(stopTool);
+
+		// if mouse leaves preview canvas or window, set newCoord to null and stop the tool
+		previewCanvas.mouseleave(mouseOut);
+		doc.mouseleave(mouseOut);
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
@@ -123,6 +127,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		getDrawing();
 	}
 
+	function mouseOut(ev) {
+		tool.newCoord = null;
+		stopTool(ev);
+	}
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
@@ -285,6 +293,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Draw the text onto the canvas, only
 	function drawText(tool, emit, thisCtx) {
 		if (tool.newCoord == null) { // mouse outside boundaries
+			console.log("outside boundary!");
 			thisCtx.clearRect(0, 0, width, height); // Clear the canvas
 			return;
 		}
@@ -1077,16 +1086,6 @@ function cropCanvas(sourceCanvas, destCanvas, toolIn) {
 
 	var imageData = context.getImageData(0, 0, imgWidth, imgHeight);
 	
-	// attempt at getting text to work	
-	// if (toolIn.tool == "text") { 
-	// 	// with text, we have to be careful to avoid copying preview data
-	// 	// so use the baseData - only contains written edits
-	// 	imageData = context.baseData; 
-	// } else {
-	// 	// for other tools, just grab the canvas data
-	// 	imageData = context.getImageData(0, 0, width, height);
-	// }
-
     var data = imageData.data,
         hasData = function (x, y) {
         	var offset = imgWidth * y + x;
