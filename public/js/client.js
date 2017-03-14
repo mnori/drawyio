@@ -56,7 +56,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			regenLayerCode();
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
-				if (menuOpen()) {
+				if (menusOpen()) {
 					return;
 				}
 				activateDropperToggle();
@@ -80,7 +80,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// key bindings
 		body.keydown(function(ev) {
 			if (ev.which == 16) { // shift
-				if (menuOpen()) {
+				if (menusOpen()) {
 					return;
 				}
 				regenLayerCode(); 
@@ -91,7 +91,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 		body.keyup(function(ev) {
 			if (ev.which == 16) { // shift
-				if (menuOpen()) {
+				if (menusOpen()) {
 					return;
 				}
 				regenLayerCode();
@@ -265,6 +265,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// drawing text on the canvas
 	function handleText(toolIn, emit) {
 		var thisCtx = getDrawCtx(toolIn, emit); 
+
+		// intialise the text tool meta if required
+		// undefined check should probably actually be about checking the tool name
 		if (emit && (toolIn.meta == null || typeof(toolIn.meta.text) === "undefined")) {
 			toolIn.meta = {"text": ""}
 		}
@@ -877,9 +880,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// Check whether any of the menus are open
-	function menuOpen() {
+	function menusOpen() {
 		// check text input
-		if ($("#text_input").css("display") != "none") {
+		// text is a special case, we the tool is selected, not just if the menu is open
+		if ($("#text").hasClass("button_pressed")) {
 			return true;
 		}
 		// check the brush size menu 
