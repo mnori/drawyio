@@ -52,6 +52,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		previewCanvas.mousedown(function(ev) {
+			closeMenus();
 			regenLayerCode();
 			// colourPicker.spectrum("get");
 			pickerToToolColour();
@@ -270,6 +271,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
+				$("#text_input_box").val("Enter some text");
+				toolIn.meta = {"text": ""}
 				emitTool(toolIn);
 			} else {
 				drawText(toolIn, emit, thisCtx);
@@ -278,15 +281,19 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			finaliseEdit(toolIn, emit);
 
 		} else if (tool.state == "idle") {
-			if (emit) emitTool(toolIn);
-			var previewCtx = getDrawCtx(toolIn, emit, "_preview");
-			previewCtx.clearRect(0, 0, width, height); // Clear the canvas
-			if (toolIn.newCoord != null) {
-				drawText(toolIn, emit, previewCtx);	
-			}
+			textIdle(toolIn, emit);
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
+		}
+	}
+
+	function textIdle(toolIn, emit) {
+		if (emit) emitTool(toolIn);
+		var previewCtx = getDrawCtx(toolIn, emit, "_preview");
+		previewCtx.clearRect(0, 0, width, height); // Clear the canvas
+		if (toolIn.newCoord != null) {
+			drawText(toolIn, emit, previewCtx);	
 		}
 	}
 
@@ -877,6 +884,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		$("#text_input_box").focus(function() { $(this).select(); } );
 		$("#text_input_box").keyup(function() {
 			tool.meta.text = $(this).val();
+			textIdle(tool, true);
 		});
 	}
 
