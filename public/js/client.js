@@ -277,7 +277,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
-				$("#text_input_box").val("Enter text here");
+				$("#text_input_box").val("Enter text, press <enter>");
 				toolIn.meta = {"text": ""}
 				emitTool(toolIn);
 			} else {
@@ -878,7 +878,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Check whether any of the menus are open
 	function menuOpen() {
+		// check text input
 		if ($("#text_input").css("display") != "none") {
+			return true;
+		}
+		// check the brush size menu 
+		if ($("#brush_size-menu").parent().css("display") != "none") {
+			return true;
+		}
+		// check colour picker
+		if (pickerVisible()) {
 			return true;
 		}
 		return false;
