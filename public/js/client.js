@@ -59,6 +59,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			// colourPicker.spectrum("hide");
 
 			if (ev.which == 3) { // right click
+				if (menuOpen()) {
+					return;
+				}
 				activateDropperToggle();
 			}
 		    startTool(getMousePos(ev));
@@ -85,7 +88,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				}
 				regenLayerCode(); 
 				closeMenus();
-				tool.rightClick = true; 
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
 			}
