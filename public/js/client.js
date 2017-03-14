@@ -80,6 +80,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// key bindings
 		body.keydown(function(ev) {
 			if (ev.which == 16) { // shift
+				if (menuOpen()) {
+					return;
+				}
 				regenLayerCode(); 
 				closeMenus();
 				tool.rightClick = true; 
@@ -89,6 +92,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 		body.keyup(function(ev) {
 			if (ev.which == 16) { // shift
+				if (menuOpen()) {
+					return;
+				}
 				regenLayerCode();
 				resetDropperToggle(ev); 
 				stopTool();
@@ -515,13 +521,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		$("#brush_size-button").addClass("button_pressed");
 	}
 
-	function closeSelectMenus(except) {
-		if (typeof(except) !== "undefined" && except != "brush_size") {
-			$("#brush_size-button").removeClass("button_pressed");
-			$("#brush_size").selectmenu("close");
-		}
-	}
-
 	function setBrushSizeLabel() {
 		var brushSize = $("#brush_size");
 		var widget = brushSize.selectmenu("widget");
@@ -868,9 +867,21 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
+	// Close menus, optionally exclude a particular menu from closing
 	function closeMenus(except) {
 		closeTextInput();
-		closeSelectMenus(except);
+		if (typeof(except) !== "undefined" && except != "brush_size") {
+			$("#brush_size-button").removeClass("button_pressed");
+			$("#brush_size").selectmenu("close");
+		}
+	}
+
+	// Check whether any of the menus are open
+	function menuOpen() {
+		if ($("#text_input").css("display") != "none") {
+			return true;
+		}
+		return false;
 	}
 
 	function toggleTextInput() {
