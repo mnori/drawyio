@@ -52,6 +52,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		previewCanvas.mousedown(function(ev) {
+			regenLayerCode();
 			// colourPicker.spectrum("get");
 			pickerToToolColour();
 			// colourPicker.spectrum("hide");
@@ -64,6 +65,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		previewCanvas.mouseenter(function(ev) {
 			if (event.which == 1) { // left mouse button is pressed
+				regenLayerCode();
 				startTool(getMousePos(ev));
 			}
 		})
@@ -73,7 +75,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// key bindings
 		body.keydown(function(ev) {
-			if (ev.which == 16) { 
+			if (ev.which == 16) { // shift
+				regenLayerCode(); 
 				closeSelectMenus();
 				tool.rightClick = true; 
 				activateDropperToggle();
@@ -81,7 +84,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 		});
 		body.keyup(function(ev) {
-			if (ev.which == 16) { 
+			if (ev.which == 16) { // shift
+				regenLayerCode();
 				resetDropperToggle(ev); 
 				stopTool();
 			}
@@ -89,15 +93,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse move. 
 		body.mousemove(function(ev) {
+			regenLayerCode();
 			// Sync with the tick so coords send are the same used for drawing
 			tool.newCoord = getMousePos(ev);
 
 			// create new layer code if required
 			// note this should be in mousemove, since we need to generate a new layer code
 			// for idle previews, like with the text
-			if (tool.layerCode == null) { 
-				tool.layerCode = randomString(layerCodeLen);
-			}
+			
 
 			// keep high resolution map of line entries for processing at intervals
 			if (tool.tool == "paint" && tool.state == "drawing") {
@@ -131,6 +134,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		initColourPicker();
 		addToolSettings();
 		getDrawing();
+	}
+
+	// Only generates the layer code if it's empty, i.e. after finalise has been called
+	function regenLayerCode() {
+		if (tool.layerCode == null) { 
+			tool.layerCode = randomString(layerCodeLen);
+		}
 	}
 
 	function mouseOut(ev) {
