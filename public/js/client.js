@@ -43,7 +43,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var tool = {
 		data: null,
 		state: "idle",
-		tool: "paint"
+		tool: "paint",
 	};
 
 	function setup() { 
@@ -261,6 +261,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	function handleText(toolIn, emit) {
 		var thisCtx = getDrawCtx(toolIn, emit); 
 
+		if (emit && toolIn.meta == null) {
+			toolIn.meta = {"text": ""}
+		}
+
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
 			if (emit) {
@@ -311,21 +315,15 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// can pass in either a preview or a drawing canvas context
 	// Draw the text onto the canvas, only
-	function drawText(tool, emit, thisCtx) {
-		if (tool.newCoord == null) { // mouse outside boundaries
+	function drawText(toolIn, emit, thisCtx) {
+		if (toolIn.newCoord == null) { // mouse outside boundaries
 			thisCtx.clearRect(0, 0, width, height); // Clear the canvas
 			return;
 		}
-
-		// This decides whether to use a local or a remote canvas
-		// var thisCtx = getDrawCtx(tool, emit); 
-
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		thisCtx.globalAlpha = 0.4; // just for testing
-		// thisCtx.putImageData(thisCtx.baseData, 0, 0);
 		thisCtx.font = "30px Arial";
-		thisCtx.fillText("#rekt", tool.newCoord.x, tool.newCoord.y)
-		// thisCtx.globalAlpha = 1; // just for testing
+		thisCtx.fillText(toolIn.meta.text, toolIn.newCoord.x, toolIn.newCoord.y)
 		return thisCtx;
 	}
 
@@ -576,7 +574,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			lastEmit = $.now();
 		} else if (tool.tool == "line") {
 			initLine(tool);
-		} else { // tool does not have a data attribute
+		} else if (tool.tool != "text") { // tool does not have a data attribute
 			tool.meta = null;
 		}
 
@@ -877,6 +875,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		$("#text_input").show();
 		positionTextInput();
 		$("#text_input_box").focus(function() { $(this).select(); } );
+		$("#text_input_box").keyup(function() {
+			tool.meta.text = $(this).val();
+		});
 	}
 
 	function closeTextInput() {
