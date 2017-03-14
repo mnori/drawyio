@@ -38,6 +38,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
 	var finaliseTimeoutMs = 500; // mainly for brush and line drawing
+	var textMargin = 10; // pixels to offset the text box preview
 
 	// Metadata about the action being performed
 	var tool = {
@@ -342,10 +343,16 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			return;
 		}
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
-		thisCtx.globalAlpha = 1; // just for testing
+		// thisCtx.globalAlpha = 1; // just for testing
 		thisCtx.font = toolIn.meta.fontSize+"px "+toolIn.meta.fontFace;
 		thisCtx.textAlign = "right";
-		thisCtx.fillText(toolIn.meta.text, toolIn.newCoord.x, toolIn.newCoord.y)
+
+		// Position the text next to the cursor
+		var coords = {
+			x: toolIn.newCoord.x - textMargin,
+			y: toolIn.newCoord.y + (Math.ceil(toolIn.meta.fontSize / 2))
+		}
+		thisCtx.fillText(toolIn.meta.text, coords.x, coords.y)
 		return thisCtx;
 	}
 
