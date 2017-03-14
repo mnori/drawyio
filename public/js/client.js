@@ -80,7 +80,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		body.keydown(function(ev) {
 			if (ev.which == 16) { // shift
 				regenLayerCode(); 
-				closeSelectMenus();
+				closeMenus();
 				tool.rightClick = true; 
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
@@ -487,6 +487,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function positionBrushSizeMenu() {
+		closeMenus("brush_size");
+
 		var menu = $("#brush_size-menu").parent();
 		if (menu.css("display") == "none") {
 			return; // menu not active, nothing to do
@@ -506,9 +508,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		$("#brush_size-button").addClass("button_pressed");
 	}
 
-	function closeSelectMenus() {
-		$("#brush_size-button").removeClass("button_pressed");
-		$("#brush_size").selectmenu("close");
+	function closeSelectMenus(except) {
+		if (typeof(except) !== "undefined" && except != "brush_size") {
+			$("#brush_size-button").removeClass("button_pressed");
+			$("#brush_size").selectmenu("close");
+		}
 	}
 
 	function setBrushSizeLabel() {
@@ -531,6 +535,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function positionColourPicker() {
+		closeMenus();
 		var offset = $(".sp-light").first().offset();
 		var panel = $(".sp-container").first(); 
 		panel.css({
@@ -851,7 +856,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 		if (elementID == "text") {
 			toggleTextInput();
+		} else {
+			closeTextInput();
 		}
+	}
+
+	function closeMenus(except) {
+		closeTextInput();
+		closeSelectMenus(except);
 	}
 
 	function toggleTextInput() {
@@ -859,8 +871,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function openTextInput() {
+		closeMenus();
 		$("#text_input").show();
 		positionTextInput();
+	}
+
+	function closeTextInput() {
+		$("#text_input").hide();
 	}
 
 	function positionTextInput() {
@@ -874,14 +891,10 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// get the parent element and reposition it
 		menu.css({
-			"top": (offset.top - menu.height() + 45 + 2)+"px",
-			"left": (offset.left - menu.width())+"px",
+			"top": (offset.top - menu.height() + 45)+"px",
+			"left": (offset.left - menu.width() - 1)+"px",
 			"z-index": 100000000000012
 		});
-	}
-
-	function closeTextInput() {
-		$("#text_input").hide();
 	}
 
 	// emit a tool action
