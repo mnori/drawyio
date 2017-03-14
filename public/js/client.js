@@ -52,9 +52,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		previewCanvas.mousedown(function(ev) {
-			colourPicker.spectrum("get");
+			// colourPicker.spectrum("get");
 			pickerToToolColour();
-			colourPicker.spectrum("hide");
+			// colourPicker.spectrum("hide");
 
 			if (ev.which == 3) { // right click
 				activateDropperToggle();
