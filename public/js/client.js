@@ -64,6 +64,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});	
 
 		previewCanvas.mouseenter(function(ev) {
+			console.log("mouseenter!");
+			if (pickerVisible()) { // stop problem with the colour picker
+				console.log("Picker visible!");
+				return;
+			} else {
+				console.log("Picker not visible");
+			}
 			if (event.which == 1) { // left mouse button is pressed
 				regenLayerCode();
 				startTool(getMousePos(ev));
@@ -535,6 +542,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			"left": (offset.left - panel.width())+"px",
 			"z-index": 100000000000012
 		});
+	}
+
+	function pickerVisible() {
+		var panel = $(".sp-container").first(); 
+		if (!panel.hasClass("sp-hidden")) {
+			return true;
+		}
+		return false;
 	}
 
 	function pickerToToolColour() {
