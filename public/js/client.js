@@ -62,6 +62,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		    startTool(getMousePos(ev));
 		});	
 
+		previewCanvas.mouseenter(function(ev) {
+			if (event.which == 1) { // left mouse button is pressed
+				startTool(getMousePos(ev));
+			}
+		})
+
 		// Right click activates the eye dropper - not the contex menu
 		previewCanvas.contextmenu(function(ev) { return false; });
 
