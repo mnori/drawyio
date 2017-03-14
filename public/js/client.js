@@ -265,7 +265,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// drawing text on the canvas
 	function handleText(toolIn, emit) {
 		var thisCtx = getDrawCtx(toolIn, emit); 
-		if (emit && toolIn.meta == null) {
+		if (emit && (toolIn.meta == null || typeof(toolIn.meta.text) === "undefined")) {
 			toolIn.meta = {"text": ""}
 		}
 
@@ -333,6 +333,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		thisCtx.globalAlpha = 1; // just for testing
 		thisCtx.font = "25px ubuntuRegular";
+		thisCtx.textAlign = "right";
 		thisCtx.fillText(toolIn.meta.text, toolIn.newCoord.x, toolIn.newCoord.y)
 		return thisCtx;
 	}
@@ -350,7 +351,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			previewData.data.set(thisCtx.baseData.data.slice()); // slice() makes a copy of the array
 		}
 
-		// Draw a line over the cached data
+		// Check both coords are present
 		var start = toolIn.meta.startCoord
 		if (start == null) {
 			return;
@@ -359,6 +360,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		if (end == null) {
 			return;
 		}
+
+		// Draw a line over the cached data
 		plotLine(previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
 		// Put the cached image data back into canvas DOM element
