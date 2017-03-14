@@ -54,10 +54,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		previewCanvas.mousedown(function(ev) {
 			closeMenus();
 			regenLayerCode();
-			// colourPicker.spectrum("get");
 			pickerToToolColour();
-			// colourPicker.spectrum("hide");
-
 			if (ev.which == 3) { // right click
 				if (menuOpen()) {
 					return;
@@ -105,14 +102,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse move. 
 		body.mousemove(function(ev) {
-			regenLayerCode();
-			// Sync with the tick so coords send are the same used for drawing
-			tool.newCoord = getMousePos(ev);
-
 			// create new layer code if required
 			// note this should be in mousemove, since we need to generate a new layer code
 			// for idle previews, like with the text
-			
+			regenLayerCode();
+
+			// Sync with the tick so coords send are the same used for drawing
+			tool.newCoord = getMousePos(ev);
 
 			// keep high resolution map of line entries for processing at intervals
 			if (tool.tool == "paint" && tool.state == "drawing") {
@@ -269,7 +265,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// drawing text on the canvas
 	function handleText(toolIn, emit) {
 		var thisCtx = getDrawCtx(toolIn, emit); 
-
 		if (emit && toolIn.meta == null) {
 			toolIn.meta = {"text": ""}
 		}
@@ -280,8 +275,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				$("#text_input_box").val("Enter text, press <enter>");
-				toolIn.meta = {"text": ""}
 				emitTool(toolIn);
+				toolIn.meta = {"text": ""}
 			} else {
 				drawText(toolIn, emit, thisCtx);
 			} 
