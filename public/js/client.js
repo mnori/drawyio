@@ -259,7 +259,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) emitTool(toolIn);
 			var previewCtx = getDrawCtx(toolIn, emit, "_preview");
 			previewCtx.clearRect(0, 0, width, height); // Clear the canvas
-			drawText(toolIn, emit, previewCtx);
+			if (toolIn.newCoord != null) {
+				drawText(toolIn, emit, previewCtx);	
+			}
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
@@ -293,7 +295,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Draw the text onto the canvas, only
 	function drawText(tool, emit, thisCtx) {
 		if (tool.newCoord == null) { // mouse outside boundaries
-			console.log("outside boundary!");
 			thisCtx.clearRect(0, 0, width, height); // Clear the canvas
 			return;
 		}
@@ -329,6 +330,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			return;
 		}
 		var end = toolIn.newCoord;
+		if (end == null) {
+			return;
+		}
 		plotLine(previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
 		// Put the cached image data back into canvas DOM element
@@ -831,10 +835,11 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		var sockID = tool.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
 
-		if (tool.newCoord == null) { // This pointer fading is broken, will fix later
+		if (tool.newCoord == null) {
 			pointerElement.fadeOut(labelFadeOutMs, function() {
 				pointerElement.remove();
 			});
+			handleAction(tool, false);
 			return;
 		}
 
