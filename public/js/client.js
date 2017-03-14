@@ -370,6 +370,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 
 		// Check both coords are present
+		if (toolIn.meta == null) {
+			return;
+		}
 		var start = toolIn.meta.startCoord
 		if (start == null) {
 			return;
