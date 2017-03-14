@@ -151,6 +151,15 @@ h1 {
 	left: 0px;
 }
 
+#text_input {
+	width: 100px;
+	height: 100px;
+	background-color: #f00;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
 /*** BUTTONS ***/
 .button_icon { /* the (e.g. +) icon inside the button */
 	margin-right: 10px;	

@@ -853,6 +853,22 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				element.removeClass("button_pressed")
 			}
 		});
+		if (elementID == "text") {
+			// toggleTextMenu();
+		}
+	}
+
+	function toggleTextInput() {
+		$("#text").hasClass("button_pressed") ? 
+			closeTextMenu() : openTextMenu();
+	}
+
+	function openTextInput() {
+		console.log("openTextInput() invoked");
+	}
+
+	function closeTextInput() {
+		
 	}
 
 	// emit a tool action

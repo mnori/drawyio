@@ -46,10 +46,11 @@
 			<!-- <input id="nickname" type="text" value="Anonymous" /> -->
 		</div>
 	</div>
-		
 {% endblock %}
 
 {% block js %}
+	<!-- for the drawing text -->
+	<div id="text_input">Text input!</div>
 	<script>
 		initSplash();
 		initDrawing("{{ drawID }}", {{ width }}, {{ height }});
