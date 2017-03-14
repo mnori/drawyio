@@ -269,7 +269,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		// intialise the text tool meta if required
 		// undefined check should probably actually be about checking the tool name
 		if (emit && (toolIn.meta == null || typeof(toolIn.meta.text) === "undefined")) {
-			toolIn.meta = {"text": ""}
+			initTextMeta(toolIn);
 		}
 
 		// if start or moving, clear canvas and draw the text
@@ -279,7 +279,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				$("#text_input_box").val("Enter text, press <enter>");
 				emitTool(toolIn);
-				toolIn.meta = {"text": ""}
+				initTextMeta(toolIn);
 			} else {
 				drawText(toolIn, emit, thisCtx);
 			} 
@@ -291,6 +291,14 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
+		}
+	}
+
+	function initTextMeta(toolIn) {
+		toolIn.meta = {
+			"text": "",
+			"fontFace": "ubuntuRegular",
+			"fontSize": 25
 		}
 	}
 
@@ -335,7 +343,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		}
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		thisCtx.globalAlpha = 1; // just for testing
-		thisCtx.font = "25px ubuntuRegular";
+		thisCtx.font = toolIn.meta.fontSize+"px "+toolIn.meta.fontFace;
 		thisCtx.textAlign = "right";
 		thisCtx.fillText(toolIn.meta.text, toolIn.newCoord.x, toolIn.newCoord.y)
 		return thisCtx;
@@ -349,9 +357,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Create a copy of the base data
 		var previewData = thisCtx.createImageData(width, height);
-
 		if (typeof(thisCtx.baseData) !== "undefined") {
-			previewData.data.set(thisCtx.baseData.data.slice()); // slice() makes a copy of the array
+			// slice() makes a copy of the array
+			previewData.data.set(thisCtx.baseData.data.slice()); 
 		}
 
 		// Check both coords are present
