@@ -860,6 +860,24 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	function openTextInput() {
 		$("#text_input").show();
+		positionTextInput();
+	}
+
+	function positionTextInput() {
+		var menu = $("#text_input")
+		if (menu.css("display") == "none") {
+			return; // menu not active, nothing to do
+		}
+		
+		var button = $("#text");
+		var offset = button.offset(); // the offset will now be consistent
+
+		// get the parent element and reposition it
+		menu.css({
+			"top": (offset.top - menu.height() + 45 + 2)+"px",
+			"left": (offset.left - menu.width())+"px",
+			"z-index": 100000000000012
+		});
 	}
 
 	function closeTextInput() {
