@@ -152,8 +152,6 @@ h1 {
 }
 
 #text_input {
-	width: 100px;
-	height: 100px;
 	background-color: #fff;
 	position: absolute;
 	top: 0px;
@@ -162,9 +160,28 @@ h1 {
 
 	border: 1px solid #888;
     box-shadow: 0px 0px 10px 3px #bbb;
-    font-family: ubuntuRegular;
-    font-size: 16px;
 }
+
+#text_input_box {
+	border: none;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 10px;
+	padding-right: 10px;
+	line-height: 45px;
+	font-size: 25px;
+	width: 400px;
+	font-family: ubuntuRegular;
+}
+
+input {
+	outline: none;
+}
+
+input::selection{
+    background: #007fff;
+    color: #fff;
+}​
 
 /*** BUTTONS ***/
 .button_icon { /* the (e.g. +) icon inside the button */

@@ -50,7 +50,9 @@
 
 {% block js %}
 	<!-- for the drawing text -->
-	<div id="text_input" style="display:none;">Text input!</div>
+	<div id="text_input" style="display:none;">
+		<input type="text" id="text_input_box" name="text_input_box" value="Enter some text">
+	</div>
 	<script>
 		initSplash();
 		initDrawing("{{ drawID }}", {{ width }}, {{ height }});

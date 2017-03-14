@@ -153,7 +153,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
-
 		if (
 			tool.tool == "flood" && 
 			emit && tool.state == "start" && finaliseTimeout == null
@@ -453,6 +452,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		$("#text").on("mousedown", function() {
 			toggleButtons($(this).attr("id"));
 			tool.tool = "text";
+		});
+		$("#text").on("mouseup", function() { // prevent text button from stealing the focus
+			$("#text_input_box").focus();
 		});
 
 		initBrushSizeMenu();
@@ -874,6 +876,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		closeMenus();
 		$("#text_input").show();
 		positionTextInput();
+		$("#text_input_box").focus(function() { $(this).select(); } );
 	}
 
 	function closeTextInput() {
