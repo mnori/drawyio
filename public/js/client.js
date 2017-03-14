@@ -271,7 +271,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
-				$("#text_input_box").val("Enter some text");
+				$("#text_input_box").val("Enter text here");
 				toolIn.meta = {"text": ""}
 				emitTool(toolIn);
 			} else {
@@ -328,8 +328,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			return;
 		}
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
-		thisCtx.globalAlpha = 0.4; // just for testing
-		thisCtx.font = "30px Arial";
+		thisCtx.globalAlpha = 1; // just for testing
+		thisCtx.font = "25px ubuntuRegular";
 		thisCtx.fillText(toolIn.meta.text, toolIn.newCoord.x, toolIn.newCoord.y)
 		return thisCtx;
 	}
@@ -885,6 +885,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		$("#text_input_box").keyup(function() {
 			tool.meta.text = $(this).val();
 			textIdle(tool, true);
+		});
+
+		$("#text_input_box").keydown(function(ev) {
+			if (ev.keyCode == 13) {
+				closeTextInput();
+			}
 		});
 	}
 
