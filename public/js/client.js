@@ -64,12 +64,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});	
 
 		previewCanvas.mouseenter(function(ev) {
-			console.log("mouseenter!");
-			if (pickerVisible()) { // stop problem with the colour picker
-				console.log("Picker visible!");
+			if (pickerVisible()) { // no mouse enter when colour picker is visible
 				return;
-			} else {
-				console.log("Picker not visible");
 			}
 			if (event.which == 1) { // left mouse button is pressed
 				regenLayerCode();
@@ -854,21 +850,20 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			}
 		});
 		if (elementID == "text") {
-			// toggleTextMenu();
+			toggleTextInput();
 		}
 	}
 
 	function toggleTextInput() {
-		$("#text").hasClass("button_pressed") ? 
-			closeTextMenu() : openTextMenu();
+		($("#text_input").css("display") == "none") ? openTextInput() : closeTextInput();
 	}
 
 	function openTextInput() {
-		console.log("openTextInput() invoked");
+		$("#text_input").show();
 	}
 
 	function closeTextInput() {
-		
+		$("#text_input").hide();
 	}
 
 	// emit a tool action
