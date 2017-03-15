@@ -234,7 +234,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
-				// ensures that starting creates a dot
+				// ensures that starting creates a dot on mousedown
 				if (tool.state == "start") {
 					drawPaint(tool, emit);
 					emitTool(toolOut);
@@ -472,26 +472,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function setupControls() {
-		$("#paint").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "paint";
-		});
-		$("#flood").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "flood";
-		});
-		$("#eyedropper").on("mousedown", function(f) {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "eyedropper";
-		});
-		$("#line").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "line";
-		});
-		$("#text").on("mousedown", function() {
-			toggleButtons($(this).attr("id"));
-			tool.tool = "text";
-		});
+		bindTool("eyedropper");
+		bindTool("paint");
+		bindTool("line");
+		bindTool("flood");
+		bindTool("text");
+
 		$("#text").on("mouseup", function() { // prevent text button from stealing the focus
 			$("#text_input_box").focus();
 		});
@@ -505,6 +491,13 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 			// gets fired before the spectrum has at it
 			positionColourPicker();
+		});
+	}
+
+	function bindTool(toolID) {
+		$("#"+toolID).on("mousedown", function() {
+			toggleButtons(toolID);
+			tool.tool = toolID;
 		});
 	}
 
