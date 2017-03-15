@@ -1261,8 +1261,9 @@ function ToolOptionMenu(drawUI, idIn, changeIn) {
 	var change = changeIn;
 	var self = this; // scoping help
 	
+	// Private stuff
 	function init() {
-		menuButton.selectmenu({ // might need a window resize handler here
+		menuButton.selectmenu({
 
 			// When the menu opens, reposition to the desired location to the left of the tool
 			open: function() { self.position(); },
@@ -1278,7 +1279,17 @@ function ToolOptionMenu(drawUI, idIn, changeIn) {
 		$("#"+id+"-button").addClass("button_tool");
 	}
 
-	// Private stuff
+	function setLabel() {
+		var brushSize = $("#"+id);
+		var widget = brushSize.selectmenu("widget");
+		widget.html(
+			"<span class=\"ui-selectmenu-text\">"+
+				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
+			"</span>"
+		);
+	}
+
+	// Public methods
 	this.position = function() {
 		ui.methods.closeMenus(id);
 
@@ -1301,17 +1312,7 @@ function ToolOptionMenu(drawUI, idIn, changeIn) {
 		$("#"+id+"-button").addClass("button_pressed");
 	}
 
-	function setLabel() {
-		var brushSize = $("#"+id);
-		var widget = brushSize.selectmenu("widget");
-		widget.html(
-			"<span class=\"ui-selectmenu-text\">"+
-				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
-			"</span>"
-		);
-	}
 
-	// Public methods
 	this.close = function() {
 		$("#"+id+"-button").removeClass("button_pressed");
 		$("#"+id+"").selectmenu("close");
