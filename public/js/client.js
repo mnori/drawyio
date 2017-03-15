@@ -34,7 +34,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var lastEmit = $.now(); // part of general purpose intervalling system
 	var labelFadeOutMs = 120;
 	var canvasCeiling = 999999999;
-	// var canvasCeiling = 1000000000;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
 	var finaliseTimeoutMs = 500; // mainly for brush and line drawing
@@ -43,9 +42,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 	// Metadata about the action being performed
 	var tool = {
-		data: null,
 		state: "idle",
 		tool: "paint",
+		meta: null
 	};
 
 	function setup() { 
@@ -282,13 +281,22 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
-			if (emit) {
+			if (emit) { // Local text click and place
+
+				// no text has been entered, open the text input to hint that it is required
+				if (toolIn.meta.text == "") { 
+					openTextInput(); // make sure text input box is open
+					// $("#text_input_box").select(); // doesn't seem to work
+					// $("#text_input_box").focus()
+					toolIn.state = "end";
+					return;
+				}
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				$("#text_input_box").val(defaultText);
 				emitTool(toolIn);
 				initTextMeta(toolIn);
-			} else {
+			} else { // Remote text data
 				drawText(toolIn, emit, thisCtx);
 			} 
 			toolIn.state = "end";
