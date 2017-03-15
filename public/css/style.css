@@ -490,6 +490,10 @@ input {
 	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
 }
 
+.ui-widget.ui-widget-content {
+    border: none;
+}
+
 /*.ui-selectmenu-button-open {
 	border: 1px solid #d9d9d9;
 }*/

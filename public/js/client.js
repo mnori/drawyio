@@ -41,6 +41,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var defaultText = "Enter text, press <enter>";
 	var brushSizeMenu = null; // initialised later
 	var fontSizeMenu = null; // initialised later
+	var fontFaceMenu = null
 
 	// Metadata about the action being performed
 	var tool = {
@@ -499,6 +500,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 		brushSizeMenu = new ToolOptionMenu(this, "brush_size");
 		fontSizeMenu = new ToolOptionMenu(this, "font_size");
+		fontFaceMenu = new ToolOptionMenu(this, "font_face");
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
