@@ -13,7 +13,7 @@ function initSplash() {
 }
 
 // Initialise the drawing image UI
-var drawUI = function(drawIdIn, widthIn, heightIn) {
+function drawUI(drawIdIn, widthIn, heightIn) {
 	var emitInterval = 33;
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
@@ -53,8 +53,9 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 		var body = $("body");
 
 		// Handle mouse down.
-		previewCanvas.mousedown(function(ev) {
-			this.closeMenus();
+		previewCanvas.mousedown($.proxy(function(ev) {
+			
+			closeMenus();
 			regenLayerCode();
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
@@ -64,7 +65,7 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 				activateDropperToggle();
 			}
 		    startTool(getMousePos(ev));
-		});	
+		}, this));
 
 		previewCanvas.mouseenter(function(ev) {
 			if (pickerVisible()) { // no mouse enter when colour picker is visible
@@ -80,18 +81,18 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 		previewCanvas.contextmenu(function(ev) { return false; });
 
 		// key bindings
-		body.keydown(function(ev) {
+		body.keydown($.proxy(function(ev) {
 			if (ev.which == 16) { // shift
 				if (menusOpen()) {
 					return;
 				}
 				regenLayerCode(); 
-				this.closeMenus();
+				closeMenus();
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
 			}
-		});
-		body.keyup(function(ev) {
+		}, this));
+		body.keyup($.proxy(function(ev) {
 			if (ev.which == 16) { // shift
 				if (menusOpen()) {
 					return;
@@ -100,7 +101,7 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 				resetDropperToggle(ev); 
 				stopTool();
 			}
-		});
+		}, this));
 
 		// Handle mouse move. 
 		body.mousemove(function(ev) {
@@ -492,6 +493,7 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 			$("#text_input_box").focus();
 		});
 
+		console.log("SELF", self);
 		brushSizeMenu = new ToolOptionMenu(this, "brush_size");
 		toggleButtons("paint");
 
@@ -517,17 +519,6 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 			cancelText: "Cancel",
 	        chooseText: "OK",
 			show: positionColourPicker
-		});
-	}
-
-	function positionColourPicker() {
-		this.closeMenus();
-		var offset = $(".sp-light").first().offset();
-		var panel = $(".sp-container").first(); 
-		panel.css({
-			"top": (offset.top)+"px",
-			"left": (offset.left - panel.width())+"px",
-			"z-index": 100000000000012
 		});
 	}
 
@@ -823,13 +814,6 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 		return true; // identical
 	}
 
-	function addToolSettings() {
-		pickerToToolColour();
-
-		// calculate the radius from the value coming in
-		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;
-	}
-
 	function toggleButtons(elementID) {
 		var selectedElement = $("#"+elementID);
 		$(".button_tool").each(function() {
@@ -847,13 +831,32 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
+	function addToolSettings() {
+		pickerToToolColour();
+
+		// calculate the radius from the value coming in
+		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;
+	}
+
 	// Close menus, optionally exclude a particular menu from closing
-	this.closeMenus = function(except) {
+	function closeMenus(except) {
 		closeTextInput();
 		if (typeof(except) !== "undefined" && except != "brush_size") {
 			$("#brush_size-button").removeClass("button_pressed");
 			$("#brush_size").selectmenu("close");
 		}
+	}
+
+	// Position colour picker
+	function positionColourPicker() {
+		closeMenus();
+		var offset = $(".sp-light").first().offset();
+		var panel = $(".sp-container").first(); 
+		panel.css({
+			"top": (offset.top)+"px",
+			"left": (offset.left - panel.width())+"px",
+			"z-index": 100000000000012
+		});
 	}
 
 	// Check whether any of the menus are open
@@ -864,9 +867,12 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 			return true;
 		}
 		// check the brush size menu 
-		if ($("#brush_size-menu").parent().css("display") != "none") {
+		if (brushSizeMenu.isOpen()) {
 			return true;
 		}
+		// if ($("#brush_size-menu").parent().css("display") != "none") {
+		// 	return true;
+		// }
 		// check colour picker
 		if (pickerVisible()) {
 			return true;
@@ -879,7 +885,7 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 	}
 
 	function openTextInput() {
-		this.closeMenus();
+		closeMenus();
 		$("#text_input").show();
 		positionTextInput();
 		$("#text_input_box").focus(function() { $(this).select(); } );
@@ -1173,6 +1179,12 @@ var drawUI = function(drawIdIn, widthIn, heightIn) {
 		}, "image/png");
 	}
 
+	// Expose some public methods
+	this.methods = {
+		"closeMenus": closeMenus
+	};
+
+	// Public stuff
 	setup();
 }
 
@@ -1278,8 +1290,10 @@ function ToolOptionMenu(drawUI, idIn) {
 	});
 	$("#"+id+"-button").addClass("button_tool");
 
+	// Private stuff
 	function position() {
-		ui.closeMenus(id);
+		console.log(ui);
+		ui.methods.closeMenus(id);
 
 		var menu = $("#"+id+"-menu").parent();
 		if (menu.css("display") == "none") {
@@ -1308,6 +1322,13 @@ function ToolOptionMenu(drawUI, idIn) {
 				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
 			"</span>"
 		);
+	}
+
+	this.isOpen = function() {
+		if ($("#"+id+"-menu").parent().css("display") != "none") {
+			return true;
+		}
+		return false
 	}
 }
 
