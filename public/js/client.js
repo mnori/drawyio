@@ -121,8 +121,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			if (tool.state == "start") {
 				tool.state = "drawing";
 			}
-			addToolSettings();
-
 			// this is where processing occurs
 			if (tool.newCoord == null && tool.tool != "eyedropper") { 
 				stopTool(ev);
@@ -144,7 +142,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		socket.on("receive_mouse_coords", receiveTool);
 
 		initColourPicker();
-		addToolSettings();
 		getDrawing();
 	}
 
@@ -162,6 +159,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
+		if (emit) pickerToToolColour(); // practically everything has a tool colour
 		if (
 			tool.tool == "flood" && 
 			emit && tool.state == "start" && finaliseTimeout == null
@@ -197,6 +195,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// drawing a straight line
 	function handleLine(tool, emit) {
+		if (emit) readBrushSize(tool);
 		if (tool.state == "idle") {
 			if (emit) emitTool(tool);
 			return; // nothing to do when idle
@@ -230,6 +229,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// free form drawing
 	function handlePaint(tool, emit) {
+		if (emit) readBrushSize(tool);
 		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
 				// prevent line drawings getting cut off by finaliser
@@ -515,20 +515,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function setTool(toolID) {
-		console.log("setTool called with "+toolID);
 		tool.tool = toolID;
-
-		// get the settings from the select menus and also the colour setting
-		addToolSettings();
 	}
 
-	function addToolSettings() {
-		pickerToToolColour();
-
-		// calculate the radius from the value coming in
-		if (tool.tool == "paint" || tool.tool == "line") {
-			tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;	
-		}
+	function readBrushSize(tool) {
+		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;	
 	}
 
 	function initColourPicker() {
@@ -572,8 +563,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		} else if (tool.tool != "text") { // tool does not have a data attribute
 			tool.meta = null;
 		}
-
-		addToolSettings();
 		handleAction(tool, true);
 	}
 
@@ -1262,10 +1251,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	setup();
 }
 
-function ToolOptionMenu(drawUI, idIn) {
+function ToolOptionMenu(drawUI, idIn, changeIn) {
 	var ui = drawUI;
 	var id = idIn;
 	var menuButton = $("#"+id);
+	var change = changeIn;
 	menuButton.selectmenu({ // might need a window resize handler here
 
 		// When the menu opens, reposition to the desired location to the left of the tool
