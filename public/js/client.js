@@ -510,8 +510,25 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function bindTool(toolID) {
 		$("#"+toolID).on("mousedown", function() {
 			toggleButtons(toolID);
-			tool.tool = toolID;
+			setTool(toolID);
 		});
+	}
+
+	function setTool(toolID) {
+		console.log("setTool called with "+toolID);
+		tool.tool = toolID;
+
+		// get the settings from the select menus and also the colour setting
+		addToolSettings();
+	}
+
+	function addToolSettings() {
+		pickerToToolColour();
+
+		// calculate the radius from the value coming in
+		if (tool.tool == "paint" || tool.tool == "line") {
+			tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;	
+		}
 	}
 
 	function initColourPicker() {
@@ -830,13 +847,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		} else {
 			closeTextInput();
 		}
-	}
-
-	function addToolSettings() {
-		pickerToToolColour();
-
-		// calculate the radius from the value coming in
-		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;
 	}
 
 	// Close menus, optionally exclude a particular menu from closing
