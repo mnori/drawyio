@@ -234,6 +234,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
+				// ensures that starting creates a dot
+				if (tool.state == "start") {
+					drawPaint(tool, emit);
+					emitTool(toolOut);
+				}
+
 				// must put drawPaint in the interval, since it's quite a slow operation
 				if ($.now() - lastEmit > paintEmitInterval) { 
 					// reached interval
