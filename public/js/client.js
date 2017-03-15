@@ -498,9 +498,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			$("#text_input_box").focus();
 		});
 
-		brushSizeMenu = new ToolOptionMenu(this, "brush_size");
-		fontSizeMenu = new ToolOptionMenu(this, "font_size");
-		fontFaceMenu = new ToolOptionMenu(this, "font_face");
+		brushSizeMenu = new ToolOptionMenu(this, "brush_size", null);
+		fontSizeMenu = new ToolOptionMenu(this, "font_size", null);
+		fontFaceMenu = new ToolOptionMenu(this, "font_face", function() {
+			console.log("Called on open")
+		});
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
@@ -1264,11 +1266,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	setup();
 }
 
-function ToolOptionMenu(drawUI, idIn, changeIn) {
+function ToolOptionMenu(drawUI, idIn, onOpenIn) {
 	var ui = drawUI;
 	var id = idIn;
 	var menuButton = $("#"+id);
-	var change = changeIn;
+	var onOpen = onOpenIn
 	var self = this; // scoping help
 	
 	// Private stuff
@@ -1320,6 +1322,9 @@ function ToolOptionMenu(drawUI, idIn, changeIn) {
 			"z-index": 100000000000012
 		});
 		$("#"+id+"-button").addClass("button_pressed");
+
+		onOpen();
+		// loop through the child elements - the options
 	}
 
 
