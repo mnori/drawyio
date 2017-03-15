@@ -39,6 +39,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var finaliseTimeout = null;
 	var finaliseTimeoutMs = 500; // mainly for brush and line drawing
 	var textMargin = 10; // pixels to offset the text box preview
+	var defaultText = "Enter text, press <enter>";
 
 	// Metadata about the action being performed
 	var tool = {
@@ -278,7 +279,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			if (emit) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
-				$("#text_input_box").val("Enter text, press <enter>");
+				$("#text_input_box").val(defaultText);
 				emitTool(toolIn);
 				initTextMeta(toolIn);
 			} else {
@@ -925,6 +926,9 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		positionTextInput();
 		$("#text_input_box").focus(function() { $(this).select(); } );
 		$("#text_input_box").keyup(function() {
+			if ($(this).val() == defaultText) { // no text entered
+				return;
+			}
 			tool.meta.text = $(this).val();
 			textIdle(tool, true);
 		});
