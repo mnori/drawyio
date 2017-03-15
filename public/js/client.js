@@ -280,6 +280,9 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (emit && (toolIn.meta == null || typeof(toolIn.meta.text) === "undefined")) {
 			initTextMeta(toolIn);
 		}
+		if (emit) {
+			readFontSize(toolIn);
+		}
 
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
@@ -317,7 +320,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		toolIn.meta = {
 			"text": "",
 			"fontFace": "ubuntuRegular",
-			"fontSize": 25
+			"fontSize": null
 		}
 	}
 
@@ -522,6 +525,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	function readBrushSize(tool) {
 		tool.meta.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;	
+	}
+
+	function readFontSize(tool) {
+		tool.meta.fontSize = parseInt($("#font_size").val());
 	}
 
 	function initColourPicker() {
