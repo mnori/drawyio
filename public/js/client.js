@@ -500,8 +500,16 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 		brushSizeMenu = new ToolOptionMenu(this, "brush_size", null);
 		fontSizeMenu = new ToolOptionMenu(this, "font_size", null);
-		fontFaceMenu = new ToolOptionMenu(this, "font_face", function() {
+		fontFaceMenu = new ToolOptionMenu(this, "font_face", function(id) {
 			console.log("Called on open")
+			var menu = $("#"+id+"-menu").parent();
+			var options = menu.find(".ui-menu-item-wrapper")
+			options.each(function() {
+				var element = $(this);
+				var htmlval = element.html();
+				element.css("font-family", htmlval)
+				// console.log();
+			});
 		});
 		toggleButtons("paint");
 
@@ -1323,8 +1331,9 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn) {
 		});
 		$("#"+id+"-button").addClass("button_pressed");
 
-		onOpen();
-		// loop through the child elements - the options
+		if (onOpen != null) {
+			onOpen(id);
+		}
 	}
 
 
