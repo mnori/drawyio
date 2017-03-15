@@ -484,13 +484,14 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function setupControls() {
-		bindTool("eyedropper");
-		bindTool("paint");
-		bindTool("line");
-		bindTool("flood");
-		bindTool("text");
+		bindToolButton("eyedropper");
+		bindToolButton("paint");
+		bindToolButton("line");
+		bindToolButton("flood");
+		bindToolButton("text");
 
-		$("#text").on("mouseup", function() { // prevent text button from stealing the focus
+		// Special case prevent text button from stealing the focus
+		$("#text").on("mouseup", function() { 
 			$("#text_input_box").focus();
 		});
 
@@ -507,7 +508,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		});
 	}
 
-	function bindTool(toolID) {
+	function bindToolButton(toolID) {
 		$("#"+toolID).on("mousedown", function() {
 			toggleButtons(toolID);
 			setTool(toolID);
@@ -516,6 +517,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	function setTool(toolID) {
 		tool.tool = toolID;
+		// when the tool is set (i.e. changed), we must initialise its metadata
+
 	}
 
 	function readBrushSize(tool) {
@@ -1256,23 +1259,27 @@ function ToolOptionMenu(drawUI, idIn, changeIn) {
 	var id = idIn;
 	var menuButton = $("#"+id);
 	var change = changeIn;
-	menuButton.selectmenu({ // might need a window resize handler here
+	var self = this; // scoping help
+	
+	function init() {
+		menuButton.selectmenu({ // might need a window resize handler here
 
-		// When the menu opens, reposition to the desired location to the left of the tool
-		open: position,
-		close: function(ev) {
-			var button = $("#"+id+"-button");
-			button.removeClass("button_pressed");
-			button.blur();
-		},
+			// When the menu opens, reposition to the desired location to the left of the tool
+			open: function() { self.position(); },
+			close: function(ev) {
+				var button = $("#"+id+"-button");
+				button.removeClass("button_pressed");
+				button.blur();
+			},
 
-		create: setLabel,
-		select: setLabel
-	});
-	$("#"+id+"-button").addClass("button_tool");
+			create: setLabel,
+			select: setLabel
+		});
+		$("#"+id+"-button").addClass("button_tool");
+	}
 
 	// Private stuff
-	function position() {
+	this.position = function() {
 		ui.methods.closeMenus(id);
 
 		var menu = $("#"+id+"-menu").parent();
@@ -1316,6 +1323,8 @@ function ToolOptionMenu(drawUI, idIn, changeIn) {
 		}
 		return false
 	}
+
+	init();
 }
 
 // just for debugging, see http://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
