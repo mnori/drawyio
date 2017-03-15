@@ -41,6 +41,17 @@
 				<option>31px</option>
 				<option>45px</option>
 			</select>
+
+			<select name="text_size" id="font_size" class="controls_selectmenu">
+				<option>8px</option>
+				<option selected="selected">10px</option>
+				<option>12px</option>
+				<option>15px</option>
+				<option>20px</option>
+				<option>26px</option>
+				<option>32px</option>
+				<option>42px</option>
+			</select>
 			
 			<!-- Doesn't work anymore so commented out. Will fix when implementing chat -->
 			<!-- <input id="nickname" type="text" value="Anonymous" /> -->
@@ -55,6 +66,6 @@
 	</div>
 	<script>
 		initSplash();
-		initDrawing("{{ drawID }}", {{ width }}, {{ height }});
+		drawUI("{{ drawID }}", {{ width }}, {{ height }});
 	</script>
 {% endblock %}

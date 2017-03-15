@@ -13,7 +13,7 @@ function initSplash() {
 }
 
 // Initialise the drawing image UI
-function initDrawing(drawIdIn, widthIn, heightIn) {
+var drawUI = function(drawIdIn, widthIn, heightIn) {
 	var emitInterval = 33;
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
@@ -39,6 +39,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	var finaliseTimeoutMs = 500; // mainly for brush and line drawing
 	var textMargin = 10; // pixels to offset the text box preview
 	var defaultText = "Enter text, press <enter>";
+	var brushSizeMenu = null; // initialised later
 
 	// Metadata about the action being performed
 	var tool = {
@@ -53,7 +54,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		previewCanvas.mousedown(function(ev) {
-			closeMenus();
+			this.closeMenus();
 			regenLayerCode();
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
@@ -85,7 +86,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 					return;
 				}
 				regenLayerCode(); 
-				closeMenus();
+				this.closeMenus();
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
 			}
@@ -286,7 +287,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				// no text has been entered, open the text input to hint that it is required
 				if (toolIn.meta.text == "") { 
 					openTextInput(); // make sure text input box is open
-					// $("#text_input_box").select(); // doesn't seem to work
+					// $("#text_input_box").select(); // doesn't seem to work :(
 					// $("#text_input_box").focus()
 					toolIn.state = "end";
 					return;
@@ -296,7 +297,8 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 				$("#text_input_box").val(defaultText);
 				emitTool(toolIn);
 				initTextMeta(toolIn);
-			} else { // Remote text data
+
+			} else { // Remote text click and place
 				drawText(toolIn, emit, thisCtx);
 			} 
 			toolIn.state = "end";
@@ -490,12 +492,12 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 			$("#text_input_box").focus();
 		});
 
-		initBrushSizeMenu();
+		brushSizeMenu = new ToolOptionMenu(this, "brush_size");
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
 			// reposition things that need repositioning
-			positionBrushSizeMenu();
+			brushSizeMenu.position();
 
 			// gets fired before the spectrum has at it
 			positionColourPicker();
@@ -509,57 +511,6 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 		});
 	}
 
-	function initBrushSizeMenu() {
-		var brushSize = $("#brush_size");
-		brushSize.selectmenu({ // might need a window resize handler here
-
-			// When the menu opens, reposition to the desired location to the left of the tool
-			open: positionBrushSizeMenu,
-			close: function(ev) {
-				var button = $("#brush_size-button");
-				button.removeClass("button_pressed");
-				button.blur();
-			},
-
-			create: setBrushSizeLabel,
-			select: setBrushSizeLabel
-		});
-
-		$("#brush_size-button").addClass("button_tool");
-	}
-
-	function positionBrushSizeMenu() {
-		closeMenus("brush_size");
-
-		var menu = $("#brush_size-menu").parent();
-		if (menu.css("display") == "none") {
-			return; // menu not active, nothing to do
-		}
-		var button = $("#brush_size-button");
-
-		menu.hide(); // hide to avoid scroll bar problem
-		var offset = button.offset(); // the offset will now be consistent
-		menu.show();
-
-		// get the parent element and reposition it
-		menu.css({
-			"top": (offset.top - menu.height() + 45 + 2)+"px",
-			"left": (offset.left - menu.width())+"px",
-			"z-index": 100000000000012
-		});
-		$("#brush_size-button").addClass("button_pressed");
-	}
-
-	function setBrushSizeLabel() {
-		var brushSize = $("#brush_size");
-		var widget = brushSize.selectmenu("widget");
-		widget.html(
-			"<span class=\"ui-selectmenu-text\">"+
-				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
-			"</span>"
-		);
-	}
-
 	function initColourPicker() {
 		colourPicker.spectrum({
 			showAlpha: false,
@@ -570,7 +521,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function positionColourPicker() {
-		closeMenus();
+		this.closeMenus();
 		var offset = $(".sp-light").first().offset();
 		var panel = $(".sp-container").first(); 
 		panel.css({
@@ -897,7 +848,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	// Close menus, optionally exclude a particular menu from closing
-	function closeMenus(except) {
+	this.closeMenus = function(except) {
 		closeTextInput();
 		if (typeof(except) !== "undefined" && except != "brush_size") {
 			$("#brush_size-button").removeClass("button_pressed");
@@ -928,7 +879,7 @@ function initDrawing(drawIdIn, widthIn, heightIn) {
 	}
 
 	function openTextInput() {
-		closeMenus();
+		this.closeMenus();
 		$("#text_input").show();
 		positionTextInput();
 		$("#text_input_box").focus(function() { $(this).select(); } );
@@ -1287,6 +1238,77 @@ function cropCanvas(sourceCanvas, destCanvas, toolIn) {
         0, 0, cropWidth, cropHeight);
 
     return {top: cropTop, right: cropRight, bottom: cropBottom, left: cropLeft};
+}
+
+	// function initBrushSizeMenu() {
+	// 	var brushSize = $("#brush_size");
+	// 	brushSize.selectmenu({ // might need a window resize handler here
+
+	// 		// When the menu opens, reposition to the desired location to the left of the tool
+	// 		open: positionBrushSizeMenu,
+	// 		close: function(ev) {
+	// 			var button = $("#brush_size-button");
+	// 			button.removeClass("button_pressed");
+	// 			button.blur();
+	// 		},
+
+	// 		create: setBrushSizeLabel,
+	// 		select: setBrushSizeLabel
+	// 	});
+
+	// 	$("#brush_size-button").addClass("button_tool");
+	// }
+
+function ToolOptionMenu(drawUI, idIn) {
+	var ui = drawUI;
+	var id = idIn;
+	var menuButton = $("#"+id);
+	menuButton.selectmenu({ // might need a window resize handler here
+
+		// When the menu opens, reposition to the desired location to the left of the tool
+		open: position,
+		close: function(ev) {
+			var button = $("#"+id+"-button");
+			button.removeClass("button_pressed");
+			button.blur();
+		},
+
+		create: setLabel,
+		select: setLabel
+	});
+	$("#"+id+"-button").addClass("button_tool");
+
+	function position() {
+		ui.closeMenus(id);
+
+		var menu = $("#"+id+"-menu").parent();
+		if (menu.css("display") == "none") {
+			return; // menu not active, nothing to do
+		}
+		var button = $("#"+id+"-button");
+
+		menu.hide(); // hide to avoid scroll bar problem
+		var offset = button.offset(); // the offset will now be consistent
+		menu.show();
+
+		// get the parent element and reposition it
+		menu.css({
+			"top": (offset.top - menu.height() + 45 + 2)+"px",
+			"left": (offset.left - menu.width())+"px",
+			"z-index": 100000000000012
+		});
+		$("#"+id+"-button").addClass("button_pressed");
+	}
+
+	function setLabel() {
+		var brushSize = $("#"+id);
+		var widget = brushSize.selectmenu("widget");
+		widget.html(
+			"<span class=\"ui-selectmenu-text\">"+
+				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
+			"</span>"
+		);
+	}
 }
 
 // just for debugging, see http://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
