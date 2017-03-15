@@ -195,7 +195,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// drawing a straight line
 	function handleLine(tool, emit) {
-		if (emit) readBrushSize(tool);
 		if (tool.state == "idle") {
 			if (emit) emitTool(tool);
 			return; // nothing to do when idle
@@ -208,6 +207,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			// This fix comes from the handlePaint method - stops the canvas from being
 			// cleared between clicks
 			if (emit) {
+				readBrushSize(tool);
 				clearFinalise();
 				drawLine(tool, emit); // always draw - gives smooth local
 				if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
@@ -229,11 +229,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// free form drawing
 	function handlePaint(tool, emit) {
-		if (emit) readBrushSize(tool);
 		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
-				// prevent line drawings getting cut off by finaliser
-				clearFinalise();
+				readBrushSize(tool);
+				clearFinalise(); // prevent line drawings getting cut off by finaliser
 				var toolOut = JSON.parse(JSON.stringify(tool));
 
 				// ensures that starting creates a dot on mousedown
@@ -522,7 +521,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function readBrushSize(tool) {
-		tool.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;	
+		tool.meta.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;	
 	}
 
 	function initColourPicker() {
@@ -561,15 +560,17 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			// TODO put this in a "data" property
 			tool.meta = {"lineEntries": [{"state": tool.state, "coord": tool.newCoord}]};
 			lastEmit = $.now();
+
 		} else if (tool.tool == "line") {
-			initLine(tool);
+			startLine(tool);
+
 		} else if (tool.tool != "text") { // tool does not have a data attribute
 			tool.meta = null;
 		}
 		handleAction(tool, true);
 	}
 
-	function initLine(tool) {
+	function startLine(tool) {
 		tool.meta = {startCoord: tool.newCoord}
 	}
 
@@ -598,13 +599,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		tool.dropperToggle = false;
 		tool.tool = tool.prevTool;
 		if (tool.tool == "line") {
-			initLine(tool)
+			startLine(tool)
 		}
 		toggleButtons(tool.tool);
 	}
 
 	function makeCircle(toolIn) {
-		var radius = toolIn.brushSize;
+		var radius = toolIn.meta.brushSize;
 		var circleData = [];
 		for (x = 0; x < radius * 2 + 1; x++) {
 			var yData = []
@@ -631,7 +632,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		var err = dx+dy, e2;
 
 		for (;;) {
-			var offset = -toolIn.brushSize;
+			var offset = -toolIn.meta.brushSize;
 			for (var x = 0; x < circleData.length; x++) {
 				for (var y = 0; y < circleData[x].length; y++) {
 					if (circleData[x][y] == true) {
