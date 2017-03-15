@@ -460,9 +460,10 @@ input {
 /* Custom select menu for pixel size selector */
 #controls > .ui-selectmenu-button {
 	width: 25px;
+	margin-bottom: 12px;
 }
 
-#brush_size-menu {
+.ui-selectmenu-menu {
 	border: 1px solid #888;
 	box-shadow: 0px 0px 10px 3px #bbb;
 	font-family: ubuntuRegular;

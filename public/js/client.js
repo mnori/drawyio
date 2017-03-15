@@ -40,6 +40,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var textMargin = 10; // pixels to offset the text box preview
 	var defaultText = "Enter text, press <enter>";
 	var brushSizeMenu = null; // initialised later
+	var fontSizeMenu = null; // initialised later
 
 	// Metadata about the action being performed
 	var tool = {
@@ -493,8 +494,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			$("#text_input_box").focus();
 		});
 
-		console.log("SELF", self);
 		brushSizeMenu = new ToolOptionMenu(this, "brush_size");
+		fontSizeMenu = new ToolOptionMenu(this, "font_size");
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
@@ -842,8 +843,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function closeMenus(except) {
 		closeTextInput();
 		if (typeof(except) !== "undefined" && except != "brush_size") {
-			$("#brush_size-button").removeClass("button_pressed");
-			$("#brush_size").selectmenu("close");
+			brushSizeMenu.close();
+		}
+		if (typeof(except) !== "undefined" && except != "font_size") {
+			fontSizeMenu.close();
 		}
 	}
 
@@ -870,9 +873,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (brushSizeMenu.isOpen()) {
 			return true;
 		}
-		// if ($("#brush_size-menu").parent().css("display") != "none") {
-		// 	return true;
-		// }
 		// check colour picker
 		if (pickerVisible()) {
 			return true;
@@ -1252,25 +1252,6 @@ function cropCanvas(sourceCanvas, destCanvas, toolIn) {
     return {top: cropTop, right: cropRight, bottom: cropBottom, left: cropLeft};
 }
 
-	// function initBrushSizeMenu() {
-	// 	var brushSize = $("#brush_size");
-	// 	brushSize.selectmenu({ // might need a window resize handler here
-
-	// 		// When the menu opens, reposition to the desired location to the left of the tool
-	// 		open: positionBrushSizeMenu,
-	// 		close: function(ev) {
-	// 			var button = $("#brush_size-button");
-	// 			button.removeClass("button_pressed");
-	// 			button.blur();
-	// 		},
-
-	// 		create: setBrushSizeLabel,
-	// 		select: setBrushSizeLabel
-	// 	});
-
-	// 	$("#brush_size-button").addClass("button_tool");
-	// }
-
 function ToolOptionMenu(drawUI, idIn) {
 	var ui = drawUI;
 	var id = idIn;
@@ -1292,7 +1273,6 @@ function ToolOptionMenu(drawUI, idIn) {
 
 	// Private stuff
 	function position() {
-		console.log(ui);
 		ui.methods.closeMenus(id);
 
 		var menu = $("#"+id+"-menu").parent();
@@ -1322,6 +1302,11 @@ function ToolOptionMenu(drawUI, idIn) {
 				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
 			"</span>"
 		);
+	}
+
+	this.close = function() {
+		$("#"+id+"-button").removeClass("button_pressed");
+		$("#"+id+"").selectmenu("close");
 	}
 
 	this.isOpen = function() {
