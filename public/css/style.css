@@ -1,8 +1,16 @@
-@font-face {font-family: ubuntuMonoBold; src: url(/fonts/UbuntuMono-B.ttf);}
-@font-face {font-family: ubuntuMono; src: url(/fonts/UbuntuMono-R.ttf);}
+@font-face {font-family: ubuntuLight; src: url(/fonts/Ubuntu-L.ttf);}
+@font-face {font-family: ubuntuLightItalic; src: url(/fonts/Ubuntu-LI.ttf);}
 @font-face {font-family: ubuntuRegular; src: url(/fonts/Ubuntu-R.ttf);}
+@font-face {font-family: ubuntuRegularItalic; src: url(/fonts/Ubuntu-RI.ttf);}
+@font-face {font-family: ubuntuMedium; src: url(/fonts/Ubuntu-M.ttf);}
+@font-face {font-family: ubuntuMediumItalic; src: url(/fonts/Ubuntu-MI.ttf);}
 @font-face {font-family: ubuntuBold; src: url(/fonts/Ubuntu-B.ttf);}
-@font-face {font-family: ubuntuItalic; src: url(/fonts/Ubuntu-RI.ttf);}
+@font-face {font-family: ubuntuBoldItalic; src: url(/fonts/Ubuntu-BI.ttf);}
+
+@font-face {font-family: ubuntuMonoRegular; src: url(/fonts/UbuntuMono-R.ttf);}
+@font-face {font-family: ubuntuMonoRegularItalic; src: url(/fonts/UbuntuMono-RI.ttf);}
+@font-face {font-family: ubuntuMonoBold; src: url(/fonts/UbuntuMono-B.ttf.ttf);}
+@font-face {font-family: ubuntuMonoBoldItalic; src: url(/fonts/UbuntuMono-BI.ttf);}
 
 #navbar_wrapper {
 	background-color: #333;
@@ -312,7 +320,7 @@ input {
 	/*border: 1px solid #ccc;*/
 	color: #666;
 	padding: 15px;
-	font-family: ubuntuItalic;
+	font-family: ubuntuRegularItalic;
 	font-size: 16px;
 	text-align: right;
 	clear: both;
