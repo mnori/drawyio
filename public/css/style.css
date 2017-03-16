@@ -9,7 +9,7 @@
 
 @font-face {font-family: ubuntuMonoRegular; src: url(/fonts/UbuntuMono-R.ttf);}
 @font-face {font-family: ubuntuMonoRegularItalic; src: url(/fonts/UbuntuMono-RI.ttf);}
-@font-face {font-family: ubuntuMonoBold; src: url(/fonts/UbuntuMono-B.ttf.ttf);}
+@font-face {font-family: ubuntuMonoBold; src: url(/fonts/UbuntuMono-B.ttf);}
 @font-face {font-family: ubuntuMonoBoldItalic; src: url(/fonts/UbuntuMono-BI.ttf);}
 
 #navbar_wrapper {
@@ -519,6 +519,10 @@ input {
 	border-radius: 0px;
 }
 
+.ui-menu-item-wrapper {
+	white-space: nowrap;
+}
+
 /*.ui-button {
 	background-color: #d9d9d9;
 }*/
@@ -527,3 +531,5 @@ input::selection {
     background: #007fff;
     color: #fff;
 }​
+
+

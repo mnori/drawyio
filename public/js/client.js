@@ -501,13 +501,20 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		brushSizeMenu = new ToolOptionMenu(this, "brush_size", null);
 		fontSizeMenu = new ToolOptionMenu(this, "font_size", null);
 		fontFaceMenu = new ToolOptionMenu(this, "font_face", function(id) {
-			console.log("Called on open")
 			var menu = $("#"+id+"-menu").parent();
 			var options = menu.find(".ui-menu-item-wrapper")
 			options.each(function() {
 				var element = $(this);
-				var htmlval = element.html();
-				element.css("font-family", htmlval)
+
+				// build the css font identifier using the text
+				var bits = element.html().split(" ");
+				var id = "ubuntu"
+				for (var i = 0; i < bits.length; i++) {
+					var word = bits[i];
+					id += word.substring(0, 1).toUpperCase()+word.substring(1)
+				}
+				console.log(id);
+				element.css("font-family", id)
 				// console.log();
 			});
 		});
@@ -1274,6 +1281,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	setup();
 }
 
+// Wrapper for tool menu UI elements, which use jquery selectmenu
 function ToolOptionMenu(drawUI, idIn, onOpenIn) {
 	var ui = drawUI;
 	var id = idIn;
