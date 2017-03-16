@@ -283,6 +283,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		}
 		if (emit) {
 			readFontSize(toolIn);
+			readFontFace(toolIn);
 		}
 
 		// if start or moving, clear canvas and draw the text
@@ -498,25 +499,17 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			$("#text_input_box").focus();
 		});
 
-		brushSizeMenu = new ToolOptionMenu(this, "brush_size", null);
-		fontSizeMenu = new ToolOptionMenu(this, "font_size", null);
-		fontFaceMenu = new ToolOptionMenu(this, "font_face", function(id) {
+		brushSizeMenu = new ToolOptionMenu(this, "brush_size", null, null);
+		fontSizeMenu = new ToolOptionMenu(this, "font_size", null, null);
+		fontFaceMenu = new ToolOptionMenu(this, "font_face", function(id) { // onOpen
 			var menu = $("#"+id+"-menu").parent();
 			var options = menu.find(".ui-menu-item-wrapper")
 			options.each(function() {
 				var element = $(this);
-
-				// build the css font identifier using the text
-				var bits = element.html().split(" ");
-				var id = "ubuntu"
-				for (var i = 0; i < bits.length; i++) {
-					var word = bits[i];
-					id += word.substring(0, 1).toUpperCase()+word.substring(1)
-				}
-				console.log(id);
-				element.css("font-family", id)
-				// console.log();
+				element.css("font-family", getFontValue(element.html()));
 			});
+		}, function(htmlIn) { // getVal
+			return "<span style=\"font-family: "+getFontValue(htmlIn)+";\">Font</span>"
 		});
 		toggleButtons("paint");
 
@@ -527,6 +520,16 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			// gets fired before the spectrum has at it
 			positionColourPicker();
 		});
+	}
+
+	function getFontValue(htmlIn) {
+		var bits = htmlIn.split(" ");
+		var id = "ubuntu"
+		for (var i = 0; i < bits.length; i++) {
+			var word = bits[i];
+			id += word.substring(0, 1).toUpperCase()+word.substring(1)
+		}
+		return id;
 	}
 
 	function bindToolButton(toolID) {
@@ -548,6 +551,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	function readFontSize(tool) {
 		tool.meta.fontSize = parseInt($("#font_size").val());
+	}
+
+	function readFontFace(tool) {
+		tool.meta.fontFace = getFontValue($("#font_face").val());
 	}
 
 	function initColourPicker() {
@@ -1282,11 +1289,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 }
 
 // Wrapper for tool menu UI elements, which use jquery selectmenu
-function ToolOptionMenu(drawUI, idIn, onOpenIn) {
+function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 	var ui = drawUI;
 	var id = idIn;
 	var menuButton = $("#"+id);
 	var onOpen = onOpenIn
+	var getVal = getValIn
+
 	var self = this; // scoping help
 	
 	// Private stuff
@@ -1310,9 +1319,10 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn) {
 	function setLabel() {
 		var brushSize = $("#"+id);
 		var widget = brushSize.selectmenu("widget");
+		var val = (getVal != null) ? getVal($(this).val()) : $(this).val();
 		widget.html(
 			"<span class=\"ui-selectmenu-text\">"+
-				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+$(this).val()+
+				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+val+
 			"</span>"
 		);
 	}
