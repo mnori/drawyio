@@ -318,7 +318,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function checkTextBox(toolIn) {
 		// no text has been entered, open the text input to hint that it is required
 		if (toolIn.tool == "text" && toolIn.meta.text == "") { 
-			console.log("empty!");
 			openTextInput(); // make sure text input box is open
 			// $("#text_input_box").select(); // doesn't seem to work :(
 			$("#text_input_box").focus()
@@ -538,7 +537,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function getFontValue(htmlIn) {
 		var bits = htmlIn.split(" ");
 		var id = "ubuntu"
-		for (var i = 0; i < bits.length; i++) {
+		for (var i = 1; i < bits.length; i++) {
 			var word = bits[i];
 			id += word.substring(0, 1).toUpperCase()+word.substring(1)
 		}
@@ -913,8 +912,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// Close menus, optionally exclude a particular menu from closing
 	function closeMenus(except) {
-
-		console.log("except: "+except);
 		closeTextInput();
 		if (typeof(except) !== "undefined" && except != "brush_size") {
 			brushSizeMenu.close();
@@ -1371,10 +1368,6 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 
 	// Public methods
 	this.position = function() {
-		// if we got this far, the menu is active
-		if (onOpen != null) {
-			onOpen(id);
-		}
 		var menu = $("#"+id+"-menu").parent();
 		if (menu.css("display") == "none") {
 			return; // menu not active, nothing to do
@@ -1383,6 +1376,10 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 		var button = $("#"+id+"-button");
 
 		menu.hide(); // hide to avoid scroll bar problem
+		// if we got this far, the menu is active
+		if (onOpen != null) {
+			onOpen(id);
+		}
 		var offset = button.offset(); // the offset will now be consistent
 		menu.show();
 
