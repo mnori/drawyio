@@ -57,8 +57,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		previewCanvas.mousedown($.proxy(function(ev) {
-			
-			closeMenus();
+			console.log("mousedown");
 			regenLayerCode();
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
@@ -527,6 +526,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		$(window).on("resize", function() {
 			// reposition things that need repositioning
 			brushSizeMenu.position();
+			fontSizeMenu.position();
+			fontFaceMenu.position();
 
 			// gets fired before the spectrum has at it
 			positionColourPicker();
@@ -577,8 +578,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			showAlpha: false,
 			cancelText: "Cancel",
 	        chooseText: "OK",
-			show: positionColourPicker
+			show: openColourPicker
 		});
+	}
+
+	function openColourPicker() {
+		closeMenus();
+		positionColourPicker();
 	}
 
 	function pickerVisible() {
@@ -906,6 +912,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// Close menus, optionally exclude a particular menu from closing
 	function closeMenus(except) {
+
+		console.log("except: "+except);
 		closeTextInput();
 		if (typeof(except) !== "undefined" && except != "brush_size") {
 			brushSizeMenu.close();
@@ -913,11 +921,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (typeof(except) !== "undefined" && except != "font_size") {
 			fontSizeMenu.close();
 		}
+		if (typeof(except) !== "undefined" && except != "font_face") {
+			fontFaceMenu.close();
+		}
 	}
 
 	// Position colour picker
 	function positionColourPicker() {
-		closeMenus();
 		var offset = $(".sp-light").first().offset();
 		var panel = $(".sp-container").first(); 
 		panel.css({
@@ -1360,12 +1370,16 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 
 	// Public methods
 	this.position = function() {
-		ui.methods.closeMenus(id);
-
 		var menu = $("#"+id+"-menu").parent();
 		if (menu.css("display") == "none") {
 			return; // menu not active, nothing to do
 		}
+		// if we got this far, the menu is active
+		ui.methods.closeMenus(id);
+		if (onOpen != null) {
+			onOpen(id);
+		}
+
 		var button = $("#"+id+"-button");
 
 		menu.hide(); // hide to avoid scroll bar problem
@@ -1374,15 +1388,11 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 
 		// get the parent element and reposition it
 		menu.css({
-			"top": (offset.top - menu.height() + 45 + 2)+"px",
+			"top": (offset.top - menu.height() + 45)+"px",
 			"left": (offset.left - menu.width())+"px",
 			"z-index": 100000000000012
 		});
 		$("#"+id+"-button").addClass("button_pressed");
-
-		if (onOpen != null) {
-			onOpen(id);
-		}
 	}
 
 
