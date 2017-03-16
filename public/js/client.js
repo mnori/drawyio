@@ -67,6 +67,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				activateDropperToggle();
 			}
 		    startTool(getMousePos(ev));
+		    return false;
 		}, this));
 
 		previewCanvas.mouseenter(function(ev) {
@@ -289,13 +290,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
 			if (emit) { // Local text click and place
-
-				// no text has been entered, open the text input to hint that it is required
-				if (toolIn.meta.text == "") { 
-					openTextInput(); // make sure text input box is open
-					// $("#text_input_box").select(); // doesn't seem to work :(
-					// $("#text_input_box").focus()
-					toolIn.state = "end";
+				if (!checkTextBox(tool)) {
 					return;
 				}
 				clearFinalise();
@@ -316,6 +311,18 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
 		}
+	}
+
+	function checkTextBox(toolIn) {
+		// no text has been entered, open the text input to hint that it is required
+		if (toolIn.tool == "text" && toolIn.meta.text == "") { 
+			openTextInput(); // make sure text input box is open
+			// $("#text_input_box").select(); // doesn't seem to work :(
+			$("#text_input_box").focus()
+			toolIn.state = "end";
+			return false;
+		}
+		return true;
 	}
 
 	function initTextMeta(toolIn) {
@@ -511,6 +518,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		}, function(htmlIn) { // getVal
 			return "<span style=\"font-family: "+getFontValue(htmlIn)+";\">Font</span>"
 		});
+
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
