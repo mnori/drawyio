@@ -57,7 +57,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 		// Handle mouse down.
 		previewCanvas.mousedown($.proxy(function(ev) {
-			console.log("mousedown");
 			regenLayerCode();
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
@@ -298,6 +297,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				$("#text_input_box").val(defaultText);
+				$("#text_input").hide();
 				emitTool(toolIn);
 				initTextMeta(toolIn);
 
@@ -318,6 +318,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function checkTextBox(toolIn) {
 		// no text has been entered, open the text input to hint that it is required
 		if (toolIn.tool == "text" && toolIn.meta.text == "") { 
+			console.log("empty!");
 			openTextInput(); // make sure text input box is open
 			// $("#text_input_box").select(); // doesn't seem to work :(
 			$("#text_input_box").focus()
