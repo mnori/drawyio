@@ -554,7 +554,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function readFontFace(tool) {
-		tool.meta.fontFace = getFontValue($("#font_face").val());
+		tool.meta.fontFace = getFontFromMenu();
+	}
+
+	function getFontFromMenu() {
+		return getFontValue($("#font_face").val())
 	}
 
 	function initColourPicker() {
@@ -924,16 +928,18 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		closeMenus();
 		$("#text_input").show();
 		positionTextInput();
-		$("#text_input_box").focus(function() { $(this).select(); } );
-		$("#text_input_box").keyup(function() {
+
+		var inputBox = $("#text_input_box");
+		inputBox.css("font-family", getFontFromMenu());
+		inputBox.focus(function() { $(this).select(); } );
+		inputBox.keyup(function() {
 			if ($(this).val() == defaultText) { // no text entered
 				return;
 			}
 			tool.meta.text = $(this).val();
 			textIdle(tool, true);
 		});
-
-		$("#text_input_box").keydown(function(ev) {
+		inputBox.keydown(function(ev) {
 			if (ev.keyCode == 13) {
 				closeTextInput();
 			}
