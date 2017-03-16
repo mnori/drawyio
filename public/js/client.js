@@ -308,7 +308,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			toolIn.state = "end";
 			finaliseEdit(toolIn, emit);
 
-		} else if (tool.state == "idle") {
+		} else if (toolIn.state == "idle") {
 			textIdle(toolIn, emit);
 		}
 		if (toolIn.state == "end") {
@@ -340,7 +340,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (emit) emitTool(toolIn);
 		var previewCtx = getDrawCtx(toolIn, emit, "_preview");
 		previewCtx.clearRect(0, 0, width, height); // Clear the canvas
-		if (toolInCanvas) {
+		if (!emit || toolInCanvas) {
 			drawText(toolIn, emit, previewCtx);	
 		}
 	}
