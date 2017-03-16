@@ -42,6 +42,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var brushSizeMenu = null; // initialised later
 	var fontSizeMenu = null; // initialised later
 	var fontFaceMenu = null
+	var toolInCanvas = false;
 
 	// Metadata about the action being performed
 	var tool = {
@@ -71,6 +72,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		}, this));
 
 		previewCanvas.mouseenter(function(ev) {
+			toolInCanvas = true;
 			if (pickerVisible()) { // no mouse enter when colour picker is visible
 				return;
 			}
@@ -156,6 +158,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	function mouseOut(ev) {
 		tool.newCoord = null;
+		toolInCanvas = false;
 		stopTool(ev);
 	}
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
@@ -337,7 +340,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (emit) emitTool(toolIn);
 		var previewCtx = getDrawCtx(toolIn, emit, "_preview");
 		previewCtx.clearRect(0, 0, width, height); // Clear the canvas
-		if (toolIn.newCoord != null) {
+		if (toolInCanvas) {
 			drawText(toolIn, emit, previewCtx);	
 		}
 	}
