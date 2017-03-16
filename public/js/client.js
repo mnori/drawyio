@@ -1371,16 +1371,15 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 
 	// Public methods
 	this.position = function() {
+		// if we got this far, the menu is active
+		if (onOpen != null) {
+			onOpen(id);
+		}
 		var menu = $("#"+id+"-menu").parent();
 		if (menu.css("display") == "none") {
 			return; // menu not active, nothing to do
 		}
-		// if we got this far, the menu is active
 		ui.methods.closeMenus(id);
-		if (onOpen != null) {
-			onOpen(id);
-		}
-
 		var button = $("#"+id+"-button");
 
 		menu.hide(); // hide to avoid scroll bar problem
