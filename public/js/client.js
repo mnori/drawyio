@@ -873,8 +873,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		return true; // identical
 	}
 
-	function toggleButtons(elementID) {
-		var selectedElement = $("#"+elementID);
+	function toggleButtons(toolID) {
+		var selectedElement = $("#"+toolID);
 		$(".button_tool").each(function() {
 			var element = $(this);
 			if (element.attr("id") == selectedElement.attr("id")) {
@@ -883,11 +883,25 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				element.removeClass("button_pressed")
 			}
 		});
-		if (elementID == "text") {
+		if (toolID == "text") {
 			toggleTextInput();
 		} else {
 			closeTextInput();
 		}
+
+		// toggle option menus
+		$(".controls_selectmenu").each(function() {
+			var option = $(this).attr("id")
+			var el = $("#"+option+"_container");
+			if (
+				(toolID == "text" && (option == "font_face" || option == "font_size")) ||
+				((toolID == "paint" || toolID == "line") && option == "brush_size")
+			) {
+				el.show();
+			} else {
+				el.hide()
+			}
+		});
 	}
 
 	// Close menus, optionally exclude a particular menu from closing
