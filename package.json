@@ -7,13 +7,14 @@
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
+  "dependencies": {   
     "express": "*",
     "nunjucks": "*",
     "sharp": "*",
     "nanoseconds": "*",
     "socket.io": "*",
     "http": "*",
-    "time-ago": "*"
+    "time-ago": "*",
+    "mysql": "*"
   }
 }

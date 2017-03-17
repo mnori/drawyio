@@ -36,7 +36,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 999999999;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 500; // mainly for brush and line drawing
+	var finaliseTimeoutMs = 100; // mainly for brush and line drawing
 	var textMargin = 10; // pixels to offset the text box preview
 	var defaultText = "Enter text, press <enter>";
 	var brushSizeMenu = null; // initialised later
