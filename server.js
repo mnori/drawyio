@@ -15,25 +15,7 @@ const ta = require('time-ago')(); // set up time-ago human readable dates librar
 const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
 const mysql = require('mysql');
-
-// Define global constants
-const PORT = 8080; // Which port to expose to the outside world
-const ID_LEN = 16; // The length of the ID string for drawings
-const LAYER_CODE_LEN = 32; // Length of layer codes
-const MAX_LAYERS = 5; // Max number of layers to store before flattening the image
-const FLATTEN_TIMEOUT = 1000; // after n ms since last edit, flatten the image
-const DRAWING_PARAMS = { // Parameters for creating blank drawings
-	width: 800,
-	height:  600,
-	channels: 4,
-	rgbaPixel: 0xFFFFFFFF
-}
-const DB_CONNECT_PARAMS = {
-	host: "localhost",
-	user: "root",
-	password: ""
-	// database: "drawyio"
-}
+const settings = require("./settings")
 
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
@@ -46,13 +28,13 @@ function main() {
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	initDB();
-	server.listen(PORT);
-	console.log("Running on http://localhost:" + PORT);
+	server.listen(settings.PORT);
+	console.log("Running on http://localhost:" + settings.PORT);
 }
 
 function initDB() {
 	console.log("initDB() invoked");
-	db = mysql.createConnection(DB_CONNECT_PARAMS)
+	db = mysql.createConnection(settings.DB_CONNECT_PARAMS)
 	db.connect();
 	db.query("CREATE DATABASE IF NOT EXISTS drawyio");
 	db.query('SHOW DATABASES', function (error, results, fields) {
@@ -166,13 +148,13 @@ function receiveLayer(data, socket) {
 			clearTimeout(drawing.timeout)
 			drawing.timeout = null;
 		}
-		if (drawing.getNStoredLayers() > MAX_LAYERS) {
+		if (drawing.getNStoredLayers() > settings.MAX_LAYERS) {
 			drawing.flatten();
 		} else {
 			drawing.timeout = setTimeout(function() {
 				console.log("Timeout triggered");
 				drawing.flatten();
-			}, FLATTEN_TIMEOUT);
+			}, settings.FLATTEN_TIMEOUT);
 		}
 	}
 }
@@ -186,8 +168,8 @@ function renderDrawingPage(req, res) {
 	if (drawings.get(drawID)) { // drawing present
 		res.render("drawing.html", { 
 			drawID: drawID,
-			width: DRAWING_PARAMS.width,
-			height: DRAWING_PARAMS.height
+			width: settings.DRAWING_PARAMS.width,
+			height: settings.DRAWING_PARAMS.height
 		});
 	} else { // drawing is missing
 		send404(res);
@@ -222,7 +204,7 @@ function createDrawing(req, res) {
 
 	// 2. Set up the drawing
 	// Create empty image
-	var params = DRAWING_PARAMS;
+	var params = settings.DRAWING_PARAMS;
 	var canvas = Buffer.alloc(
 		params.width * params.height * params.channels, 
 		params.rgbaPixel
@@ -243,7 +225,7 @@ function createDrawing(req, res) {
 			drawID: drawID,
 			base64: base64, 
 			offsets: {top: 0, right: 0, bottom: 0, left: 0},
-			code: randomString(LAYER_CODE_LEN)
+			code: randomString(settings.LAYER_CODE_LEN)
 		};
 		var drawing = new Drawing(drawID, layer);
 		drawings.set(drawID, drawing);
@@ -259,7 +241,7 @@ function makeDrawID() {
 	var maxTries = 10;
 	var nTries = 0;
 	do {
-		drawID = randomString(ID_LEN);
+		drawID = randomString(settings.ID_LEN);
 		nTries++;
 		if (nTries >= maxTries) {
 			return null;
@@ -399,7 +381,7 @@ function Drawing(idIn, startLayer) {
 		function flattenRecursive(self, baseBuf, ind) {
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
-			if (ind < MAX_LAYERS && overlay != null) {
+			if (ind < settings.MAX_LAYERS && overlay != null) {
 
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
@@ -432,7 +414,7 @@ function Drawing(idIn, startLayer) {
 						id: flattenedLayerID,
 						base64: base64, 
 						offsets: {top: 0, right: 0, bottom: 0, left: 0},
-						code: randomString(LAYER_CODE_LEN),
+						code: randomString(settings.LAYER_CODE_LEN),
 						components: componentCodes
 					});
 
