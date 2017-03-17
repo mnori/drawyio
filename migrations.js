@@ -9,7 +9,7 @@ var migrations = [
 	}
 ]
 function migrate() {
-
+	
 }
 
 migrate();
