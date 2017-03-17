@@ -31,13 +31,13 @@ const DRAWING_PARAMS = { // Parameters for creating blank drawings
 const DB_CONNECT_PARAMS = {
 	host: "localhost",
 	user: "root",
-	password: "",
-	database: "drawyio"
+	password: ""
+	// database: "drawyio"
 }
 
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
-var dbConnection = null; // filled later
+var db = null; // filled later
 
 // Set up the app
 function main() {
@@ -52,9 +52,10 @@ function main() {
 
 function initDB() {
 	console.log("initDB() invoked");
-	dbConnection = mysql.createConnection(DB_CONNECT_PARAMS)
-	dbConnection.connect();
-	dbConnection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+	db = mysql.createConnection(DB_CONNECT_PARAMS)
+	db.connect();
+	db.query("CREATE DATABASE IF NOT EXISTS drawyio");
+	db.query('SHOW DATABASES', function (error, results, fields) {
 		if (error) throw error;
 		console.log(results);
 		console.log('The solution is: '+results[0].solution);
