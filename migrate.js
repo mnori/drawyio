@@ -1,8 +1,8 @@
 // Database migrations for drawy.io
 
 var migrations = [
-	{
-		name: "create_database",
+	{ 
+		name: "beginning", 
 		run: function() {
 			console.log("run!");
 		}

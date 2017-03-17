@@ -14,8 +14,8 @@ const app = express();
 const ta = require('time-ago')(); // set up time-ago human readable dates library
 const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
-const mysql = require('mysql');
 const settings = require("./settings")
+const database = require("./database")
 
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
@@ -27,22 +27,16 @@ function main() {
 	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
-	initDB();
-	server.listen(settings.PORT);
-	console.log("Running on http://localhost:" + settings.PORT);
-}
+	db = new database.DB(settings.DB_CONNECT_PARAMS);
 
-function initDB() {
-	console.log("initDB() invoked");
-	db = mysql.createConnection(settings.DB_CONNECT_PARAMS)
-	db.connect();
 	db.query("CREATE DATABASE IF NOT EXISTS drawyio");
-	db.query('SHOW DATABASES', function (error, results, fields) {
-		if (error) throw error;
+	db.query('SHOW DATABASES', function (results, fields) {
 		console.log(results);
 		console.log('The solution is: '+results[0].solution);
 	});
-	// console.log(dbConnection);
+	
+	server.listen(settings.PORT);
+	console.log("Running on http://localhost:" + settings.PORT);
 }
 
 // Set up all the endpoints
