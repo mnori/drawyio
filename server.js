@@ -28,6 +28,12 @@ const DRAWING_PARAMS = { // Parameters for creating blank drawings
 	channels: 4,
 	rgbaPixel: 0xFFFFFFFF
 }
+const DB_CONNECT_PARAMS = {
+	host: "localhost",
+	user: "root",
+	password: "",
+	database: "drawyio"
+}
 
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
@@ -46,18 +52,13 @@ function main() {
 
 function initDB() {
 	console.log("initDB() invoked");
-	// dbConnection = mysql.createConnection({
-	// 	host: "localhost",
-	// 	user: "root",
-	// 	password: "LocalPw",
-	// 	database: "na"
-	// })
-	// dbConnection.connect();
-	// dbConnection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-	// 	if (error) throw error;
-	// 	console.log('The solution is: ', results[0].solution);
-	// });
-	
+	dbConnection = mysql.createConnection(DB_CONNECT_PARAMS)
+	dbConnection.connect();
+	dbConnection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+		if (error) throw error;
+		console.log(results);
+		console.log('The solution is: '+results[0].solution);
+	});
 	// console.log(dbConnection);
 }
 

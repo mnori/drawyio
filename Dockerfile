@@ -22,4 +22,6 @@ RUN apt-get update \
 EXPOSE 8080
 
 # Start mysql and then run the node.js webserver
+# CMD executes once. There can also only be only one CMD, 
+# only the last one specified here is executed
 CMD /etc/init.d/mysql start && npm start
