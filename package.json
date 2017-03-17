@@ -15,6 +15,7 @@
     "socket.io": "*",
     "http": "*",
     "time-ago": "*",
-    "mysql": "*"
+    "mysql": "*",
+    "synchronize": "*"
   }
 }
