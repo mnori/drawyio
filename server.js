@@ -28,13 +28,6 @@ function main() {
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	db = new database.DB(settings.DB_CONNECT_PARAMS);
-
-	db.query("CREATE DATABASE IF NOT EXISTS drawyio");
-	db.query('SHOW DATABASES', function (results, fields) {
-		console.log(results);
-		console.log('The solution is: '+results[0].solution);
-	});
-	
 	server.listen(settings.PORT);
 	console.log("Running on http://localhost:" + settings.PORT);
 }
