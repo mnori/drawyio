@@ -534,6 +534,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 			// gets fired before the spectrum has at it
 			positionColourPicker();
+			positionTextInput();
 		});
 	}
 
