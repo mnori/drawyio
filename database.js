@@ -28,7 +28,7 @@ class DB {
 	// Do query synchronously. For use in database migrations, don't use on the server.
 	querySync(sql) {
 		if (settings.SQL_DEBUG) {
-			console.log("Sync query\n"+this.addTab(sql))		
+			console.log("Sync query:\n"+this.addTab(sql))		
 		}
 		if (this.sync == null) { // should not ever happen
 			console.log("\tSync is null!");

@@ -18,8 +18,8 @@ module.exports = {
 		host: "localhost",
 		user: "root",
 		password: ""
-		// database: "drawyio"
 	},
+	DB_NAME: "drawyio",
 	SQL_DEBUG: true
 }
 

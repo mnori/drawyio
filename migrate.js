@@ -9,18 +9,24 @@ var migrations = [
 	{ 
 		name: "beginning", 
 		run: function() {
-			db.querySync("DROP DATABASE IF EXISTS drawyio")
+			db.querySync("DROP DATABASE IF EXISTS "+settings.DB_NAME)
 
 			// create the database and use
-			db.querySync("CREATE DATABASE drawyio");
-			db.querySync("USE drawyio");
+			db.querySync("CREATE DATABASE "+settings.DB_NAME);
+			db.querySync("USE "+settings.DB_NAME);
+
+			// note - this way of entering the sql is a bit cumbersome.
+			// could try loading sql from a file instead
+			// provide 
 
 			// create room table
 			db.querySync([
 				"CREATE TABLE room (",
-				"	id VARCHAR("+settings.LAYER_CODE_LEN+") PRIMARY KEY,",
-				"	snapshot_id VARCHAR("+settings.LAYER_CODE_LEN+"),",
-				"	last_active DATETIME NOT NULL",
+				"	id VARCHAR("+settings.LAYER_CODE_LEN+"),",
+				"	snapshot_id VARCHAR("+settings.LAYER_CODE_LEN+") REFERENCES snapshot(id),",
+				"	last_active DATETIME NOT NULL,",
+				"	PRIMARY KEY (id),",
+				"	FOREIGN KEY (snapshot_id) REFERENCES snapshot(id)",
 				")"
 			].join("\n"));
 
@@ -28,8 +34,10 @@ var migrations = [
 			db.querySync([
 				"CREATE TABLE snapshot (",
 				"	id VARCHAR("+settings.LAYER_CODE_LEN+") PRIMARY KEY,",
-				"	room_id VARCHAR("+settings.LAYER_CODE_LEN+") NOT NULL,",
-				"	taken_on DATETIME NOT NULL",
+				"	room_id VARCHAR("+settings.LAYER_CODE_LEN+") NOT NULL REFERENCES room(id),",
+				"	taken_on DATETIME NOT NULL,",
+				"	PRIMARY KEY (id),",
+				"	FOREIGN KEY (room_id) REFERENCES room(id)",
 				")"
 			].join("\n"));
 
@@ -56,6 +64,7 @@ function migrate() {
 		} catch (err) {
 			console.log("Something went wrong:");
 			console.log(err);
+			process.exit(); 
 		}
 	});
 }
