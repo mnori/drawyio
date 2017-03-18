@@ -25,8 +25,8 @@ var migrations = [
 				"	id VARCHAR("+settings.LAYER_CODE_LEN+"),",
 				"	snapshot_id VARCHAR("+settings.LAYER_CODE_LEN+") REFERENCES snapshot(id),",
 				"	last_active DATETIME NOT NULL,",
-				"	PRIMARY KEY (id),",
-				"	FOREIGN KEY (snapshot_id) REFERENCES snapshot(id)",
+				"	PRIMARY KEY (id)",
+				// "	FOREIGN KEY (snapshot_id) REFERENCES snapshot(id)",
 				")"
 			].join("\n"));
 

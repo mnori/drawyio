@@ -38,7 +38,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var finaliseTimeout = null;
 	var finaliseTimeoutMs = 100; // mainly for brush and line drawing
 	var textMargin = 10; // pixels to offset the text box preview
-	var defaultText = "Enter text, press <enter>";
+	var defaultText = "Enter text";
 	var brushSizeMenu = null; // initialised later
 	var fontSizeMenu = null; // initialised later
 	var fontFaceMenu = null
@@ -554,7 +554,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function setTool(toolID) {
 		tool.tool = toolID;
 		// when the tool is set (i.e. changed), we must initialise its metadata
-
 	}
 
 	function readBrushSize(tool) {
@@ -988,14 +987,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (menu.css("display") == "none") {
 			return; // menu not active, nothing to do
 		}
-		
-		var button = $("#text");
-		var offset = button.offset(); // the offset will now be consistent
-
-		// get the parent element and reposition it
-		menu.css({
-			"top": (offset.top - menu.height() + 45)+"px",
-			"left": (offset.left - menu.width() - 1)+"px",
+		// determine top right corner
+		var reference = $("#drawing_form");
+		var offset = reference.offset(); // the offset will now be consistent
+		var right = offset.left;
+		menu.css({ // get the parent element and reposition it
+			"top": offset.top+"px",
+			"left": offset.left+"px",
 			"z-index": 100000000000012
 		});
 	}
