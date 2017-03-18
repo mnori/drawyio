@@ -17,7 +17,8 @@ var migrations = [
 
 			// note - this way of entering the sql is a bit cumbersome.
 			// could try loading sql from a file instead
-			// provide 
+			// provide both options?
+			// but will the db really get that big?
 
 			// create room table
 			db.querySync([
@@ -41,8 +42,14 @@ var migrations = [
 				")"
 			].join("\n"));
 
+			db.querySync([
+				"ALTER TABLE room",
+				"ADD CONSTRAINT FOREIGN KEY (snapshot_id) REFERENCES snapshot(id);"
+			].join("\n"));
 
-
+			// ALTER TABLE Orders
+			// ADD CONSTRAINT FK_PersonOrder
+			// FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);
 			// results = db.querySync('SHOW DATABASES');
 			// console.log(results);
 		}
@@ -70,7 +77,3 @@ function migrate() {
 }
 
 migrate();
-
-// if we do this, it's going to quit before the async shiz has finished running
-// definitely need to wait until mysql operations are finished
-// consider using Promise to solve the issue

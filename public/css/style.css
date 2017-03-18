@@ -20,7 +20,7 @@
 }
 
 .fixed_width {
-	width: 1024px;
+	width: 873px;
 }
 
 #navbar {
@@ -300,13 +300,13 @@ input {
 	border: 1px solid #fff;
 }
 
-.thumb:nth-child(3n) {
+.thumb:nth-child(2n) {
 	margin-right: 0px;
 }
 
 .thumb_img {
 	display: block;
-	width: 326px;
+	width: 424px;
 	float: left;
 }
 
