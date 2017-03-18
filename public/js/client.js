@@ -993,10 +993,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		// determine top right corner
 		var reference = $("#drawing_form");
 		var offset = reference.offset(); // the offset will now be consistent
-		var right = offset.left;
+		var left = offset.left
 		menu.css({ // get the parent element and reposition it
 			"top": offset.top+"px",
-			"left": offset.left+"px",
+			"left": left+"px",
+			"width": width,
 			"z-index": 100000000000012
 		});
 	}
