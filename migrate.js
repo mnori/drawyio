@@ -3,23 +3,23 @@
 const settings = require("./settings")
 var database = require("./database");
 var db = new database.DB(settings.DB_CONNECT_PARAMS);
-var sync = require('synchronize');
+db.sync = require('synchronize');
 
 var migrations = [
 	{ 
 		name: "beginning", 
 		run: function() {
-			var results = db.querySync("DROP DATABASE IF EXISTS drawyio", sync)
-			db.querySync("CREATE DATABASE drawyio", sync);
-			results = db.querySync('SHOW DATABASES', sync);
+			var results = db.querySync("DROP DATABASE IF EXISTS drawyio")
+			db.querySync("CREATE DATABASE drawyio");
+			results = db.querySync('SHOW DATABASES');
 			console.log(results);
 		}
 	}
 ]
 
 function migrate() {
-	// fiber allows synchronous operations
-	sync.fiber(function() {
+	// fiber allows synchronous operations - avoids getting in a pickle with callbacks
+	db.sync.fiber(function() {
 		try {
 			console.log("Started migration.");
 			for (var i = 0; i < migrations.length; i++) {

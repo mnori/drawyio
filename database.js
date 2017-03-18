@@ -6,6 +6,7 @@ class DB {
 	constructor(params) {
 		this.connection = mysql.createConnection(params)
 		this.connection.connect();
+		this.sync = null;
 	}
 
 	// Do a query async. Correct way to do a query on the server.
@@ -23,8 +24,11 @@ class DB {
 	}
 
 	// Only for migrations, do not use in serverland!
-	querySync(sql, sync) {
-		var results = sync.await(this.connection.query(sql, sync.defer()));
+	querySync(sql) {
+		if (this.sync == null) {
+			console.log("Sync is null!");
+		}
+		var results = this.sync.await(this.connection.query(sql, this.sync.defer()));
 		return results;
 	}
 };
