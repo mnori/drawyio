@@ -9,9 +9,9 @@ var migrations = [
 	{ 
 		name: "beginning", 
 		run: function() {
-			db.querySync("DROP DATABASE IF EXISTS drawyio", sync)
+			var results = db.querySync("DROP DATABASE IF EXISTS drawyio", sync)
 			db.querySync("CREATE DATABASE drawyio", sync);
-			var results = db.querySync('SHOW DATABASES', sync);
+			results = db.querySync('SHOW DATABASES', sync);
 			console.log(results);
 		}
 	}

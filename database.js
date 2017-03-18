@@ -1,5 +1,6 @@
+// Database API wrapper
+
 const mysql = require('mysql');
-// Thin database wrapper
 
 class DB {
 	constructor(params) {
@@ -23,8 +24,7 @@ class DB {
 
 	// Only for migrations, do not use in serverland!
 	querySync(sql, sync) {
-		console.log("querySync() called with ["+sql+"]")
-		var results = sync.await(this.query(sql, sync.defer()));
+		var results = sync.await(this.connection.query(sql, sync.defer()));
 		return results;
 	}
 };
