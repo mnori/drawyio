@@ -440,6 +440,9 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		for (var i = 1; i < entries.length; i++) {
 			var prevCoord = entries[i - 1].coord;
 			var thisCoord = entries[i].coord;
+			if (prevCoord == null || thisCoord == null) {
+				continue;
+			}
 			plotLine(destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
 
