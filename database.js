@@ -1,6 +1,8 @@
 // Database API wrapper
+// drawy.io
 
 const mysql = require('mysql');
+const settings = require("./settings")
 
 class DB {
 	constructor(params) {
@@ -23,13 +25,26 @@ class DB {
 		});
 	}
 
-	// Only for migrations, do not use in serverland!
+	// Do query synchronously. For use in database migrations, don't use on the server.
 	querySync(sql) {
-		if (this.sync == null) {
-			console.log("Sync is null!");
+		if (settings.SQL_DEBUG) {
+			console.log("Sync query\n"+this.addTab(sql))		
+		}
+		if (this.sync == null) { // should not ever happen
+			console.log("\tSync is null!");
 		}
 		var results = this.sync.await(this.connection.query(sql, this.sync.defer()));
 		return results;
+	}
+
+	// For debugging
+	addTab(sql) {
+		var bits = sql.split("\n");
+		var buf = ""
+		for (var i = 0; i < bits.length; i++) {
+			buf += bits[i] = "\t"+bits[i];
+		}
+		return bits.join("\n");
 	}
 };
 

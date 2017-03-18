@@ -9,10 +9,34 @@ var migrations = [
 	{ 
 		name: "beginning", 
 		run: function() {
-			var results = db.querySync("DROP DATABASE IF EXISTS drawyio")
+			db.querySync("DROP DATABASE IF EXISTS drawyio")
+
+			// create the database and use
 			db.querySync("CREATE DATABASE drawyio");
-			results = db.querySync('SHOW DATABASES');
-			console.log(results);
+			db.querySync("USE drawyio");
+
+			// create room table
+			db.querySync([
+				"CREATE TABLE room (",
+				"	id VARCHAR("+settings.LAYER_CODE_LEN+") PRIMARY KEY,",
+				"	snapshot_id VARCHAR("+settings.LAYER_CODE_LEN+"),",
+				"	last_active DATETIME NOT NULL",
+				")"
+			].join("\n"));
+
+			// create snapshot table
+			db.querySync([
+				"CREATE TABLE snapshot (",
+				"	id VARCHAR("+settings.LAYER_CODE_LEN+") PRIMARY KEY,",
+				"	room_id VARCHAR("+settings.LAYER_CODE_LEN+") NOT NULL,",
+				"	taken_on DATETIME NOT NULL",
+				")"
+			].join("\n"));
+
+
+
+			// results = db.querySync('SHOW DATABASES');
+			// console.log(results);
 		}
 	}
 ]

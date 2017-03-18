@@ -19,6 +19,7 @@ module.exports = {
 		user: "root",
 		password: ""
 		// database: "drawyio"
-	}	
+	},
+	SQL_DEBUG: true
 }
 
