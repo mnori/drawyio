@@ -377,6 +377,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		// thisCtx.globalAlpha = 1; // just for testing
 		thisCtx.font = toolIn.meta.fontSize+"px "+toolIn.meta.fontFace;
+		thisCtx.fillStyle = toolIn.colourFg;
 		thisCtx.textAlign = "right";
 
 		// Position the text next to the cursor

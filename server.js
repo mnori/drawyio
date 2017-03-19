@@ -89,7 +89,7 @@ function getGallery() {
 	var out = []
 	var ids = drawings.getKeys();
 	for (var i = 0; i < ids.length; i++) {
-		var drawing = drawings.get(ids[i]);
+		var drawing = getDrawing(ids[i]);
 		if (!drawing.emptyImage) { // skip blank images
 			out.push({ drawing: drawing, ago: drawing.getLastEditedStr()});
 		}
@@ -108,23 +108,23 @@ function getGallery() {
 }
 
 function receiveTool(data, socket) {
-	var drawing = drawings.get(socket.drawID);
+	var drawing = getDrawing(socket.drawID);
 	drawing.broadcastTool(data, socket);
 }
 
 // we'll also want a broadcastDrawing() method for when the image is flattened
 function sendDrawing(data, socket) {
 	var drawID = data.drawID;
-	var drawing = drawings.get(drawID); 
+	var drawing = getDrawing(drawID); 
 	var output = drawing.getJson();
 	socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
-	socket.emit("update_drawing", drawings.get(drawID).getJson());
+	socket.emit("update_drawing", getDrawing(drawID).getJson());
 }
 
 // Adds a layer from raw data coming from the socket
 function receiveLayer(data, socket) {
 	var drawID = data.drawID;
-	var drawing = drawings.get(drawID);
+	var drawing = getDrawing(drawID);
 	if (drawing == null) {
 		console.log("WARNING: "+drawID+" does not exist!");
 	} else {
@@ -152,7 +152,7 @@ function send404(res) {
 
 function renderDrawingPage(req, res) {
 	var drawID = req.params.id
-	if (drawings.get(drawID)) { // drawing present
+	if (getDrawing(drawID)) { // drawing present
 		res.render("drawing.html", { 
 			drawID: drawID,
 			width: settings.DRAWING_PARAMS.width,
@@ -166,8 +166,9 @@ function renderDrawingPage(req, res) {
 // Return png image as buffer
 function sendDrawingImage(req, res) {
 	var drawID = req.params.id.replace(".png", "");
-	var drawing = drawings.get(drawID)
+	var drawing = getDrawing(drawID)
 	if (drawing == null) { // drawing missing
+		// is
 		send404(res)
 	} else { // drawing is present
 		var layer = drawing.getUnmergedLayer(0);
@@ -233,7 +234,7 @@ function makeDrawID() {
 		if (nTries >= maxTries) {
 			return null;
 		}
-	} while(drawings.get(drawID) !== null);
+	} while(getDrawing(drawID) !== null);
 	return drawID;
 }
 
@@ -263,6 +264,10 @@ function setupDebug() {
 function base64ToBuffer(base64) {
 	var str = base64.replace("data:image/png;base64,", "");
 	return Buffer.from(str, 'base64')
+}
+
+function getDrawing(drawID) {
+	return drawings.get(drawID);
 }
 
 // Stores the data for a drawing
