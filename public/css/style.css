@@ -540,3 +540,8 @@ input::selection {
     background: #007fff;
     color: #fff;
 }
+
+
+.fa-caret-left {
+	font-size: 11px;
+}
