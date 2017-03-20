@@ -225,17 +225,17 @@ function createDrawing(req, res) {
 
 // Make a unique drawing ID by attempting to random generate one up to n times
 function makeDrawID() {
-	var drawID;
 	var maxTries = 10;
 	var nTries = 0;
+	var newDrawID;
 	do {
-		drawID = randomString(settings.ID_LEN);
+		newDrawID = randomString(settings.ID_LEN);
 		nTries++;
 		if (nTries >= maxTries) {
 			return null;
 		}
-	} while(getDrawing(drawID) !== null);
-	return drawID;
+	} while(getDrawing(newDrawID) !== null);
+	return newDrawID;
 }
 
 // Create a random string, to be used as an ID code
@@ -267,9 +267,28 @@ function base64ToBuffer(base64) {
 }
 
 function getDrawing(drawID) {
-	return drawings.get(drawID);
+	var drawing = drawings.get(drawID);
+	if (drawing != null) { // it's in memory
+		return drawing
+ 	}
+ 	return loadDrawing(drawID);
 }
 
+// Save a drawing to disk
+function saveImage(drawID, data) {
+	console.log("saveImage invoked")
+	var outFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
+	fs.writeFile(outFilepath, data, function(err) {
+		console.log("saveImage", err);
+	});
+}
+
+// Try to load a drawing from disk
+function loadDrawing(drawID) {
+	// must sanitise the drawID
+	// ..
+	return null;
+}
 // Stores the data for a drawing
 function Drawing(idIn, startLayer) {
 	this.id = idIn;
@@ -367,9 +386,6 @@ function Drawing(idIn, startLayer) {
 		// String codes of the component layers of the flatten
 		var componentCodes = []
 
-		var tl = new Timeline();
-		tl.log("a");
-
 		function flattenRecursive(self, baseBuf, ind) {
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
@@ -390,6 +406,7 @@ function Drawing(idIn, startLayer) {
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
+					saveImage(self.id, buffer);
 					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
 					// Remove old layers but not new ones					
@@ -409,16 +426,12 @@ function Drawing(idIn, startLayer) {
 						code: randomString(settings.LAYER_CODE_LEN),
 						components: componentCodes
 					});
-
 					console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
-					tl.log("b");
 
 					// now we must update each client
 					self.broadcast();
 					self.isFlattening = false;
 					self.emptyImage = false;
-					tl.log("c");
-					// tl.dump();
 				});
 			}
 		}

@@ -20,6 +20,7 @@ module.exports = {
 		password: ""
 	},
 	DB_NAME: "drawyio",
-	SQL_DEBUG: true
+	SQL_DEBUG: true,
+	IMAGES_DIR: "/usr/src/app/code/images"
 }
 
