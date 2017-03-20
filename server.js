@@ -89,7 +89,7 @@ function getGallery() {
 	var out = []
 	var ids = drawings.getKeys();
 	for (var i = 0; i < ids.length; i++) {
-		var drawing = getDrawing(ids[i]);
+		var drawing = getDrawing(ids[i]); // note that this only grabs from memory
 		if (!drawing.emptyImage) { // skip blank images
 			out.push({ drawing: drawing, ago: drawing.getLastEditedStr()});
 		}
@@ -108,42 +108,45 @@ function getGallery() {
 }
 
 function receiveTool(data, socket) {
-	var drawing = getDrawing(socket.drawID);
-	drawing.broadcastTool(data, socket);
+	getDrawing(socket.drawID, function(drawing) {
+		drawing.broadcastTool(data, socket);
+	});
 }
 
 // we'll also want a broadcastDrawing() method for when the image is flattened
 function sendDrawing(data, socket) {
 	var drawID = data.drawID;
-	var drawing = getDrawing(drawID); 
-	var output = drawing.getJson();
-	socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
-	socket.emit("update_drawing", getDrawing(drawID).getJson());
+	getDrawing(drawID, function(drawing) {
+		var output = drawing.getJson();
+		socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
+		socket.emit("update_drawing", drawing.getJson());
+	}); 
 }
 
 // Adds a layer from raw data coming from the socket
 function receiveLayer(data, socket) {
 	var drawID = data.drawID;
-	var drawing = getDrawing(drawID);
-	if (drawing == null) {
-		console.log("WARNING: "+drawID+" does not exist!");
-	} else {
-		var layer = data;
-		var layerID = drawing.addLayer(layer);
-		drawing.broadcastLayer(layerID, layer, socket);
-		if (drawing.timeout) {
-			clearTimeout(drawing.timeout)
-			drawing.timeout = null;
-		}
-		if (drawing.getNStoredLayers() > settings.MAX_LAYERS) {
-			drawing.flatten();
+	getDrawing(drawID, function(drawing) {
+		if (drawing == null) {
+			console.log("WARNING: "+drawID+" does not exist!");
 		} else {
-			drawing.timeout = setTimeout(function() {
-				console.log("Timeout triggered");
+			var layer = data;
+			var layerID = drawing.addLayer(layer);
+			drawing.broadcastLayer(layerID, layer, socket);
+			if (drawing.timeout) {
+				clearTimeout(drawing.timeout)
+				drawing.timeout = null;
+			}
+			if (drawing.getNStoredLayers() > settings.MAX_LAYERS) {
 				drawing.flatten();
-			}, settings.FLATTEN_TIMEOUT);
-		}
-	}
+			} else {
+				drawing.timeout = setTimeout(function() {
+					console.log("Timeout triggered");
+					drawing.flatten();
+				}, settings.FLATTEN_TIMEOUT);
+			}
+		}	
+	});
 }
 
 function send404(res) {
@@ -152,90 +155,107 @@ function send404(res) {
 
 function renderDrawingPage(req, res) {
 	var drawID = req.params.id
-	if (getDrawing(drawID)) { // drawing present
-		res.render("drawing.html", { 
-			drawID: drawID,
-			width: settings.DRAWING_PARAMS.width,
-			height: settings.DRAWING_PARAMS.height
-		});
-	} else { // drawing is missing
-		send404(res);
-	}
+	getDrawing(drawID, function(drawing) {
+		if (drawing != null) {
+			res.render("drawing.html", { 
+				drawID: drawID,
+				width: settings.DRAWING_PARAMS.width,
+				height: settings.DRAWING_PARAMS.height
+			});	
+		} else {
+			send404(res);
+		}
+	});
 }
 
 // Return png image as buffer
 function sendDrawingImage(req, res) {
 	var drawID = req.params.id.replace(".png", "");
-	var drawing = getDrawing(drawID)
-	if (drawing == null) { // drawing missing
-		// is
-		send404(res)
-	} else { // drawing is present
-		var layer = drawing.getUnmergedLayer(0);
-		var buf = base64ToBuffer(layer.base64);
-		res.writeHead(200, {
-			'Content-Type': 'image/png',
-			'Content-Length': buf.length
-		});
-		res.end(buf);
-	}
+	getDrawing(drawID, function(drawing) {
+		if (drawing == null) {
+			send404(res)	
+		} else {
+			var layer = drawing.getUnmergedLayer(0);
+			var buf = base64ToBuffer(layer.base64);
+			res.writeHead(200, {
+				'Content-Type': 'image/png',
+				'Content-Length': buf.length
+			});
+			res.end(buf);	
+		}
+	});
 }
 
 function createDrawing(req, res) {
 	// 1. Find a unique drawing ID
-	var drawID = makeDrawID();
-	if (drawID == null) { // exceeded max tries
-		console.log("WARNING: Max tries exceeded")
-		res.send("error");
-		return;
-	}
+	makeDrawID(function(drawID) {
+		if (drawID == null) { // exceeded max tries
+			console.log("WARNING: Max tries exceeded")
+			res.send("error");
+			return;
+		}
 
-	// 2. Set up the drawing
-	// Create empty image
-	var params = settings.DRAWING_PARAMS;
-	var canvas = Buffer.alloc(
-		params.width * params.height * params.channels, 
-		params.rgbaPixel
-	);
+		// 2. Set up the drawing
+		// Create empty image
+		var params = settings.DRAWING_PARAMS;
+		var canvas = Buffer.alloc(
+			params.width * params.height * params.channels, 
+			params.rgbaPixel
+		);
 
-	// Specify that it's a PNG
-	var png = sharp(canvas, {raw: {
-		width: params.width, 
-		height: params.height, 
-		channels: params.channels
-	}}).png();
+		// Specify that it's a PNG
+		var png = sharp(canvas, {raw: {
+			width: params.width, 
+			height: params.height, 
+			channels: params.channels
+		}}).png();
 
-	// Convert to buffer, store the buffer, send unique drawing ID to client
-	// Sends a base64 encoded string
-	png.toBuffer().then(function(buffer) {
-		var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
-		var layer = {
-			drawID: drawID,
-			base64: base64, 
-			offsets: {top: 0, right: 0, bottom: 0, left: 0},
-			code: randomString(settings.LAYER_CODE_LEN)
-		};
-		var drawing = new Drawing(drawID, layer);
-		drawings.set(drawID, drawing);
-		configureDrawingSocket(drawing);
-		res.send(drawID);
-		console.log("Drawing "+drawID+" created.");
+		// Convert to buffer, store the buffer, send unique drawing ID to client
+		// Sends a base64 encoded string
+		png.toBuffer().then(function(buffer) {
+			var layer = bufferToLayer(drawID, buffer);
+			var drawing = new Drawing(drawID, layer);
+			drawings.set(drawID, drawing);
+			configureDrawingSocket(drawing);
+			res.send(drawID);
+			console.log("Drawing "+drawID+" created.");
+		});
 	});
 }
 
+function bufferToLayer(drawID, bufferIn) {
+	var base64 = "data:image/png;base64,"+(bufferIn.toString('base64'));
+	var layer = {
+		drawID: drawID,
+		base64: base64, 
+		offsets: {top: 0, right: 0, bottom: 0, left: 0},
+		code: randomString(settings.LAYER_CODE_LEN)
+	};
+	return layer;
+}
+
 // Make a unique drawing ID by attempting to random generate one up to n times
-function makeDrawID() {
+function makeDrawID(callback) {
 	var maxTries = 10;
 	var nTries = 0;
 	var newDrawID;
-	do {
+
+	function recurse() {
 		newDrawID = randomString(settings.ID_LEN);
-		nTries++;
-		if (nTries >= maxTries) {
-			return null;
-		}
-	} while(getDrawing(newDrawID) !== null);
-	return newDrawID;
+		getDrawing(newDrawID, function(drawing) {
+			if (drawing == null) {
+				callback(newDrawID)
+			} else {
+				nTries += 1
+				if (nTries >= maxTries) {
+					callback(null);
+				} else {
+					recurse();
+				}
+			}
+		});
+	}
+	recurse();
 }
 
 // Create a random string, to be used as an ID code
@@ -266,12 +286,17 @@ function base64ToBuffer(base64) {
 	return Buffer.from(str, 'base64')
 }
 
-function getDrawing(drawID) {
+function getDrawing(drawID, loadCallback) {
 	var drawing = drawings.get(drawID);
 	if (drawing != null) { // it's in memory
-		return drawing
+		if (typeof(loadCallback) !== "undefined") {
+			loadCallback(drawing);	
+		} else {
+			return drawing;
+		}
+ 	} else if (typeof(loadCallback) !== "undefined") {
+ 		loadImage(drawID, loadCallback);
  	}
- 	return loadDrawing(drawID);
 }
 
 // Save a drawing to disk
@@ -284,10 +309,19 @@ function saveImage(drawID, data) {
 }
 
 // Try to load a drawing from disk
-function loadDrawing(drawID) {
+function loadImage(drawID, callback) {
 	// must sanitise the drawID
-	// ..
-	return null;
+	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
+	fs.readFile(inFilepath, function(err, data) {
+		if (err) { // file does not exist
+			callback(null);
+		} else {
+			var layer = bufferToLayer(drawID, data);
+			var drawing = new Drawing(drawID, layer);
+			drawings.set(drawID, drawing);
+			callback(drawing);				
+		}
+	});
 }
 // Stores the data for a drawing
 function Drawing(idIn, startLayer) {
