@@ -312,15 +312,18 @@ function saveImage(drawID, data) {
 function loadImage(drawID, callback) {
 	// must sanitise the drawID
 	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
-	fs.readFile(inFilepath, function(err, data) {
-		if (err) { // file does not exist
-			callback(null);
-		} else {
-			var layer = bufferToLayer(drawID, data);
-			var drawing = new Drawing(drawID, layer);
-			drawings.set(drawID, drawing);
-			callback(drawing);				
-		}
+	sharp(inFilepath).png().toBuffer().then(function(buffer) {
+		console.log(inFilepath+" was found");
+		var layer = bufferToLayer(drawID, buffer);
+		var drawing = new Drawing(drawID, layer);
+		drawings.set(drawID, drawing);
+		configureDrawingSocket(drawing);
+		console.log("Loaded image")
+		callback(drawing);				
+	}).catch(function(err) {
+		console.log("Error: "+err);
+		// console.log(inFilepath+" does not exist");
+		callback(null);
 	});
 }
 // Stores the data for a drawing
