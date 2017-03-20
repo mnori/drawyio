@@ -215,6 +215,7 @@ function createDrawing(req, res) {
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
 			var drawing = new Drawing(drawID, layer);
+			drawing.setMemoryTimeout();
 			drawings.set(drawID, drawing);
 			configureDrawingSocket(drawing);
 			res.send(drawID);
@@ -334,7 +335,7 @@ function Drawing(idIn, startLayer) {
 	this.isFlattening = false;
 	this.timeout = null;
 	this.emptyImage = true; // whether the PNG is empty
-
+	this.memoryTimeout = null;
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0;
@@ -343,6 +344,15 @@ function Drawing(idIn, startLayer) {
 	this.broadcast = function() {
 		var self = this;
 		this.socketNS.emit("update_drawing", self.getJson());
+	}
+
+	this.setMemoryTimeout = function() {
+		if (this.memoryTimeout != null) {
+			clearTimeout(this.memoryTimeout);
+		}
+		this.memoryTimeout = setTimeout(function() {
+			console.log("Timeout completed");
+		}, settings.MEMORY_TIMEOUT);
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -469,6 +479,7 @@ function Drawing(idIn, startLayer) {
 					self.broadcast();
 					self.isFlattening = false;
 					self.emptyImage = false;
+					self.setMemoryTimeout();
 				});
 			}
 		}

@@ -8,6 +8,7 @@ module.exports = {
 	LAYER_CODE_LEN: 32, // Length of layer codes
 	MAX_LAYERS: 5, // Max number of layers to store before flattening the image
 	FLATTEN_TIMEOUT: 1000, // after n ms since last edit, flatten the image
+	MEMORY_TIMEOUT: 5000, // milliseconds before deleting the drawing from memory
 	DRAWING_PARAMS: { // Parameters for creating blank drawings
 		width: 800,
 		height:  600,
