@@ -109,7 +109,9 @@ function getGallery() {
 
 function receiveTool(data, socket) {
 	getDrawing(socket.drawID, function(drawing) {
-		drawing.broadcastTool(data, socket);
+		if (drawing != null) {
+			drawing.broadcastTool(data, socket);
+		}
 	});
 }
 
@@ -311,6 +313,9 @@ function saveImage(drawID, data) {
 
 // Try to load a drawing from disk
 function loadImage(drawID, callback) {
+
+	console.log(drawID);
+
 	// must sanitise the drawID
 	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
@@ -350,8 +355,14 @@ function Drawing(idIn, startLayer) {
 		if (this.memoryTimeout != null) {
 			clearTimeout(this.memoryTimeout);
 		}
+		var self = this;
 		this.memoryTimeout = setTimeout(function() {
-			console.log("Timeout completed");
+			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
+			sharp(baseBuf).png().toBuffer().then(function(buffer) {
+				saveImage(self.id, buffer);
+				drawings.remove(self.id)
+				console.log("Timeout completed, number of drawings: "+drawings.getLength());
+			});
 		}, settings.MEMORY_TIMEOUT);
 	}
 
@@ -461,7 +472,7 @@ function Drawing(idIn, startLayer) {
 					for (var i = 0; i < keys.length; i++) {
 						var key = keys[i];
 						if (parseInt(key) < flattenedLayerID) {
-							self.layers.delete(key);
+							self.layers.remove(key);
 						}
 					}
 
@@ -527,8 +538,8 @@ function AssocArray() {
 	this.empty = function() {
 		this.values = {}
 	}
-	this.delete = function(key) {
-		delete this.values[""+key]
+	this.remove = function(key) {
+		delete this.values[key]
 	}
 };
 
