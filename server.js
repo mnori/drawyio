@@ -292,7 +292,6 @@ function base64ToBuffer(base64) {
 function getDrawing(drawID, loadCallback) {
 	var drawing = drawings.get(drawID);
 	if (drawing != null) { // it's in memor
-		y
 		if (typeof(loadCallback) !== "undefined") {
 			loadCallback(drawing);	
 		} else {
@@ -390,10 +389,12 @@ function Drawing(idIn, startLayer) {
 
 	// layer is a base64 encoded PNG string from the client
 	this.addLayer = function(layerObj) {
+		console.log("addLayer invoked");
 		this.nLayers++;
 		console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		this.updateEdited();
+		this.setMemoryTimeout();
 		return this.nLayers;
 	}
 	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
