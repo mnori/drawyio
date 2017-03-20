@@ -291,7 +291,8 @@ function base64ToBuffer(base64) {
 
 function getDrawing(drawID, loadCallback) {
 	var drawing = drawings.get(drawID);
-	if (drawing != null) { // it's in memory
+	if (drawing != null) { // it's in memor
+		y
 		if (typeof(loadCallback) !== "undefined") {
 			loadCallback(drawing);	
 		} else {
@@ -307,7 +308,7 @@ function saveImage(drawID, data) {
 	console.log("saveImage invoked")
 	var outFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	fs.writeFile(outFilepath, data, function(err) {
-		console.log("saveImage", err);
+		// .. nothing to do
 	});
 }
 
@@ -319,16 +320,12 @@ function loadImage(drawID, callback) {
 	// must sanitise the drawID
 	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
-		console.log(inFilepath+" was found");
 		var layer = bufferToLayer(drawID, buffer);
 		var drawing = new Drawing(drawID, layer);
 		drawings.set(drawID, drawing);
 		configureDrawingSocket(drawing);
-		console.log("Loaded image")
 		callback(drawing);				
 	}).catch(function(err) {
-		console.log("Error: "+err);
-		// console.log(inFilepath+" does not exist");
 		callback(null);
 	});
 }
