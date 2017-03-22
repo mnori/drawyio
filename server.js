@@ -350,8 +350,9 @@ function Drawing(idIn, startLayer) {
 	this.setMemoryTimeout = function() {
 		console.log("setMemoryTimeout()");
 		console.log("memoryTimeout: ", this.memoryTimeout);
-		if (this.memoryTimeout != null) {
+		if (this.memoryTimeout) { // why doesn't this work?
 			clearTimeout(this.memoryTimeout);
+			this.memoryTimeout = null;
 			console.log("Cleared timeout");
 		}
 		var self = this;
@@ -365,6 +366,8 @@ function Drawing(idIn, startLayer) {
 				console.log("Finsihed saving image");
 			});
 		}, settings.MEMORY_TIMEOUT);
+
+		console.log("New memory timeout: "+this.memoryTimeout);
 	}
 
 	// Broadcast a single layer to all sockets except originator
