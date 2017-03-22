@@ -348,16 +348,21 @@ function Drawing(idIn, startLayer) {
 	}
 
 	this.setMemoryTimeout = function() {
+		console.log("setMemoryTimeout()");
+		console.log("memoryTimeout: ", this.memoryTimeout);
 		if (this.memoryTimeout != null) {
 			clearTimeout(this.memoryTimeout);
+			console.log("Cleared timeout");
 		}
 		var self = this;
 		this.memoryTimeout = setTimeout(function() {
+			console.log("memoryTimeout triggered");
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 				saveImage(self.id, buffer);
 				drawings.remove(self.id)
-				console.log("Timeout completed, number of drawings: "+drawings.getLength());
+				self.memoryTimeout = null;
+				console.log("Finsihed saving image");
 			});
 		}, settings.MEMORY_TIMEOUT);
 	}
@@ -389,7 +394,6 @@ function Drawing(idIn, startLayer) {
 
 	// layer is a base64 encoded PNG string from the client
 	this.addLayer = function(layerObj) {
-		console.log("addLayer invoked");
 		this.nLayers++;
 		console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
@@ -449,7 +453,6 @@ function Drawing(idIn, startLayer) {
 
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
-				console.log("Added component code "+overlay.code);
 				var overlayBuf = base64ToBuffer(overlay.base64);
 				var overlayParams = {top: overlay.offsets.top,  left: overlay.offsets.left};
 				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
