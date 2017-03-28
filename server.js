@@ -290,21 +290,20 @@ function base64ToBuffer(base64) {
 }
 
 function getDrawing(drawID, loadCallback) {
-	var drawing = drawings.get(drawID);
-	if (drawing != null) { // it's in memor
-		if (typeof(loadCallback) !== "undefined") {
-			loadCallback(drawing);	
+	var drawing = drawings.get(drawID);	
+	if (typeof(loadCallback) === "undefined") { // return the value
+		return drawing;
+	} else if (typeof(loadCallback) !== "undefined") { // callback the value
+		if (drawing != null) {
+			loadCallback(drawing);
 		} else {
-			return drawing;
+			loadImage(drawID, loadCallback);
 		}
- 	} else if (typeof(loadCallback) !== "undefined") {
- 		loadImage(drawID, loadCallback);
  	}
 }
 
 // Save a drawing to disk
 function saveImage(drawID, data) {
-	console.log("saveImage invoked")
 	var outFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	fs.writeFile(outFilepath, data, function(err) {
 		// .. nothing to do
@@ -313,9 +312,6 @@ function saveImage(drawID, data) {
 
 // Try to load a drawing from disk
 function loadImage(drawID, callback) {
-
-	console.log(drawID);
-
 	// must sanitise the drawID
 	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
@@ -348,12 +344,13 @@ function Drawing(idIn, startLayer) {
 	}
 
 	this.setMemoryTimeout = function() {
-		console.log("setMemoryTimeout()");
-		console.log("memoryTimeout: ", this.memoryTimeout);
+		// console.log(this)
+		// console.log("setMemoryTimeout()");
+		// console.log("memoryTimeout: ", this.memoryTimeout);
 		if (this.memoryTimeout) { // why doesn't this work?
 			clearTimeout(this.memoryTimeout);
 			this.memoryTimeout = null;
-			console.log("Cleared timeout");
+			// console.log("Cleared timeout");
 		}
 		var self = this;
 		this.memoryTimeout = setTimeout(function() {
@@ -367,7 +364,7 @@ function Drawing(idIn, startLayer) {
 			});
 		}, settings.MEMORY_TIMEOUT);
 
-		console.log("New memory timeout: "+this.memoryTimeout);
+		// console.log("New memory timeout: "+this.memoryTimeout);
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -398,7 +395,7 @@ function Drawing(idIn, startLayer) {
 	// layer is a base64 encoded PNG string from the client
 	this.addLayer = function(layerObj) {
 		this.nLayers++;
-		console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
+		// console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		this.updateEdited();
 		this.setMemoryTimeout();
@@ -525,9 +522,9 @@ function AssocArray() {
 		return null;
 	}
 	this.set = function(key, value) {
-		if (this.get(key)) {
-			console.log("Replacing existing layer!");
-		}
+		// if (this.get(key)) {
+		// 	console.log("Replacing existing layer!");
+		// }
 		this.values[key] = value;
 	}
 	this.getLength = function() {
