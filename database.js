@@ -1,5 +1,6 @@
 // Database API wrapper
-// drawy.io
+// This wrapper means we can get some nice debugging and also run synchronous queries.
+// (c) 2017 drawy.io
 
 const mysql = require('mysql');
 const settings = require("./settings")
