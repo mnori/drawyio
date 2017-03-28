@@ -28,7 +28,6 @@ function main() {
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	db = new database.DB(settings.DB_CONNECT_PARAMS);
-	setSigHandlers();
 	server.listen(settings.PORT);
 	console.log("Running on http://localhost:" + settings.PORT);
 }
@@ -82,20 +81,6 @@ function configureDrawingSocket(drawing) {
 			// nothing to do
 		});
 	});
-}
-
-// look out for sigterm/sigint events
-function setSigHandlers() {
-	console.log("setSigHandlers() invoked");
-
-	// This was supposed to speed up speeds up docker container restarts. 
-	// see https://stackoverflow.com/questions/38787396/docker-restart-entrypoint
-	process.on('SIGTERM', gracefulShutdown);
-	process.on('SIGINT', gracefulShutdown);
-}
-
-function gracefulShutdown() {
-	console.log("gracefulShutdown() invoked");
 }
 
 function getGallery() {
