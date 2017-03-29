@@ -478,6 +478,13 @@ function Drawing(idIn, startLayer) {
 		function flattenRecursive(self, baseBuf, ind) {
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
+			// NOTE - sometimes an extra layer gets added during the end step.
+			// And that layer is not part of the component codes.
+			// It looks broken but still works since the extra layer is resting in memory
+			// When the client requests the drawing, the extra layer will be sent
+
+			// We could mop this up with some extra calls, but it works so not a priority
+
 			if (overlay != null) { // we must merge a layer
 
 			// no limit to the amount of stuff flattened

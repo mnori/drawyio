@@ -1117,12 +1117,16 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				"class=\"drawing_canvas\"> "+
 			"</canvas>"+
 
-			// this is the preview canvas
-			// because it's situated above the drawing canvas, it will always be displayed
-			// above it in the stacking order. So we don't need to worry about z-index being
-			// the same as the preview element.
-			// Good explanation can be found here
-			// https://philipwalton.com/articles/what-no-one-told-you-about-z-index/
+			/* 
+			This is the preview canvas.
+			
+			Because it's situated below the drawing canvas, in the html 
+			it will always be displayed above it in the stacking order. So we don't 
+			need to worry about z-index being the same as the preview element.
+			
+			Good explanation can be found here
+			https://philipwalton.com/articles/what-no-one-told-you-about-z-index/ 
+			*/
 			"<canvas id=\""+canvasID+"_preview\" "+
 				"width=\""+width+"\" height=\""+height+"\" "+
 				"style=\"z-index: 0;\" "+ // bumpCanvas will take care of the z-index
@@ -1197,7 +1201,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 					if (layer != null) {
 						console.log(layer);
 						layer.remove();
-						console.log("["+layerCode+"] Component deleted")
 					}
 					var previewLayer = getLayerByCode(codes[i]);
 					if (previewLayer != null) {
