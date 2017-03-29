@@ -219,8 +219,6 @@ function createDrawing(req, res) {
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
 			var drawing = new Drawing(drawID, layer);
-			drawing.setSaveTimeout();
-			drawings.set(drawID, drawing);
 			configureDrawingSocket(drawing);
 			res.send(drawID);
 			console.log("Drawing "+drawID+" created.");
@@ -319,7 +317,6 @@ function loadImage(drawID, callback) {
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
 		var drawing = new Drawing(drawID, layer);
-		drawings.set(drawID, drawing);
 		configureDrawingSocket(drawing);
 		callback(drawing);				
 	}).catch(function(err) {
@@ -338,6 +335,12 @@ function Drawing(idIn, startLayer) {
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0;
+
+	this.init = function(startLayer) {
+		this.addLayer(startLayer);
+		this.setSaveTimeout();
+		drawings.set(this.id, this);
+	}
 
 	this.destroy = function() {
 		// we must properly delete our socket namespace, otherwise we end up
@@ -531,7 +534,8 @@ function Drawing(idIn, startLayer) {
 		componentCodes.push(baseLayer.code);
 		flattenRecursive(this, baseBuf, 0);
 	}
-	this.addLayer(startLayer);
+
+	this.init(startLayer);
 }
 
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.
