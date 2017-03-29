@@ -1,6 +1,4 @@
 // Settings file for drawy.io node.js backend
-// see https://stackoverflow.com/questions/5797852/in-node-js-how-do-i-include-functions-from-my-other-files
-
 // Define global constants
 module.exports = {
 	PORT: 8080, // Which port to expose to the outside world

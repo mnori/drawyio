@@ -1,4 +1,6 @@
 #!/bin/bash
+# Restarts the server quickly. Not a clean reset, but who cares, it's just for development
+
 docker kill drawyio
 
 docker start  `docker ps -q -l` # restart it in the background
