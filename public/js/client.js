@@ -36,7 +36,16 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var canvasCeiling = 999999999;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
-	var finaliseTimeoutMs = 100; // mainly for brush and line drawing
+
+	/*
+	finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
+
+	NOTE:
+	If this is low enough, the system will begin to break down. The issue seems 
+	to be related to the finaliseEdit and processCanvas methods
+	It would be a good idea to fix this stuff
+	*/
+	var finaliseTimeoutMs = 1000; 
 	var textMargin = 10; // pixels to offset the text box preview
 	var defaultText = "Enter text";
 	var brushSizeMenu = null; // initialised later
@@ -162,7 +171,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
-		if (emit) pickerToToolColour(); // practically everything has a tool colour
+		if (emit) pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
 			tool.tool == "flood" && 
 			emit && tool.state == "start" && finaliseTimeout == null
@@ -182,7 +191,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			// still need to emit those mouse coords though - for the cursor update on the remote
 			if (emit) emitTool(tool); 
 
-		} else if (tool.tool == "paint") { // wobbly line
+		} else if (tool.tool == "paint") { // free drawn line
 			handlePaint(tool, emit);
 
 		} else if (tool.tool == "line") { // straight line
@@ -196,7 +205,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		}
 	}
 
-	// drawing a straight line
+	// drawing a straight line between two points
 	function handleLine(tool, emit) {
 		if (tool.state == "idle") {
 			if (emit) emitTool(tool);
@@ -206,7 +215,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		var thisCtx = getDrawCtx(tool, emit); 
 		if (tool.state == "start" || tool.state == "drawing") {
 			if (tool.state == "start") {
-				initBaseData(thisCtx); // only does it if there is no base data
+				// for lines, base data is the data without the line preview data
+				// it means we can drag a line around on the screen and refresh it
+				// with the stuff behind it
+				initBaseData(thisCtx); 
 			}
 
 			if (emit) {
@@ -224,6 +236,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			
 		} else if (tool.state == "end") {
 			// draw line data onto canvas
+			// remember, drawLine is not async. so we can't settimeout it
 			drawLine(tool, emit);
 
 			// get the line data from the canvas, set into baseData.
@@ -353,19 +366,25 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function finaliseEdit(toolIn, emit) {
 		if (emit) { // local user, not remote user
 			var thisCtx = getDrawCtx(toolIn, emit); 
-			toolIn.state = "end";
-			var toolOut = JSON.parse(JSON.stringify(toolIn)); // don't use tool, use this!
+
+			// Copy the tool so we can modify it before sending to client
+			var toolOut = JSON.parse(JSON.stringify(toolIn));
+			toolOut.state = "end";
 			emitTool(toolOut);
 			if (toolOut.tool == "paint" && toolOut.meta != null && toolOut.meta.lineEntries != null) {
 				drawPaint(toolOut, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
+				// ah but what if finaliseTimeout is already running?
 				clearTimeout(finaliseTimeout);
 			}
 			finaliseTimeout = setTimeout(function() {
+				console.log("finaliseTimeout invoked");
 				// Processing step
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], toolOut, thisCtx);
+
+				// this will be executed after the synchronous bit of the processCanvas
 				toolIn.layerCode = null;
 			}, finaliseTimeoutMs);
 		}
@@ -408,18 +427,16 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		}
 
 		// Check both coords are present
+		// This is expected when the mouse is outside the canvas
 		if (toolIn.meta == null) {
-			console.log("meta is null!");
 			return;
 		}
 		var start = toolIn.meta.startCoord
 		if (start == null) {
-			console.log("start is null!");
 			return;
 		}
 		var end = toolIn.newCoord;
 		if (end == null) {
-			console.log("end is null!");
 			return;
 		}
 
@@ -1119,8 +1136,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 			/* 
 			This is the preview canvas.
-			
-			Because it's situated below the drawing canvas, in the html 
+
+			Because it's situated below the drawing canvas in the html 
 			it will always be displayed above it in the stacking order. So we don't 
 			need to worry about z-index being the same as the preview element.
 			
@@ -1199,7 +1216,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 					var layerCode = codes[i];
 					var layer = getLayerByCode(layerCode);
 					if (layer != null) {
-						console.log(layer);
 						layer.remove();
 					}
 					var previewLayer = getLayerByCode(codes[i]);
@@ -1211,7 +1227,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			if (context.duplicate != null) {
 				// Delete duplicate layer
 				context.duplicate.remove();
-				console.log("Duplicate deleted")
 			}
 			if (context.previewDuplicate != null) {
 				context.previewDuplicate.remove();
