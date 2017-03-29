@@ -1252,6 +1252,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 					var base64 = fr.result;
 					socket.emit("add_layer", layer);
 					finaliseTimeout = null; 
+
+					console.log("Emitted layer of code ["+layer.code+"]");
 				}
 			}
 			fr.readAsDataURL(blob);

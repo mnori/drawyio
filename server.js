@@ -453,13 +453,13 @@ function Drawing(idIn, startLayer) {
 			console.log("Already being flattened!");
 			return;
 		}
-		console.log("Started flattening");
 		this.isFlattening = true;
 		// must increment at the beginning to avoid new layers getting overwritten
 
 		// make room for the flattened image
-		this.nLayers++; 
+		this.nLayers++;
 		var flattenedLayerID = this.nLayers;
+		console.log("["+flattenedLayerID+"] Started flattening");
 
 		// String codes of the component layers of the flatten
 		var componentCodes = []
@@ -467,7 +467,7 @@ function Drawing(idIn, startLayer) {
 		function flattenRecursive(self, baseBuf, ind) {
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
-			if (ind < settings.MAX_LAYERS && overlay != null) {
+			if (ind < settings.MAX_LAYERS && overlay != null) { // we must merge a layer
 
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
@@ -479,16 +479,14 @@ function Drawing(idIn, startLayer) {
 					}
 				);
 
-			} else {
-				// reached the end
+			} else { // reached the end - no more layers to merge
 				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
 					// save the image to disk
 					saveImage(self.id, buffer, function(err) {
 
-						// now do a load of other stuff - set flattened image into the 
-						// drawing and broadcast the results
+						// set flattened image into the drawing and broadcast the results
 						var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
 						// Remove old layers but not new ones					
@@ -508,7 +506,9 @@ function Drawing(idIn, startLayer) {
 							code: randomString(settings.LAYER_CODE_LEN),
 							components: componentCodes
 						});
-						console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
+						console.log("["+flattenedLayerID+"] Drawing has been flattened, "+ind+" layers total");
+						console.log("Here are the components:");
+						console.log(componentCodes);
 
 						// now we must update each client
 						self.broadcast();
@@ -531,7 +531,8 @@ function Drawing(idIn, startLayer) {
 		var baseLayer = this.getUnmergedLayer(0);
 		var baseBuf = base64ToBuffer(baseLayer.base64); // base image
 		componentCodes.push(baseLayer.code);
-		flattenRecursive(this, baseBuf, 0);
+		var self = this;
+		flattenRecursive(self, baseBuf, 0);
 	}
 
 	this.init(startLayer);
