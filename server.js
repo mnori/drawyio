@@ -190,6 +190,7 @@ function sendDrawingImage(req, res) {
 	});
 }
 
+// Create a blank canvas image to draw on
 function createDrawing(req, res) {
 	// 1. Find a unique drawing ID
 	makeDrawID(function(drawID) {
@@ -219,6 +220,7 @@ function createDrawing(req, res) {
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
 			var drawing = new Drawing(drawID, layer);
+			drawing.setSaveTimeout();
 			configureDrawingSocket(drawing);
 			res.send(drawID);
 			console.log("Drawing "+drawID+" created.");
@@ -338,7 +340,7 @@ function Drawing(idIn, startLayer) {
 
 	this.init = function(startLayer) {
 		this.addLayer(startLayer);
-		this.setSaveTimeout();
+		// this.setSaveTimeout(); // don't do this! causes bug. do it outside
 		drawings.set(this.id, this);
 	}
 
