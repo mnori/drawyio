@@ -14,8 +14,8 @@ const app = express();
 const ta = require('time-ago')(); // set up time-ago human readable dates library
 const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
-const settings = require("./settings")
-const database = require("./database")
+const settings = require("./settings") // Our settings
+const database = require("./database") // Our database wrapper
 
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
@@ -115,7 +115,7 @@ function receiveTool(data, socket) {
 	});
 }
 
-// we'll also want a broadcastDrawing() method for when the image is flattened
+// Send drawing data to client
 function sendDrawing(data, socket) {
 	var drawID = data.drawID;
 	getDrawing(drawID, function(drawing) {
@@ -303,11 +303,9 @@ function getDrawing(drawID, loadCallback) {
 }
 
 // Save a drawing to disk
-function saveImage(drawID, data) {
+function saveImage(drawID, data, callback) {
 	var outFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
-	fs.writeFile(outFilepath, data, function(err) {
-		// .. nothing to do
-	});
+	fs.writeFile(outFilepath, data, callback);
 }
 
 // Try to load a drawing from disk
@@ -357,10 +355,13 @@ function Drawing(idIn, startLayer) {
 			console.log("memoryTimeout triggered");
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
-				saveImage(self.id, buffer);
-				drawings.remove(self.id)
-				self.memoryTimeout = null;
-				console.log("Saved image");
+				saveImage(self.id, buffer, function(err) {
+					drawings.remove(self.id)
+					self.memoryTimeout = null;
+					console.log("Saved image");
+					// var stack = new Error().stack
+					// console.log( stack )
+				});
 			});
 		}, settings.MEMORY_TIMEOUT);
 
@@ -465,33 +466,39 @@ function Drawing(idIn, startLayer) {
 				// reached the end
 				// now we must convert the image to base 64 encoded string again
 				sharp(baseBuf).png().toBuffer().then(function(buffer) {
-					saveImage(self.id, buffer);
-					var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
 
-					// Remove old layers but not new ones					
-					var keys = self.layers.getKeys();
-					for (var i = 0; i < keys.length; i++) {
-						var key = keys[i];
-						if (parseInt(key) < flattenedLayerID) {
-							self.layers.remove(key);
+					// save the image to disk
+					saveImage(self.id, buffer, function(err) {
+
+						// now do a load of other stuff - set flattened image into the 
+						// drawing and broadcast the results
+						var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
+
+						// Remove old layers but not new ones					
+						var keys = self.layers.getKeys();
+						for (var i = 0; i < keys.length; i++) {
+							var key = keys[i];
+							if (parseInt(key) < flattenedLayerID) {
+								self.layers.remove(key);
+							}
 						}
-					}
 
-					// Add the new flattened layer
-					self.layers.set(flattenedLayerID, {
-						id: flattenedLayerID,
-						base64: base64, 
-						offsets: {top: 0, right: 0, bottom: 0, left: 0},
-						code: randomString(settings.LAYER_CODE_LEN),
-						components: componentCodes
+						// Add the new flattened layer
+						self.layers.set(flattenedLayerID, {
+							id: flattenedLayerID,
+							base64: base64, 
+							offsets: {top: 0, right: 0, bottom: 0, left: 0},
+							code: randomString(settings.LAYER_CODE_LEN),
+							components: componentCodes
+						});
+						console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
+
+						// now we must update each client
+						self.broadcast();
+						self.isFlattening = false;
+						self.emptyImage = false;
+						self.setMemoryTimeout();
 					});
-					console.log("["+self.nLayers+"] Drawing has been flattened, "+ind+" layers total");
-
-					// now we must update each client
-					self.broadcast();
-					self.isFlattening = false;
-					self.emptyImage = false;
-					self.setMemoryTimeout();
 				});
 			}
 		}
