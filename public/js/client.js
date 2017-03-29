@@ -41,9 +41,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
 
 	NOTE:
-	If this is low enough, the system will begin to break down. The issue seems 
+	The system will begin to fail with lower timeout values. The issue seems 
 	to be related to the finaliseEdit and processCanvas methods
-	It would be a good idea to fix this stuff
+	
+	Specifically it seems due to timeouts executing at the same time
+
+	Possible fixes - chain timeouts together using Promise
+	Or copy the drawing canvas so that stuff doesn't interfere
 	*/
 	var finaliseTimeoutMs = 1000; 
 	var textMargin = 10; // pixels to offset the text box preview
@@ -376,6 +380,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			}
 			if (finaliseTimeout != null) {
 				// ah but what if finaliseTimeout is already running?
+				// you'll get two timeouts overlapping each other
 				clearTimeout(finaliseTimeout);
 			}
 			finaliseTimeout = setTimeout(function() {
