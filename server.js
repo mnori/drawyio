@@ -56,7 +56,9 @@ function configureRoutes(app) {
 }
 
 // Set up drawing-specific event handlers
+// maybe we should be attaching this to the Drawing object in the constructor?
 function configureDrawingSocket(drawing) {
+	console.log("configureDrawingSocket() invoked");
 
 	// set up the drawing's socket namespace
 	var drawingNS = io.of("/drawing_socket_"+drawing.id);
@@ -335,6 +337,21 @@ function Drawing(idIn, startLayer) {
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0;
 
+	this.destroy = function() {
+
+		// we have properly delete our socket namespace, otherwise we end up
+		// with a disastrous memory leak problem
+
+		// fetch the identifiers of the sockets
+		var socketsConnected = Object.keys(this.socketNS.connected);
+		for (var i = 0; i < socketsConnected.length; i++) {
+			var socketID = socketsConnected[i];
+			this.socketNS.connected[socketID].disconnect();
+		}
+		this.socketNS.removeAllListeners();
+		delete io.nsps["/drawing_socket_"+this.id];
+	}
+
 	// Broadcast all drawing data to all sockets
 	this.broadcast = function() {
 		var self = this;
@@ -342,13 +359,10 @@ function Drawing(idIn, startLayer) {
 	}
 
 	this.setMemoryTimeout = function() {
-		// console.log(this)
-		// console.log("setMemoryTimeout()");
-		// console.log("memoryTimeout: ", this.memoryTimeout);
 		if (this.memoryTimeout) { // why doesn't this work?
+			console.log("Existing timeout cleared");
 			clearTimeout(this.memoryTimeout);
 			this.memoryTimeout = null;
-			// console.log("Cleared timeout");
 		}
 		var self = this;
 		this.memoryTimeout = setTimeout(function() {
@@ -357,10 +371,9 @@ function Drawing(idIn, startLayer) {
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 				saveImage(self.id, buffer, function(err) {
 					drawings.remove(self.id)
-					self.memoryTimeout = null;
-					console.log("Saved image");
-					// var stack = new Error().stack
-					// console.log( stack )
+					self.destroy();
+					// self.memoryTimeout = null;
+					console.log("Saved image and destroyed");
 				});
 			});
 		}, settings.MEMORY_TIMEOUT);
