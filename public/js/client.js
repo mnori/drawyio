@@ -151,7 +151,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function regenLayerCode() {
 		if (tool.layerCode == null) { 
 			tool.layerCode = randomString(layerCodeLen);
-			console.log("["+tool.layerCode+"] code was generated");
 		}
 	}
 
@@ -206,10 +205,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 		var thisCtx = getDrawCtx(tool, emit); 
 		if (tool.state == "start" || tool.state == "drawing") {
-			initBaseData(thisCtx); // only does it if there is no base data
+			if (tool.state == "start") {
+				initBaseData(thisCtx); // only does it if there is no base data
+			}
 
-			// This fix comes from the handlePaint method - stops the canvas from being
-			// cleared between clicks
 			if (emit) {
 				readBrushSize(tool);
 				clearFinalise();
@@ -224,7 +223,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			
 			
 		} else if (tool.state == "end") {
+			// draw line data onto canvas
 			drawLine(tool, emit);
+
+			// get the line data from the canvas, set into baseData.
+			// this is the final line drawing
 			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);/**/
 			finaliseEdit(tool, emit);
 			tool.state = "idle"; // pretty important to avoid issues
@@ -397,29 +400,33 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		var thisCtx = getDrawCtx(toolIn, emit); 
 
 		// Create a copy of the base data
+		// must create empty data first
 		var previewData = thisCtx.createImageData(width, height);
 		if (typeof(thisCtx.baseData) !== "undefined") {
-			// slice() makes a copy of the array
+			// fill out the empty preview data with base data
 			previewData.data.set(thisCtx.baseData.data.slice()); 
 		}
 
 		// Check both coords are present
 		if (toolIn.meta == null) {
+			console.log("meta is null!");
 			return;
 		}
 		var start = toolIn.meta.startCoord
 		if (start == null) {
+			console.log("start is null!");
 			return;
 		}
 		var end = toolIn.newCoord;
 		if (end == null) {
+			console.log("end is null!");
 			return;
 		}
 
-		// Draw a line over the cached data
+		// Draw a line over the copied data
 		plotLine(previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
-		// Put the cached image data back into canvas DOM element
+		// Put the modified image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
 	}
 
@@ -496,10 +503,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function initBaseData(thisCtx) {
-		if (typeof(thisCtx.baseData) == "undefined") {
-			// Initialise the base data cache
-			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
-		}
+		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 	}
 
 	function setupControls() {
@@ -1188,9 +1192,12 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				for (var i = 0; i < codes.length; i++) {
 
 					// Delete component layers
-					var layer = getLayerByCode(codes[i]);
+					var layerCode = codes[i];
+					var layer = getLayerByCode(layerCode);
 					if (layer != null) {
+						console.log(layer);
 						layer.remove();
+						console.log("["+layerCode+"] Component deleted")
 					}
 					var previewLayer = getLayerByCode(codes[i]);
 					if (previewLayer != null) {
@@ -1201,6 +1208,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			if (context.duplicate != null) {
 				// Delete duplicate layer
 				context.duplicate.remove();
+				console.log("Duplicate deleted")
 			}
 			if (context.previewDuplicate != null) {
 				context.previewDuplicate.remove();
@@ -1215,6 +1223,12 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(sourceCanvas, croppingCanvas, toolIn) {
+
+		// // Clear the baseData
+		// if (toolIn.tool == "line") {
+		// 	console.log("baseData deleted");
+		// 	delete ctx.baseData;
+		// }	
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
@@ -1241,10 +1255,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				// Clear the canvas
 				ctx.clearRect(0, 0, width, height)
 
-				// Clear the baseData
-				if (toolIn.tool == "line") {
-					delete ctx.baseData;
-				}
+				// // Clear the baseData
+				// if (toolIn.tool == "line") {
+				// 	console.log("baseData deleted");
+				// 	delete ctx.baseData;
+				// }
 
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
@@ -1253,8 +1268,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 					var base64 = fr.result;
 					socket.emit("add_layer", layer);
 					finaliseTimeout = null; 
-
-					console.log("Emitted layer of code ["+layer.code+"]");
 				}
 			}
 			fr.readAsDataURL(blob);
