@@ -219,7 +219,7 @@ function createDrawing(req, res) {
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
 			var drawing = new Drawing(drawID, layer);
-			drawing.setMemoryTimeout();
+			drawing.setSaveTimeout();
 			drawings.set(drawID, drawing);
 			configureDrawingSocket(drawing);
 			res.send(drawID);
@@ -293,10 +293,12 @@ function base64ToBuffer(base64) {
 
 function getDrawing(drawID, loadCallback) {
 	var drawing = drawings.get(drawID);	
-	if (typeof(loadCallback) === "undefined") { // return the value
+	if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
+		drawing.setSaveTimeout(); // pip the timout
 		return drawing;
 	} else if (typeof(loadCallback) !== "undefined") { // callback the value
 		if (drawing != null) {
+			drawing.setSaveTimeout(); // pip the timout
 			loadCallback(drawing);
 		} else {
 			loadImage(drawID, loadCallback);
@@ -332,7 +334,7 @@ function Drawing(idIn, startLayer) {
 	this.isFlattening = false;
 	this.timeout = null;
 	this.emptyImage = true; // whether the PNG is empty
-	this.memoryTimeout = null;
+	this.saveTimeout = null;
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0;
@@ -363,15 +365,14 @@ function Drawing(idIn, startLayer) {
 		this.socketNS.emit("update_drawing", self.getJson());
 	}
 
-	this.setMemoryTimeout = function() {
-		if (this.memoryTimeout) {
-			console.log("Existing timeout cleared");
-			clearTimeout(this.memoryTimeout);
-			this.memoryTimeout = null;
+	this.setSaveTimeout = function() {
+		if (this.saveTimeout) {
+			clearTimeout(this.saveTimeout);
+			this.saveTimeout = null;
 		}
 		var self = this;
-		this.memoryTimeout = setTimeout(function() {
-			console.log("memoryTimeout triggered");
+		this.saveTimeout = setTimeout(function() {
+			console.log("saveTimeout triggered");
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 				saveImage(self.id, buffer, function(err) {
@@ -414,7 +415,6 @@ function Drawing(idIn, startLayer) {
 		// console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		this.updateEdited();
-		this.setMemoryTimeout();
 		return this.nLayers;
 	}
 	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
@@ -512,7 +512,7 @@ function Drawing(idIn, startLayer) {
 						self.broadcast();
 						self.isFlattening = false;
 						self.emptyImage = false;
-						self.setMemoryTimeout();
+						self.setSaveTimeout();
 					});
 				});
 			}
