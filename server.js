@@ -55,36 +55,6 @@ function configureRoutes(app) {
 	app.use(function(req, res, next) { send404(res); })
 }
 
-// Set up drawing-specific event handlers
-// maybe we should be attaching this to the Drawing object in the constructor?
-function configureDrawingSocket(drawing) {
-	console.log("configureDrawingSocket() invoked");
-
-	// set up the drawing's socket namespace
-	var drawingNS = io.of("/drawing_socket_"+drawing.id);
-	drawing.addSocketNS(drawingNS);
-
-	// set up the event handlers
-	drawingNS.on('connection', function(socket) {
-
-		// Returns the drawing data to the client. The callback method is placed here
-		// so that we can pass the socket in as well
-		socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
-
-		// Update drawing with mouse cursor info
-		socket.on("receive_tool", function(data) { receiveTool(data, socket); });
-
-		// Receive new png draw data as base64 encoded string and add to the Drawing
-		socket.on("add_layer", function(data) { receiveLayer(data, socket); });
-
-		// disconnect a socket
-		socket.on("disconnect", function() {
-			console.log("Disconnect from "+drawing.id);
-			// nothing to do
-		});
-	});
-}
-
 function getGallery() {
 
 	// build some gallery objects
@@ -220,8 +190,6 @@ function createDrawing(req, res) {
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
 			var drawing = new Drawing(drawID, layer);
-			drawing.setSaveTimeout();
-			configureDrawingSocket(drawing);
 			res.send(drawID);
 			console.log("Drawing "+drawID+" created.");
 		});
@@ -319,7 +287,6 @@ function loadImage(drawID, callback) {
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
 		var drawing = new Drawing(drawID, layer);
-		configureDrawingSocket(drawing);
 		callback(drawing);				
 	}).catch(function(err) {
 		callback(null);
@@ -340,8 +307,9 @@ function Drawing(idIn, startLayer) {
 
 	this.init = function(startLayer) {
 		this.addLayer(startLayer);
-		// this.setSaveTimeout(); // don't do this! causes bug. do it outside
+		this.setSaveTimeout();
 		drawings.set(this.id, this);
+		this.configureDrawingNS();
 	}
 
 	this.destroy = function() {
@@ -368,6 +336,35 @@ function Drawing(idIn, startLayer) {
 	this.broadcast = function() {
 		var self = this;
 		this.socketNS.emit("update_drawing", self.getJson());
+	}
+
+	// Set up drawing-specific event handlers for the socket namespace
+	this.configureDrawingNS = function() {
+		console.log("configureDrawingNS() invoked");
+
+		// set up the drawing's socket namespace
+		var drawingNS = io.of("/drawing_socket_"+this.id);
+		this.addSocketNS(drawingNS);
+
+		// set up the event handlers
+		drawingNS.on('connection', function(socket) {
+
+			// Returns the drawing data to the client. The callback method is placed here
+			// so that we can pass the socket in as well
+			socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
+
+			// Update drawing with mouse cursor info
+			socket.on("receive_tool", function(data) { receiveTool(data, socket); });
+
+			// Receive new png draw data as base64 encoded string and add to the Drawing
+			socket.on("add_layer", function(data) { receiveLayer(data, socket); });
+
+			// disconnect a socket
+			socket.on("disconnect", function() {
+				console.log("Disconnect from "+this.id);
+				// nothing to do
+			});
+		});
 	}
 
 	this.setSaveTimeout = function() {
