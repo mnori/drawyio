@@ -151,6 +151,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function regenLayerCode() {
 		if (tool.layerCode == null) { 
 			tool.layerCode = randomString(layerCodeLen);
+			console.log("["+tool.layerCode+"] code was generated");
 		}
 	}
 
