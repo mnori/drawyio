@@ -529,9 +529,6 @@ function Drawing(idIn, startLayer) {
 						self.isFlattening = false;
 						self.emptyImage = false;
 						self.setSaveTimeout();
-
-						// nope - just do as many layers as possible
-						// self.handleFlatten(); 
 					});
 				});
 			}
