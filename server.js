@@ -338,17 +338,22 @@ function Drawing(idIn, startLayer) {
 	this.nLayers = 0;
 
 	this.destroy = function() {
-
-		// we have properly delete our socket namespace, otherwise we end up
+		// we must properly delete our socket namespace, otherwise we end up
 		// with a disastrous memory leak problem
 
 		// fetch the identifiers of the sockets
 		var socketsConnected = Object.keys(this.socketNS.connected);
+
+		// disconnect all sockets
 		for (var i = 0; i < socketsConnected.length; i++) {
 			var socketID = socketsConnected[i];
 			this.socketNS.connected[socketID].disconnect();
 		}
+
+		// remove socket event listeners
 		this.socketNS.removeAllListeners();
+
+		// finally, remove the socket namespace
 		delete io.nsps["/drawing_socket_"+this.id];
 	}
 
@@ -359,7 +364,7 @@ function Drawing(idIn, startLayer) {
 	}
 
 	this.setMemoryTimeout = function() {
-		if (this.memoryTimeout) { // why doesn't this work?
+		if (this.memoryTimeout) {
 			console.log("Existing timeout cleared");
 			clearTimeout(this.memoryTimeout);
 			this.memoryTimeout = null;
@@ -372,13 +377,10 @@ function Drawing(idIn, startLayer) {
 				saveImage(self.id, buffer, function(err) {
 					drawings.remove(self.id)
 					self.destroy();
-					// self.memoryTimeout = null;
 					console.log("Saved image and destroyed");
 				});
 			});
 		}, settings.MEMORY_TIMEOUT);
-
-		// console.log("New memory timeout: "+this.memoryTimeout);
 	}
 
 	// Broadcast a single layer to all sockets except originator
