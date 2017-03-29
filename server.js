@@ -107,22 +107,7 @@ function receiveLayer(data, socket) {
 			var layer = data;
 			var layerID = drawing.addLayer(layer);
 			drawing.broadcastLayer(layerID, layer, socket);
-
-			if (drawing.flattenTimeout) {
-				// Timout already exists
-				clearTimeout(drawing.flattenTimeout)
-				drawing.flattenTimeout = null;
-			}
-			if (drawing.getNStoredLayers() > settings.MAX_LAYERS) {
-				// Max layers reached - always flatten at this point
-				drawing.flatten();
-			} else {
-				// Not reached max layers, so set a rolling timout
-				drawing.flattenTimeout = setTimeout(function() {
-					console.log("Flatten timeout triggered");
-					drawing.flatten();
-				}, settings.FLATTEN_TIMEOUT);
-			}
+			drawing.handleFlatten();
 		}	
 	});
 }
@@ -451,7 +436,29 @@ function Drawing(idIn, startLayer) {
 		return ta.ago(this.lastEdited);
 	}
 
+	// Handles timeout logic for flattening. Called from outside and also inside
+	// after flatten completetion for new layers
+	this.handleFlatten = function() {
+		if (this.flattenTimeout) {
+			// Timout already exists
+			clearTimeout(this.flattenTimeout)
+			this.flattenTimeout = null;
+		}
+		if (this.getNStoredLayers() > settings.MAX_LAYERS) {
+			// Max layers reached - always flatten at this point
+			this.flatten();
+		} else {
+			// Not reached max layers,  so set a rolling timout
+			var self = this;
+			this.flattenTimeout = setTimeout(function() {
+				console.log("Flatten timeout triggered");
+				self.flatten();
+			}, settings.FLATTEN_TIMEOUT);
+		}
+	}
+
 	// Merges the layers into a single image. This is a pretty expensive operation.
+	// Not called from outside
 	this.flatten = function() {
 		if (this.isFlattening) {
 			console.log("Already being flattened!");
@@ -471,7 +478,10 @@ function Drawing(idIn, startLayer) {
 		function flattenRecursive(self, baseBuf, ind) {
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
-			if (ind < settings.MAX_LAYERS && overlay != null) { // we must merge a layer
+			if (overlay != null) { // we must merge a layer
+
+			// no limit to the amount of stuff flattened
+			// if (ind < settings.MAX_LAYERS && overlay != null) { // we must merge a layer
 
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
@@ -519,6 +529,9 @@ function Drawing(idIn, startLayer) {
 						self.isFlattening = false;
 						self.emptyImage = false;
 						self.setSaveTimeout();
+
+						// nope - just do as many layers as possible
+						// self.handleFlatten(); 
 					});
 				});
 			}
