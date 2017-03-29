@@ -422,7 +422,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		thisCtx.putImageData(previewData, 0, 0);
 	}
 
-	/* TOOL METHODS */
+	// Draw woblly line onto canvas
 	function drawPaint(toolIn, emit) {
 		if (toolIn.meta == null) {
 			console.log("Warning -> drawPaint called without data!");
@@ -442,6 +442,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			var prevCoord = entries[i - 1].coord;
 			var thisCoord = entries[i].coord;
 			if (prevCoord == null || thisCoord == null) {
+				// might happen if mouse is outside the boundaries
 				continue;
 			}
 			plotLine(destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			

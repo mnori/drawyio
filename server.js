@@ -107,15 +107,15 @@ function receiveLayer(data, socket) {
 			var layer = data;
 			var layerID = drawing.addLayer(layer);
 			drawing.broadcastLayer(layerID, layer, socket);
-			if (drawing.timeout) {
-				clearTimeout(drawing.timeout)
-				drawing.timeout = null;
+			if (drawing.flattenTimeout) {
+				clearTimeout(drawing.flattenTimeout)
+				drawing.flattenTimeout = null;
 			}
 			if (drawing.getNStoredLayers() > settings.MAX_LAYERS) {
 				drawing.flatten();
 			} else {
-				drawing.timeout = setTimeout(function() {
-					console.log("Timeout triggered");
+				drawing.flattenTimeout = setTimeout(function() {
+					console.log("Flatten timeout triggered");
 					drawing.flatten();
 				}, settings.FLATTEN_TIMEOUT);
 			}
@@ -298,7 +298,7 @@ function Drawing(idIn, startLayer) {
 	this.layers = new AssocArray();
 	this.socketNS = null; // contains all the sockets attached to this drawing
 	this.isFlattening = false;
-	this.timeout = null;
+	this.flattenTimeout = null;
 	this.emptyImage = true; // whether the PNG is empty
 	this.saveTimeout = null;
 	// used to generate unique sequential layer IDs
@@ -414,7 +414,7 @@ function Drawing(idIn, startLayer) {
 	// layer is a base64 encoded PNG string from the client
 	this.addLayer = function(layerObj) {
 		this.nLayers++;
-		// console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
+		console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		this.updateEdited();
 		return this.nLayers;
