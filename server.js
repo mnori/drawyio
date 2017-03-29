@@ -107,13 +107,17 @@ function receiveLayer(data, socket) {
 			var layer = data;
 			var layerID = drawing.addLayer(layer);
 			drawing.broadcastLayer(layerID, layer, socket);
+
 			if (drawing.flattenTimeout) {
+				// Timout already exists
 				clearTimeout(drawing.flattenTimeout)
 				drawing.flattenTimeout = null;
 			}
 			if (drawing.getNStoredLayers() > settings.MAX_LAYERS) {
+				// Max layers reached - always flatten at this point
 				drawing.flatten();
 			} else {
+				// Not reached max layers, so set a rolling timout
 				drawing.flattenTimeout = setTimeout(function() {
 					console.log("Flatten timeout triggered");
 					drawing.flatten();
