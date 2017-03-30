@@ -26,6 +26,10 @@ function configureNick() {
 }
 
 function showNickModal(rename) {
+	var existingNick = getCookie("nick");
+	if (existingNick != null) {
+		$("#nick_input").val(existingNick);
+	}
 	$("#nick_dialog").dialog("open");
 	if (rename) {
 		$("#nick_message").html("Please enter a new nickname.");
