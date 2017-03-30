@@ -98,8 +98,9 @@ function getGallery() {
 			return 1;
 		}
 		return 0;
-	})
-	return out;
+	});
+
+	return out.slice(0, settings.MIN_DRAWINGS_MEMORY);
 }
 
 function receiveTool(data, socket) {
@@ -314,6 +315,7 @@ function Drawing(idIn, startLayer) {
 	this.emptyImage = true; // whether the PNG is empty
 	this.isModified = false; // whether the image has been modified since loading from disk
 	this.saveTimeout = null;
+	this.lastEdited = null;
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0;
@@ -323,8 +325,8 @@ function Drawing(idIn, startLayer) {
 		this.isModified = false; // intial image is not modified
 		this.setSaveTimeout();
 		drawings.set(this.id, this);
-		console.log("Added drawing, there are now "+drawings.getLength());
 		this.configureDrawingNS();
+		console.log("["+drawings.getLength()+"] total, drawing created");
 	}
 
 	this.destroy = function() {
@@ -350,7 +352,7 @@ function Drawing(idIn, startLayer) {
 		delete io.nsps["/drawing_socket_"+this.id];
 
 		// debug
-		console.log("["+drawings.getLength()+"] drawings in memory");
+		console.log("["+drawings.getLength()+"] total, drawing destroyed");
 	}
 
 	// Broadcast all drawing data to all sockets
@@ -387,6 +389,7 @@ function Drawing(idIn, startLayer) {
 		});
 	}
 
+	// Set rolling timeout for saving drawing data to disk
 	this.setSaveTimeout = function() {
 		if (this.saveTimeout) {
 			clearTimeout(this.saveTimeout);
@@ -394,7 +397,6 @@ function Drawing(idIn, startLayer) {
 		}
 		var self = this;
 		this.saveTimeout = setTimeout(function() {
-			console.log("saveTimeout triggered");
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
@@ -415,7 +417,26 @@ function Drawing(idIn, startLayer) {
 	// Old enough means it falls outside the window
 	this.deleteIfOldEnough = function() {
 		var entries = drawings.getValues();
-		console.log(entries);
+		var self = this;
+		// Sort with newest at the top
+		entries.sort(function(a, b) {
+			var diff = b.lastEdited.getTime() - a.lastEdited.getTime();
+			return diff;
+		});
+
+		// Slice the entries
+		var entries = entries.slice(0, settings.MIN_DRAWINGS_MEMORY);
+
+		// Is this drawing inside the top most recent drawings?
+		var inWindow = false;
+		entries.forEach(function(entry) {
+			if (entry.id == self.id) {
+				inWindow = true;
+			}
+		});
+		if (!inWindow) {
+			this.destroy();
+		}
 	}
 
 	// Broadcast a single layer to all sockets except originator
