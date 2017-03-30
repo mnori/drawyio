@@ -10,6 +10,18 @@ function initSplash() {
 			window.location.href = "/d/"+drawingID
 		});
 	});
+	nick();
+}
+
+// Display a modal asking about setting the nickname cookie
+function nick() {
+	$("#nick_dialog").dialog({
+		resizable: false,
+		height: "auto",
+		width: 400,
+		modal: true,
+	});
+	$("#nick_input").click(function() { $(this).select(); })
 }
 
 // Initialise the drawing image UI
