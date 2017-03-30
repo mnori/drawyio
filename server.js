@@ -356,7 +356,6 @@ function Drawing(idIn, startLayer) {
 
 	// Set up drawing-specific event handlers for the socket namespace
 	this.configureDrawingNS = function() {
-		console.log("configureDrawingNS() invoked");
 
 		// set up the drawing's socket namespace
 		var drawingNS = io.of("/drawing_socket_"+this.id);
@@ -377,7 +376,7 @@ function Drawing(idIn, startLayer) {
 
 			// disconnect a socket
 			socket.on("disconnect", function() {
-				console.log("Disconnect from "+this.id);
+				// console.log("Disconnect from "+this.id);
 				// nothing to do
 			});
 		});
@@ -390,7 +389,7 @@ function Drawing(idIn, startLayer) {
 		}
 		var self = this;
 		this.saveTimeout = setTimeout(function() {
-			console.log("saveTimeout triggered");
+			// console.log("saveTimeout triggered");
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
@@ -398,7 +397,7 @@ function Drawing(idIn, startLayer) {
 					saveImage(self.id, buffer, function(err) {
 						drawings.remove(self.id)
 						self.destroy();
-						console.log("Saved image and destroyed");
+						// console.log("Saved image and destroyed");
 					});	
 				} else { // not modified - just cleanup, don't save
 					drawings.remove(self.id)
@@ -436,7 +435,7 @@ function Drawing(idIn, startLayer) {
 	// layer is a base64 encoded PNG string from the client
 	this.addLayer = function(layerObj) {
 		this.nLayers++;
-		console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
+		// console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		this.updateEdited();
 		this.isModified = true;
@@ -485,7 +484,7 @@ function Drawing(idIn, startLayer) {
 			// Not reached max layers,  so set a rolling timout
 			var self = this;
 			this.flattenTimeout = setTimeout(function() {
-				console.log("Flatten timeout triggered");
+				// console.log("Flatten timeout triggered");
 				self.flatten();
 			}, settings.FLATTEN_TIMEOUT);
 		}
@@ -495,7 +494,7 @@ function Drawing(idIn, startLayer) {
 	// Not called from outside
 	this.flatten = function() {
 		if (this.isFlattening) {
-			console.log("Already being flattened!");
+			// console.log("Already being flattened!");
 			return;
 		}
 		this.isFlattening = true;
@@ -504,7 +503,7 @@ function Drawing(idIn, startLayer) {
 		// make room for the flattened image
 		this.nLayers++;
 		var flattenedLayerID = this.nLayers;
-		console.log("["+flattenedLayerID+"] Started flattening");
+		// console.log("["+flattenedLayerID+"] Started flattening");
 
 		// String codes of the component layers of the flatten
 		var componentCodes = []
@@ -561,9 +560,9 @@ function Drawing(idIn, startLayer) {
 							code: randomString(settings.LAYER_CODE_LEN),
 							components: componentCodes
 						});
-						console.log("["+flattenedLayerID+"] Drawing has been flattened, "+ind+" layers total");
-						console.log("Here are the components:");
-						console.log(componentCodes);
+						// console.log("["+flattenedLayerID+"] Drawing has been flattened, "+ind+" layers total");
+						// console.log("Here are the components:");
+						// console.log(componentCodes);
 
 						// now we must update each client
 						self.broadcast();
@@ -579,7 +578,7 @@ function Drawing(idIn, startLayer) {
 		var nLayers = this.getNStoredLayers();
 		if (nLayers <= 1) {
 			// This shouldn't happen, so log a warning
-			console.log("[WARNING] flatten() called with only "+nLayers+" stored layers");
+			// console.log("[WARNING] flatten() called with only "+nLayers+" stored layers");
 			return;
 		}
 
@@ -625,7 +624,7 @@ function AssocArray() {
 	}
 };
 
-// For performance measurement
+// For performance measurements
 function Timeline() {
 	this.entries = [];
 	this.log = function(name) {
