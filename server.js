@@ -398,16 +398,24 @@ function Drawing(idIn, startLayer) {
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
+				// only remove from memory if it falls outside the window
 				if (self.isModified) { // save modified image
 					saveImage(self.id, buffer, function(err) {
-						self.destroy();
+						self.deleteIfOldEnough();	
 						// console.log("Saved image and destroyed");
 					});	
 				} else { // not modified - just cleanup, don't save
-					self.destroy();
+					self.deleteIfOldEnough();
 				}
 			});
 		}, settings.MEMORY_TIMEOUT);
+	}
+
+	// Decide whether this drawing is old enough to be deleted, delete if it is.
+	// Old enough means it falls outside the window
+	this.deleteIfOldEnough = function() {
+		var entries = drawings.getValues();
+		console.log(entries);
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -616,6 +624,10 @@ function AssocArray() {
 	this.getKeys = function() {
 		return Object.keys(this.values);
 	}
+	this.getValues = function() {
+		return Object.values(this.values);
+	}		
+
 	this.getJson = function() {
 		return JSON.stringify(this.values);	
 	}
