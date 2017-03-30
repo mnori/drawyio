@@ -15,38 +15,59 @@ function initSplash() {
 
 // Set up a modal asking about setting the nickname
 function configureNick() {
+	setupNickModal();
 	var existingNick = getCookie("nick");
 	if (existingNick == null) {
 		showNickModal();
 	} else {
 		$("#nick_dialog").hide();
 	}
-	$("#change_nick_btn").click(showNickModal);
+	$("#change_nick_btn").click(function() { showNickModal(true); });
 }
 
 function showNickModal(rename) {
+	$("#nick_dialog").dialog("open");
 	if (rename) {
 		$("#nick_message").html("Please enter a new nickname.");
+		$(".ui-dialog-title").html("Alert");
 	}
+}
+
+// Kinda messy but does the job
+function setupNickModal() {
 	// Create modal using jqueryui
 	$("#nick_dialog").dialog({
 		resizable: false,
-		height: "auto",
+		height: 400,
 		width: 400,
 		modal: true,
+		draggable: false,
+		autoOpen: false,
+		closeOnEscape: false,
+		open: function(event, ui) {
+	        $(".ui-widget-overlay").css({
+				"background-color": "#000",
+				"opacity": 0.5,
+				"z-index": 2000000013
+			});
+
+			$(".ui-dialog").css({
+				"z-index": 2000000014
+			})
+
+			// Make text input highlight when clicked
+			$("#nick_input").click(function() { $(this).select(); })
+
+			// Set up OK button event handler
+			$("#nick_button").click(function() {
+				var nick = $("#nick_input").val();
+				setCookie("nick", nick, 30); // Set nickname cookie for 30 days
+				$("#nick_dialog").dialog("close");
+			})
+			$(".ui-dialog-titlebar-close").hide();
+			$("#nick_dialog").show();
+	    }
 	});
-
-	// Make text input highlight when clicked
-	$("#nick_input").click(function() { $(this).select(); })
-
-	// Set up OK button event handler
-	$("#nick_button").click(function() {
-		var nick = $("#nick_input").val();
-		setCookie("nick", nick, 30); // Set nickname cookie for 30 days
-		$("#nick_dialog").dialog("close");
-	})
-
-	$("#nick_dialog").show();
 }
 
 // Initialise the drawing image UI
@@ -1000,7 +1021,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		panel.css({
 			"top": (offset.top)+"px",
 			"left": (offset.left - panel.width())+"px",
-			"z-index": 100000000000012
+			"z-index": 2000000012
 		});
 	}
 
@@ -1065,7 +1086,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			"top": offset.top+"px",
 			"left": left+"px",
 			"width": width,
-			"z-index": 100000000000012
+			"z-index": 2000000012
 		});
 	}
 
@@ -1468,7 +1489,7 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 		menu.css({
 			"top": (offset.top - menu.height() + 45)+"px",
 			"left": (offset.left - menu.width())+"px",
-			"z-index": 100000000000012
+			"z-index": 2000000012
 		});
 		$("#"+id+"-button").addClass("button_pressed");
 	}
