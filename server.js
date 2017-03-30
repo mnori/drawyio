@@ -48,7 +48,6 @@ function loadDrawingsInitial() {
 			drawing.emptyImage = false;
 	 		// checking the modified date is asynchronous
 	 		var filepath = dir+"/"+drawing.id+".png"
-	 		console.log(filepath);
 	 		fs.stat(filepath, function(err, stats) {
 	 			drawing.lastEdited = stats["mtime"]
 	 		})
@@ -204,7 +203,7 @@ function createDrawing(req, res) {
 			var layer = bufferToLayer(drawID, buffer);
 			var drawing = new Drawing(drawID, layer);
 			res.send(drawID);
-			console.log("Drawing "+drawID+" created.");
+			// console.log("Drawing "+drawID+" created.");
 		});
 	});
 }
@@ -324,11 +323,14 @@ function Drawing(idIn, startLayer) {
 		this.isModified = false; // intial image is not modified
 		this.setSaveTimeout();
 		drawings.set(this.id, this);
-		console.log("n drawings: "+drawings.getLength());
+		console.log("Added drawing, there are now "+drawings.getLength());
 		this.configureDrawingNS();
 	}
 
 	this.destroy = function() {
+		// remove the drawing from the array storage
+		drawings.remove(this.id)
+
 		// we must properly delete our socket namespace, otherwise we end up
 		// with a disastrous memory leak problem
 
@@ -346,6 +348,9 @@ function Drawing(idIn, startLayer) {
 
 		// finally, remove the socket namespace
 		delete io.nsps["/drawing_socket_"+this.id];
+
+		// debug
+		console.log("["+drawings.getLength()+"] drawings in memory");
 	}
 
 	// Broadcast all drawing data to all sockets
@@ -389,18 +394,16 @@ function Drawing(idIn, startLayer) {
 		}
 		var self = this;
 		this.saveTimeout = setTimeout(function() {
-			// console.log("saveTimeout triggered");
+			console.log("saveTimeout triggered");
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
 				if (self.isModified) { // save modified image
 					saveImage(self.id, buffer, function(err) {
-						drawings.remove(self.id)
 						self.destroy();
 						// console.log("Saved image and destroyed");
 					});	
 				} else { // not modified - just cleanup, don't save
-					drawings.remove(self.id)
 					self.destroy();
 				}
 			});
