@@ -313,6 +313,7 @@ function Drawing(idIn, startLayer) {
 	this.isFlattening = false;
 	this.flattenTimeout = null;
 	this.emptyImage = true; // whether the PNG is empty
+	this.isModified = false; // whether the image has been modified since loading from disk
 	this.saveTimeout = null;
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
@@ -320,6 +321,7 @@ function Drawing(idIn, startLayer) {
 
 	this.init = function(startLayer) {
 		this.addLayer(startLayer);
+		this.isModified = false; // intial image is not modified
 		this.setSaveTimeout();
 		drawings.set(this.id, this);
 		console.log("n drawings: "+drawings.getLength());
@@ -391,11 +393,17 @@ function Drawing(idIn, startLayer) {
 			console.log("saveTimeout triggered");
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
-				saveImage(self.id, buffer, function(err) {
+
+				if (self.isModified) { // save modified image
+					saveImage(self.id, buffer, function(err) {
+						drawings.remove(self.id)
+						self.destroy();
+						console.log("Saved image and destroyed");
+					});	
+				} else { // not modified - just cleanup, don't save
 					drawings.remove(self.id)
 					self.destroy();
-					console.log("Saved image and destroyed");
-				});
+				}
 			});
 		}, settings.MEMORY_TIMEOUT);
 	}
@@ -431,6 +439,7 @@ function Drawing(idIn, startLayer) {
 		console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
 		this.updateEdited();
+		this.isModified = true;
 		return this.nLayers;
 	}
 	// returns a base64 encoded PNG string. Not actually in used (@deprecated)
