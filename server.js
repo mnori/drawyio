@@ -44,6 +44,7 @@ function loadDrawingsInitial() {
 	var max = files.length <= settings.MIN_DRAWINGS_MEMORY 
 		? files.length : settings.MIN_DRAWINGS_MEMORY;
 	for (var i = 0; i < max; i++) {
+		console.log("["+files[i].split(".")[0]+"]");
 		getDrawing(files[i].split(".")[0], function(drawing) {
 			drawing.emptyImage = false;
 	 		// checking the modified date is asynchronous

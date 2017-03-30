@@ -47,18 +47,20 @@
                 <path fill="#9400D3" d="M115,115 L115,0 A115,115 1 0,1 204.97494321630762, 43.379405243867005 z" transform="rotate(308.88, 115, 115)"></path>
                 <circle cx="115" cy="115" r="64.4" fill="#333"></circle>
             </svg>
-
             <a id="create_drawing_btn" class="button" href="javascript:void(0)">
-                <i class="fa fa-file-image-o button_icon" aria-hidden="true"></i>New Room
+                <i class="fa fa-star button_icon" aria-hidden="true"></i>New Room
+            </a>
+            <a id="change_nick_btn" class="button" href="javascript:void(0)">
+                <i class="fa fa-pencil button_icon" aria-hidden="true"></i>Change Nickname
             </a>
         </nav>
     </div>
 
     <!-- Nickname dialog -->
-    <div id="nick_dialog">
-        <p>Enter a nickname to get started.</p>
+    <div id="nick_dialog" style="display: none;">
+        <p id="nick_message">Enter a nickname to get started.</p>
         <input id="nick_input" type="text" value="Anonymous" />
-        <a id="create_drawing_btn" class="button" href="javascript:void(0)">
+        <a id="nick_button" class="button" href="javascript:void(0)">
             <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
         </a>
     </div>

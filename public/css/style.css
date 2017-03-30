@@ -38,11 +38,9 @@
 }
 
 #navbar .button {
-	position: absolute;
-	bottom: 20px;
-	right: 10px;
+	float: right;
 	vertical-align: middle;	
-	z-index: 9001;
+	/*z-index: 9001;*/
 	font-weight: normal;
 }
 

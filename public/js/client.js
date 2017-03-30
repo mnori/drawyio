@@ -10,18 +10,43 @@ function initSplash() {
 			window.location.href = "/d/"+drawingID
 		});
 	});
-	nick();
+	configureNick();
 }
 
-// Display a modal asking about setting the nickname cookie
-function nick() {
+// Set up a modal asking about setting the nickname
+function configureNick() {
+	var existingNick = getCookie("nick");
+	if (existingNick == null) {
+		showNickModal();
+	} else {
+		$("#nick_dialog").hide();
+	}
+	$("#change_nick_btn").click(showNickModal);
+}
+
+function showNickModal(rename) {
+	if (rename) {
+		$("#nick_message").html("Please enter a new nickname.");
+	}
+	// Create modal using jqueryui
 	$("#nick_dialog").dialog({
 		resizable: false,
 		height: "auto",
 		width: 400,
 		modal: true,
 	});
+
+	// Make text input highlight when clicked
 	$("#nick_input").click(function() { $(this).select(); })
+
+	// Set up OK button event handler
+	$("#nick_button").click(function() {
+		var nick = $("#nick_input").val();
+		setCookie("nick", nick, 30); // Set nickname cookie for 30 days
+		$("#nick_dialog").dialog("close");
+	})
+
+	$("#nick_dialog").show();
 }
 
 // Initialise the drawing image UI
@@ -90,8 +115,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				}
 				activateDropperToggle();
 			}
-		    startTool(getMousePos(ev));
-		    return false;
+			startTool(getMousePos(ev));
+			return false;
 		}, this));
 
 		previewCanvas.mouseenter(function(ev) {
@@ -621,7 +646,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		colourPicker.spectrum({
 			showAlpha: false,
 			cancelText: "Cancel",
-	        chooseText: "OK",
+			chooseText: "OK",
 			show: openColourPicker
 		});
 	}
@@ -832,14 +857,14 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			var destColour = getColour(destData.data, x, y);
 			var tolerance = 3;
 
-	        if( // Found different colour in original image?
-	        	!rgbaEqual(sourceColour, oldColour, tolerance) ||
+			if( // Found different colour in original image?
+				!rgbaEqual(sourceColour, oldColour, tolerance) ||
 
-	        	// Are we hitting an area that has already been filled?
-	        	rgbaEqual(destColour, newColour, tolerance)
-	        ) { 
-	            continue;
-	        }
+				// Are we hitting an area that has already been filled?
+				rgbaEqual(destColour, newColour, tolerance)
+			) { 
+				continue;
+			}
 
 			// At this point, we are writing data to storage
 			// Data is written to canvas in later step
@@ -849,19 +874,19 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			// Determine another cursor movement
 			if (x > 0) {
 				queue.push([x - 1, y]);
-		    }
+			}
 		 
-		    if (y > 0) {
-		    	queue.push([x, y - 1]);
-		    }
+			if (y > 0) {
+				queue.push([x, y - 1]);
+			}
 		 
-		    if (x < width - 1) {
-		 		queue.push([x + 1, y]);
-		    }
+			if (x < width - 1) {
+				queue.push([x + 1, y]);
+			}
 		 
-		    if (y < height - 1) {
-		        queue.push([x, y + 1]);
-		    }
+			if (y < height - 1) {
+				queue.push([x, y + 1]);
+			}
 		}
 
 		// Write the new flood filled data to the canvas
@@ -1313,65 +1338,65 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// Crop a sourceCanvas by alpha=0. Results are written to destCanvas.
 	// Adapted from https://stackoverflow.com/questions/12175991/crop-image-white-space-automatically-using-jquery
 	function cropCanvas(sourceCanvas, destCanvas, toolIn) {
-	    var context = sourceCanvas.getContext("2d");
+		var context = sourceCanvas.getContext("2d");
 
-	    var imgWidth = sourceCanvas.width, 
-	    	imgHeight = sourceCanvas.height;
+		var imgWidth = sourceCanvas.width, 
+			imgHeight = sourceCanvas.height;
 
 		var imageData = context.getImageData(0, 0, imgWidth, imgHeight);
 		
-	    var data = imageData.data,
-	        hasData = function (x, y) {
-	        	var offset = imgWidth * y + x;
-	        	var value = data[offset * 4 + 3]; // this fetches the opacity value
-	        	if (value != 0) { 
-	        		return true;
-	        	}
-	        	return false;
-	        },
-	        scanY = function (fromTop) {
-	            var offset = fromTop ? 1 : -1;
+		var data = imageData.data,
+			hasData = function (x, y) {
+				var offset = imgWidth * y + x;
+				var value = data[offset * 4 + 3]; // this fetches the opacity value
+				if (value != 0) { 
+					return true;
+				}
+				return false;
+			},
+			scanY = function (fromTop) {
+				var offset = fromTop ? 1 : -1;
 
-	            // loop through each row
-	            for (var y = fromTop ? 0 : imgHeight - 1; fromTop ? (y < imgHeight) : (y > -1); y += offset) {
-	                for (var x = 0; x < imgWidth; x++) { // loop through each column
-	                    if (hasData(x, y)) {
-	                        return y;                        
-	                    }
-	                }
-	            }
-	            return null; // all image is transparent
-	        },
-	        scanX = function (fromLeft) {
-	            var offset = fromLeft? 1 : -1;
+				// loop through each row
+				for (var y = fromTop ? 0 : imgHeight - 1; fromTop ? (y < imgHeight) : (y > -1); y += offset) {
+					for (var x = 0; x < imgWidth; x++) { // loop through each column
+						if (hasData(x, y)) {
+							return y;                        
+						}
+					}
+				}
+				return null; // all image is transparent
+			},
+			scanX = function (fromLeft) {
+				var offset = fromLeft? 1 : -1;
 
-	            // loop through each column
-	            for (var x = fromLeft ? 0 : imgWidth - 1; fromLeft ? (x < imgWidth) : (x > -1); x += offset) {
-	                for (var y = 0; y < imgHeight; y++) { // loop through each row
-	                    if (hasData(x, y)) {
-	                        return x;                        
-	                    }
-	                }
-	            }
-	            return null; // all image is transparent
-	        };
+				// loop through each column
+				for (var x = fromLeft ? 0 : imgWidth - 1; fromLeft ? (x < imgWidth) : (x > -1); x += offset) {
+					for (var y = 0; y < imgHeight; y++) { // loop through each row
+						if (hasData(x, y)) {
+							return x;                        
+						}
+					}
+				}
+				return null; // all image is transparent
+			};
 
-	    var cropTop = scanY(true),
-	        cropBottom = scanY(false) + 1,
-	        cropLeft = scanX(true),
-	        cropRight = scanX(false) + 1,
-	        cropWidth = cropRight - cropLeft,
-	        cropHeight = cropBottom - cropTop;
+		var cropTop = scanY(true),
+			cropBottom = scanY(false) + 1,
+			cropLeft = scanX(true),
+			cropRight = scanX(false) + 1,
+			cropWidth = cropRight - cropLeft,
+			cropHeight = cropBottom - cropTop;
 
-	    destCanvas.setAttribute("width", cropWidth);
-	    destCanvas.setAttribute("height", cropHeight);
+		destCanvas.setAttribute("width", cropWidth);
+		destCanvas.setAttribute("height", cropHeight);
 
-	    // this is where the cropping happens
-	    destCanvas.getContext("2d").drawImage(sourceCanvas,
-	        cropLeft, cropTop, cropWidth, cropHeight,
-	        0, 0, cropWidth, cropHeight);
+		// this is where the cropping happens
+		destCanvas.getContext("2d").drawImage(sourceCanvas,
+			cropLeft, cropTop, cropWidth, cropHeight,
+			0, 0, cropWidth, cropHeight);
 
-	    return {top: cropTop, right: cropRight, bottom: cropBottom, left: cropLeft};
+		return {top: cropTop, right: cropRight, bottom: cropBottom, left: cropLeft};
 	}
 
 	// Expose some public methods
@@ -1470,10 +1495,33 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 // }
 
 function randomString(length) {
-    var text = "";
-    var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
-    for (var i = 0; i < length; i++) { 
-        text += charset.charAt(Math.floor(Math.random() * charset.length));
-    }
-    return text;
+	var text = "";
+	var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+	for (var i = 0; i < length; i++) { 
+		text += charset.charAt(Math.floor(Math.random() * charset.length));
+	}
+	return text;
+}
+
+function setCookie(cname, cvalue, exdays) {
+	var d = new Date();
+	d.setTime(d.getTime() + (exdays*24*60*60*1000));
+	var expires = "expires="+ d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+	var name = cname + "=";
+	var decodedCookie = decodeURIComponent(document.cookie);
+	var ca = decodedCookie.split(';');
+	for(var i = 0; i <ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == ' ') {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return null;
 }
