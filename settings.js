@@ -20,6 +20,7 @@ module.exports = {
 	},
 	DB_NAME: "drawyio",
 	SQL_DEBUG: true,
-	IMAGES_DIR: "/usr/src/app/code/images"
+	IMAGES_DIR: "/usr/src/app/code/images",
+	MIN_DRAWINGS_MEMORY: 16
 }
 

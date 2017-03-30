@@ -24,12 +24,36 @@ var db = null; // filled later
 // Set up the app
 function main() {
 	setupDebug();
-	drawings = new AssocArray();
+	loadDrawingsInitial();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	db = new database.DB(settings.DB_CONNECT_PARAMS);
 	server.listen(settings.PORT);
 	console.log("Running on http://localhost:" + settings.PORT);
+}
+
+// This is a bit of a dirty solution
+// will be replaced with a proper DB based storage soon.
+function loadDrawingsInitial() {
+	drawings = new AssocArray();
+	var dir = settings.IMAGES_DIR;
+	var files = fs.readdirSync(dir);
+	files.sort(function(a, b) {
+		return fs.statSync(dir+"/"+b).mtime.getTime() - fs.statSync(dir+"/"+a).mtime.getTime();
+	});	
+	var max = files.length <= settings.MIN_DRAWINGS_MEMORY 
+		? files.length : settings.MIN_DRAWINGS_MEMORY;
+	for (var i = 0; i < max; i++) {
+		getDrawing(files[i].split(".")[0], function(drawing) {
+			drawing.emptyImage = false;
+	 		// checking the modified date is asynchronous
+	 		var filepath = dir+"/"+drawing.id+".png"
+	 		console.log(filepath);
+	 		fs.stat(filepath, function(err, stats) {
+	 			drawing.lastEdited = stats["mtime"]
+	 		})
+		});
+	}
 }
 
 // Set up all the endpoints
@@ -222,12 +246,12 @@ function makeDrawID(callback) {
 
 // Create a random string, to be used as an ID code
 function randomString(length) {
-    var text = "";
-    var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
-    for (var i = 0; i < length; i++) { 
-        text += charset.charAt(Math.floor(Math.random() * charset.length));
-    }
-    return text;
+	var text = "";
+	var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+	for (var i = 0; i < length; i++) { 
+		text += charset.charAt(Math.floor(Math.random() * charset.length));
+	}
+	return text;
 }
 
 // Override console.log so it gets output to a nice file, easier to check
@@ -260,7 +284,7 @@ function getDrawing(drawID, loadCallback) {
 		} else {
 			loadImage(drawID, loadCallback);
 		}
- 	}
+	}
 }
 
 // Save a drawing to disk
@@ -298,6 +322,7 @@ function Drawing(idIn, startLayer) {
 		this.addLayer(startLayer);
 		this.setSaveTimeout();
 		drawings.set(this.id, this);
+		console.log("n drawings: "+drawings.getLength());
 		this.configureDrawingNS();
 	}
 
