@@ -180,6 +180,7 @@ h1 {
 	font-family: ubuntuMonoRegular;
 	margin-right: 20px;
 	width: 780px;
+	z-index:;
 }
 
 input {
@@ -546,3 +547,86 @@ input::selection {
 	font-size: 11px;
 }
 
+
+.ui-dialog {
+	font-family: ubuntuRegular;
+	font-size: 20px;
+	padding: 0px;
+	border-radius: 0px;
+	box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.3);
+}
+
+.ui-dialog .ui-dialog-title {
+	margin: 0px;
+}
+
+.ui-dialog .ui-dialog-titlebar {
+	font-family: ubuntuBold;
+	font-size: 20px;
+	background-color: #eee;
+	border: 0px;
+	padding: 12px;
+}
+
+#nick_input {
+	font-family: ubuntuMonoRegular;
+	line-height: 45px;
+	font-size: 25px;
+	width: 354px;
+	border: 1px solid #888;
+    box-shadow: 0px 0px 10px 3px #bbb;
+    padding-left: 10px;
+	padding-right: 10px;
+}
+
+#nick_message {
+	margin-top: 0px;
+	margin-bottom: 12px;
+}
+
+#nick_dialog {
+	overflow: hidden;
+	padding: 12px;
+}
+
+#nick_button, #nick_button:hover, #nick_button:active {
+	border: 1px solid #bbb;
+	background-color: #eee;
+}
+
+#nick_button {
+	margin-top: 12px;
+	float: right;
+	color: #444;
+}
+
+#nick_button:hover, #nick_button:active {
+	color: #000;
+	border: 1px solid #999;
+	text-shadow: none;
+}
+
+#nick_button {
+	border: 1px solid #bbb;
+}
+
+#nick_button, #nick_button:hover {
+	font-family: ubuntuRegular;
+	width: auto;
+	height: auto;
+	font-size: 18px;
+	line-height: 18px;
+	vertical-align: middle;
+	text-decoration: none;
+	padding: 6px 10px 6px 10px;
+	margin-top: 12px;
+	margin-left: 12px;
+}
+
+#nick_button:active {
+	padding: 8px 10px 4px 10px;
+	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
+}
+#nick_button:hover {
+	border: 1px solid #999;
+}

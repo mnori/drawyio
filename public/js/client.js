@@ -38,7 +38,7 @@ function setupNickModal() {
 	// Create modal using jqueryui
 	$("#nick_dialog").dialog({
 		resizable: false,
-		height: 400,
+		height: 202,
 		width: 400,
 		modal: true,
 		draggable: false,
@@ -57,6 +57,7 @@ function setupNickModal() {
 
 			// Make text input highlight when clicked
 			$("#nick_input").click(function() { $(this).select(); })
+			$("#nick_input").select();
 
 			// Set up OK button event handler
 			$("#nick_button").click(function() {
