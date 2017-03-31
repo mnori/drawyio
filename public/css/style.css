@@ -66,6 +66,15 @@
 	z-index: 1;
 }
 
+#version_txt {
+	position: absolute;
+	top: 53px;
+	left: 13px;
+	font-size: 12px;
+	z-index: 3;
+	color: #ccc;
+}
+
 a {
     -webkit-user-drag: none;
     outline: 0; /* disable ugly FF link outline */

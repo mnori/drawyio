@@ -21,6 +21,7 @@ module.exports = {
 	DB_NAME: "drawyio",
 	SQL_DEBUG: true,
 	IMAGES_DIR: "/usr/src/app/code/images",
-	MIN_DRAWINGS_MEMORY: 16 // this is also the max number of images in the gallery
+	MIN_DRAWINGS_MEMORY: 16, // this is also the max number of images in the gallery
+	VERSION: "0.1"
 }
 
