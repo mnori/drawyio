@@ -391,6 +391,7 @@ function Drawing(idIn, startLayer) {
 	}
 
 	// Set rolling timeout for saving drawing data to disk
+	// For deletion, it would be better to run a scan at intervals and delete where needed
 	this.setSaveTimeout = function() {
 		if (this.saveTimeout) {
 			clearTimeout(this.saveTimeout);

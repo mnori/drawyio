@@ -21,7 +21,7 @@ function configureNick() {
 		showNickModal();
 	} else {
 		$("#nick_dialog").hide();
-		$("#nick_indicator").html(existingNick);
+		$("#nick_indicator").text(existingNick); // using .text() escapes html
 	}
 	$("#change_nick_btn").click(function() { showNickModal(true); });
 }
@@ -68,7 +68,7 @@ function setupNickModal() {
 			$("#nick_button").click(function() {
 				var nick = $("#nick_input").val();
 				setCookie("nick", nick, 30); // Set nickname cookie for 30 days
-				$("#nick_indicator").html(nick);
+				$("#nick_indicator").text(nick);
 				$("#nick_dialog").dialog("close");
 			})
 			$(".ui-dialog-titlebar-close").hide();
