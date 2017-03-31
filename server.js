@@ -398,6 +398,10 @@ function Drawing(idIn, startLayer) {
 		}
 		var self = this;
 		this.saveTimeout = setTimeout(function() {
+			if (self.emptyImage) { // don't save empty images, just delete them
+				self.destroy();
+				return;
+			}
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
