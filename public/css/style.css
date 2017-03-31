@@ -14,21 +14,21 @@
 
 #navbar_wrapper {
 	background-color: #333;
-	height: 90px;
+	height: 70px;
 	box-shadow: 0px 0px 10px 3px #bbb;
 	border-bottom: 2px solid #000;
-}
-
-.fixed_width {
-	width: 873px;
 }
 
 #navbar {
 	margin-left: auto;
 	margin-right: auto;
 	height: 50px;
-	padding: 20px;
+	padding: 10px;
 	position: relative;
+}
+
+.fixed_width {
+	width: 873px;
 }
 
 #content {
@@ -38,7 +38,7 @@
 }
 
 #navbar .button {
-	margin-top:30px;
+	margin-top:21px;
 	float: right;
 	vertical-align: middle;	
 	/*z-index: 9001;*/
@@ -52,14 +52,14 @@
 	text-shadow: 0px 0px 16px #000;
 	position: absolute;
 	float: left;
-	top: 20px;
+	top: 8px;
 	left: 20px;
 	z-index: 2;
 }
 
 #logo_image {
 	position: absolute;
-	top: 19px;
+	top: 7px;
 	left: 132px;
 	width: 60px;
 	height: 60px; 
