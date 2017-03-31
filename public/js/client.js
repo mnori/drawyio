@@ -21,6 +21,7 @@ function configureNick() {
 		showNickModal();
 	} else {
 		$("#nick_dialog").hide();
+		$("#nick_indicator").html(existingNick);
 	}
 	$("#change_nick_btn").click(function() { showNickModal(true); });
 }
@@ -67,6 +68,7 @@ function setupNickModal() {
 			$("#nick_button").click(function() {
 				var nick = $("#nick_input").val();
 				setCookie("nick", nick, 30); // Set nickname cookie for 30 days
+				$("#nick_indicator").html(nick);
 				$("#nick_dialog").dialog("close");
 			})
 			$(".ui-dialog-titlebar-close").hide();
@@ -1045,7 +1047,17 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (pickerVisible()) {
 			return true;
 		}
+		if (nickVisible()) {
+			return true;
+		}
 		return false;
+	}
+
+	function nickVisible() {
+		if ($(".ui-dialog").css("display") == "none") {
+			return false;
+		}
+		return true;
 	}
 
 	function toggleTextInput() {
