@@ -362,21 +362,28 @@ function Drawing(idIn, startLayer) {
 		this.socketNS.emit("update_drawing", self.getJson());
 	}
 
-	// Set up drawing-specific event handlers for the socket namespace
+	// Set up drawing-specific event handlers for the socket namespace endpoints
 	this.configureDrawingNS = function() {
 
 		// set up the drawing's socket namespace
 		var drawingNS = io.of("/drawing_socket_"+this.id);
 		this.addSocketNS(drawingNS);
 
-		// set up the event handlers
+		// set up the event handlers for each endpoint
 		drawingNS.on('connection', function(socket) {
 
 			// Returns the drawing data to the client. The callback method is placed here
 			// so that we can pass the socket in as well
-			socket.on("get_drawing", function(data) { sendDrawing(data, socket); });
+			socket.on("get_drawing", function(data) { 
+				// validate
+				if (typeof(data.drawID) == undefined) {
+					socket.emit("update_drawing", "error");
+				} else {
+					sendDrawing(data, socket);	
+				}
+			});
 
-			// Update drawing with mouse cursor info
+			// Update drawing with mouse cursor info (might break)
 			socket.on("receive_tool", function(data) { receiveTool(data, socket); });
 
 			// Receive new png draw data as base64 encoded string and add to the Drawing
