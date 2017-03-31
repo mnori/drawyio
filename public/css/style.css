@@ -38,6 +38,7 @@
 }
 
 #navbar .button {
+	margin-top:30px;
 	float: right;
 	vertical-align: middle;	
 	/*z-index: 9001;*/
