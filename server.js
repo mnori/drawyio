@@ -56,7 +56,7 @@ function loadDrawingsInitial() {
 	}
 }
 
-// Set up all the endpoints
+// Set up all the basic http endpoints
 function configureRoutes(app) {
 
 	// Tell node to serve static files from the "public" subdirectory
@@ -72,7 +72,7 @@ function configureRoutes(app) {
 			renderDrawingPage(req, res);
 	});
 
-	// The splash page
+	// The index page
 	app.get("/", function(req, res) { res.render("index.html", { gallery: getGallery() }); });
 
 	// Default action if nothing else matched - 404

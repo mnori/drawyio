@@ -97,7 +97,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var layerCodeLen = 32;
 	var highestLayerID = 1;
 	var lastEmit = $.now(); // part of general purpose intervalling system
-	var labelFadeOutMs = 120;
+	// var labelFadeOutMs = 120;
+	var labelFadeOutMs = 60000;
 	var canvasCeiling = 999999999;
 	var colourPicker = $("#colour_picker");
 	var finaliseTimeout = null;
@@ -233,6 +234,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function mouseOut(ev) {
+		console.log("mouseOut with coord", tool.newCoord);
 		tool.newCoord = null;
 		toolInCanvas = false;
 		stopTool(ev);
@@ -1109,7 +1111,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// emit a tool action
 	function emitTool(toolIn) { 
-		var nickname = $("#nickname").val();
+		var nickname = getCookie("nick");
+		if (nickname == null) {
+			nickname = "Anonymous"
+		}
+		toolIn.nickname = nickname;
 		socket.emit('receive_tool', toolIn);
 	}
 
