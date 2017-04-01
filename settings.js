@@ -1,7 +1,10 @@
+var isLive = false;
+
 // Settings file for drawy.io node.js backend
 // Define global constants
 module.exports = {
-	PORT: 8080, // Which port to expose to the outside world
+	IS_LIVE: isLive,
+	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
 	LAYER_CODE_LEN: 32, // Length of layer codes
 	MAX_LAYERS: 5, // Max number of layers to store before flattening the image

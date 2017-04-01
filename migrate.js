@@ -46,12 +46,6 @@ var migrations = [
 				"ALTER TABLE room",
 				"ADD CONSTRAINT FOREIGN KEY (snapshot_id) REFERENCES snapshot(id);"
 			].join("\n"));
-
-			// ALTER TABLE Orders
-			// ADD CONSTRAINT FK_PersonOrder
-			// FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);
-			// results = db.querySync('SHOW DATABASES');
-			// console.log(results);
 		}
 	}
 ]

@@ -15,6 +15,7 @@ const ta = require('time-ago')(); // set up time-ago human readable dates librar
 const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
 const settings = require("./settings") // Our settings
+const validation = require("./validation") // Validation tools
 // const database = require("./database") // Our database wrapper
 
 // Associative array containing [alphanumeric code] => [drawing object]

@@ -1,6 +1,6 @@
 const settings = require("./settings")
 
-// Endpoint validation for drawyio
+// Endpoint validation methods for drawyio
 module.exports = {
 	validateDrawID: function(drawIdIn) {
 		var re = RegExp("[a-z1-9]{"+drawIdIn+"}");
