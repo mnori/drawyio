@@ -129,17 +129,24 @@ function sendDrawing(data, socket) {
 
 // Adds a layer from raw data coming from the socket
 function receiveLayer(data, socket) {
-	var drawID = data.drawID;
-	getDrawing(drawID, function(drawing) {
-		if (drawing == null) {
-			console.log("WARNING: "+drawID+" does not exist!");
-		} else {
-			var layer = data;
-			var layerID = drawing.addLayer(layer);
-			drawing.broadcastLayer(layerID, layer, socket);
-			drawing.handleFlatten();
-		}	
-	});
+	var layer = data;
+	var drawID = layer.drawID;
+	if (
+		!validation.checkDrawID(drawID) ||
+		!validation.checkLayerCode(layer.code)
+	) { // invalid draw ID or layer code supplied
+		return; // nothing to do, there is no client side confirmation -yet
+	} else {
+		getDrawing(drawID, function(drawing) {
+			if (drawing == null) {
+				console.log("WARNING: "+drawID+" does not exist!");
+			} else {
+				var layerID = drawing.addLayer(layer);
+				drawing.broadcastLayer(layerID, layer, socket);
+				drawing.handleFlatten();
+			}	
+		});
+	}
 }
 
 function send404(res) {
