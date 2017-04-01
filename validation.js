@@ -9,10 +9,14 @@ module.exports = {
 
 	// check an alphanumeric code, generic
 	checkCode: function(codeIn, codeLength) {
-		var regexStr = "[a-z1-9]{"+codeLength+"}"
+		var regexStr = "[a-z0-9]{"+codeLength+"}"
 		var re = RegExp(regexStr);
 		var matches = re.exec(codeIn);
-		return (matches != null && matches.length == 1) ? true : false;
+		if (matches != null && matches.length == 1) {
+			return true;
+		}
+		console.log("Invalid code ["+codeIn+"]");
+		return false;
 	}
 }
 

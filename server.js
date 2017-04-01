@@ -169,19 +169,23 @@ function renderDrawingPage(req, res) {
 // Return png image as buffer
 function sendDrawingImage(req, res) {
 	var drawID = req.params.id.replace(".png", "");
-	getDrawing(drawID, function(drawing) {
-		if (drawing == null) {
-			send404(res)	
-		} else {
-			var layer = drawing.getUnmergedLayer(0);
-			var buf = base64ToBuffer(layer.base64);
-			res.writeHead(200, {
-				'Content-Type': 'image/png',
-				'Content-Length': buf.length
-			});
-			res.end(buf);	
-		}
-	});
+	if (!validation.checkDrawID(drawID)) { // check code is valid
+		send404(res);
+	} else {
+		getDrawing(drawID, function(drawing) {
+			if (drawing == null) {
+				send404(res)	
+			} else {
+				var layer = drawing.getUnmergedLayer(0);
+				var buf = base64ToBuffer(layer.base64);
+				res.writeHead(200, {
+					'Content-Type': 'image/png',
+					'Content-Length': buf.length
+				});
+				res.end(buf);	
+			}
+		});
+	}
 }
 
 // Create a blank canvas image to draw on
