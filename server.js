@@ -390,7 +390,10 @@ function Drawing(idIn, startLayer) {
 			// so that we can pass the socket in as well
 			socket.on("get_drawing", function(data) { 
 				// validate
-				if (typeof(data.drawID) == undefined) {
+				if (
+					typeof(data.drawID) == undefined ||
+					!validation.checkDrawID(data.drawID)
+				) {
 					socket.emit("update_drawing", "error");
 				} else {
 					sendDrawing(data, socket);	

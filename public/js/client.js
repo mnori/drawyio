@@ -38,7 +38,7 @@ function showNickModal(rename) {
 	}
 }
 
-// Kinda messy but does the job
+// Set up modal dialogue for changing the nickname
 function setupNickModal() {
 	// Create modal using jqueryui
 	$("#nick_dialog").dialog({
