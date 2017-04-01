@@ -74,7 +74,10 @@ function configureRoutes(app) {
 	});
 
 	// The index page
-	app.get("/", function(req, res) { res.render("index.html", { gallery: getGallery() }); });
+	app.get("/", function(req, res) { res.render("index.html", { 
+		settings: settings,
+		gallery: getGallery()
+	}); });
 
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
@@ -147,6 +150,7 @@ function renderDrawingPage(req, res) {
 	getDrawing(drawID, function(drawing) {
 		if (drawing != null) {
 			res.render("drawing.html", { 
+				settings: settings,
 				drawID: drawID,
 				width: settings.DRAWING_PARAMS.width,
 				height: settings.DRAWING_PARAMS.height

@@ -4,6 +4,7 @@ var isLive = false;
 // Define global constants
 module.exports = {
 	IS_LIVE: isLive,
+	VERSION_TXT: "v0.1.1",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
 	LAYER_CODE_LEN: 32, // Length of layer codes
@@ -24,7 +25,6 @@ module.exports = {
 	DB_NAME: "drawyio",
 	SQL_DEBUG: true,
 	IMAGES_DIR: "/usr/src/app/code/images",
-	MIN_DRAWINGS_MEMORY: 16, // this is also the max number of images in the gallery
-	VERSION: "0.1"
+	MIN_DRAWINGS_MEMORY: 16 // this is also the max number of images in the gallery
 }
 
