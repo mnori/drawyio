@@ -11,6 +11,17 @@ function initSplash() {
 		});
 	});
 	configureNick();
+	setupResizeHandler();
+}
+
+function setupResizeHandler() {
+	$("body").resize(function() {
+		winHeight = parseInt($(window).height());
+	    winWidth = parseInt($(window).width());
+
+	    console.log("resize");
+	    // $("#neo_home_container").css({"width":winWidth,"height":winHeight});
+	})
 }
 
 // Set up a modal asking about setting the nickname
