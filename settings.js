@@ -16,6 +16,7 @@ module.exports = {
 	FLATTEN_TIMEOUT: 1000,
 
 	// milliseconds before deleting the drawing from memory
+	// This affects the disconnection when user is idle, if the drawing is less popular
 	MEMORY_TIMEOUT: 60000, 
 
 	// Parameters for creating blank drawings
