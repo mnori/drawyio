@@ -16,6 +16,7 @@ const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
 const settings = require("./settings") // Our settings
 const validation = require("./validation") // Validation tools
+
 // const database = require("./database") // Our database wrapper
 
 // Associative array containing [alphanumeric code] => [drawing object]
@@ -147,18 +148,22 @@ function send404(res) {
 
 function renderDrawingPage(req, res) {
 	var drawID = req.params.id
-	getDrawing(drawID, function(drawing) {
-		if (drawing != null) {
-			res.render("drawing.html", { 
-				settings: settings,
-				drawID: drawID,
-				width: settings.DRAWING_PARAMS.width,
-				height: settings.DRAWING_PARAMS.height
-			});	
-		} else {
-			send404(res);
-		}
-	});
+	if (!validation.checkDrawID(drawID)) { // check code is valid
+		send404(res);
+	} else {
+		getDrawing(drawID, function(drawing) {
+			if (drawing != null) {
+				res.render("drawing.html", { 
+					settings: settings,
+					drawID: drawID,
+					width: settings.DRAWING_PARAMS.width,
+					height: settings.DRAWING_PARAMS.height
+				});	
+			} else {
+				send404(res);
+			}
+		});
+	}
 }
 
 // Return png image as buffer
