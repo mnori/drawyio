@@ -221,9 +221,14 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		socket.on("update_drawing", receiveDrawing);
 		socket.on("add_layer", receiveLayer);
 		socket.on("receive_mouse_coords", receiveTool);
+		socket.on("disconnect", onDisconnect);
 
 		initColourPicker();
 		getDrawing();
+	}
+
+	function onDisconnect() {
+		$("#disconnected_indicator").show();
 	}
 
 	// Only generates the layer code if it's empty, i.e. after finalise has been called

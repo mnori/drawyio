@@ -649,9 +649,12 @@ input::selection {
 	z-index: 2000000019;
 	text-align: center;
 	vertical-align: middle;
+}
+
+#disconnected_text {
 	color: #fff;
-	font-size: 30px;
 	font-family: ubuntuBold;
+	font-size: 30px;
 	text-shadow: 0px 0px 16px #000;
 }
 
@@ -660,4 +663,8 @@ input::selection {
     top: 50%;
     transform: translateY(-50%);
     /* vendor prefixes omitted due to brevity */
+}
+
+.bold_fix {
+	font-family: ubuntuBold;
 }
