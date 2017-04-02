@@ -665,9 +665,14 @@ input::selection {
     position: relative;
     top: 50%;
     transform: translateY(-50%);
-    /* vendor prefixes omitted due to brevity */
 }
 
 .bold_fix {
 	font-family: ubuntuBold;
+}
+
+#gallery {
+	overflow: hidden; /* forces wrap around */
+	padding: 10px;
+	margin: -10px;
 }

@@ -407,7 +407,8 @@ function Drawing(idIn, startLayer) {
 				}
 			});
 
-			// Update drawing with mouse cursor info (might break)
+			// Update drawing with mouse cursor info
+			// The server doesn't touch the tool - it just gets relayed to clients
 			socket.on("receive_tool", function(data) { receiveTool(data, socket); });
 
 			// Receive new png draw data as base64 encoded string and add to the Drawing

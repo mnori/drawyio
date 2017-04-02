@@ -4,7 +4,7 @@
 
 {% block content %}
 	<h1>Recents</h1>
-	<div>
+	<div id="gallery">
 	{% for entry in gallery %}
 		<a href="/d/{{ entry.drawing.id }}" class="thumb">
 			<img src="/d/{{ entry.drawing.id }}.png" class="thumb_img" /><br />
