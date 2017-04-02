@@ -18,9 +18,6 @@ function setupResizeHandler() {
 	$("body").resize(function() {
 		winHeight = parseInt($(window).height());
 	    winWidth = parseInt($(window).width());
-
-	    console.log("resize");
-	    // $("#neo_home_container").css({"width":winWidth,"height":winHeight});
 	})
 }
 
@@ -175,7 +172,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 		// key bindings
 		body.keydown($.proxy(function(ev) {
-			if (ev.which == 16) { // shift
+			if (ev.which == 16) { // shift - select the colour picker
 				if (menusOpen()) {
 					return;
 				}
@@ -183,7 +180,15 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				closeMenus();
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
+
+			} else if ( // Text box enter key handler
+				ev.which == 13 && 
+				tool.tool == "text" &&
+				!$("#text_input").is(":visible")
+			) {
+				openTextInput();
 			}
+
 		}, this));
 		body.keyup($.proxy(function(ev) {
 			if (ev.which == 16) { // shift
@@ -250,7 +255,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function mouseOut(ev) {
-		console.log("mouseOut with coord", tool.newCoord);
 		tool.newCoord = null;
 		toolInCanvas = false;
 		stopTool(ev);
@@ -424,7 +428,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		if (toolIn.tool == "text" && toolIn.meta.text == "") { 
 			openTextInput(); // make sure text input box is open
 			// $("#text_input_box").select(); // doesn't seem to work :(
-			$("#text_input_box").focus()
 			toolIn.state = "end";
 			return false;
 		}
@@ -467,7 +470,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				clearTimeout(finaliseTimeout);
 			}
 			finaliseTimeout = setTimeout(function() {
-				console.log("finaliseTimeout invoked");
 				// Processing step
 				// Convert canvas to png and send to the server
 				processCanvas(canvas[0], croppingCanvas[0], toolOut, thisCtx);
@@ -1089,6 +1091,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		positionTextInput();
 
 		var inputBox = $("#text_input_box");
+		inputBox.focus();
 		inputBox.css("font-family", getFontFromMenu());
 		inputBox.focus(function() { $(this).select(); } );
 		inputBox.keyup(function() {
