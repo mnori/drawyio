@@ -90,7 +90,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var emitInterval = 33;
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
-	var textEmitInterval = emitInterval; 
+	var textEmitInterval = emitInterval;
 	var width = widthIn;
 	var height = heightIn;
 	var canvas = $("#drawing_canvas");
@@ -124,6 +124,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	Or copy the drawing canvas so that stuff doesn't interfere
 	*/
 	var finaliseTimeoutMs = 1000; 
+	var pointerTimeoutMs = 4000;
 	var textMargin = 10; // pixels to offset the text box preview
 	var defaultText = "Enter text";
 	var brushSizeMenu = null; // initialised later
@@ -1140,6 +1141,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	// receive a tool action from another user
+	// this basically just sets the pointer marker and then performs the tool action
 	function receiveTool(tool) {
 		var sockID = tool.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
@@ -1160,14 +1162,25 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				"</div>";
 			$("#drawing_layers").append(divBuf)
 			pointerElement = $("#drawing_pointer_"+sockID);
-			// position the pointer element
 		}
+		// position the pointer element
 		pointerElement.css({
 			left: tool.newCoord.x+"px",
 			top: tool.newCoord.y+"px"
 		});
 		var nick = !tool.nickname ? "Anonymous" : tool.nickname;
 		$("#drawing_pointer_label_"+sockID).text(nick);
+
+		// Pointer has a rolling fade timeout
+		// We're being lazy by attaching it to the DOM element
+		if (pointerElement[0].timeout) {
+			clearTimeout(pointerElement[0].timeout)
+		}
+		pointerElement[0].timeout = setTimeout(function() {
+			pointerElement.fadeOut(labelFadeOutMs, function() {
+				pointerElement.remove();
+			});
+		}, pointerTimeoutMs)
 
 		handleAction(tool, false);
 	}
