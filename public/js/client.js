@@ -266,8 +266,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			// flood fill - only on mousedown
 			// only when not working on existing processing
 			// only for local user - remote user receives png rather than tool action
-			flood(tool);
-			finaliseEdit(tool, emit);
+			// flood(tool);
+			// finaliseEdit(tool, emit);
 
 		} else if (
 			tool.tool == "eyedropper" && // eyedropper, is local user only - not remote
@@ -836,15 +836,15 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		colourPicker.spectrum("set", tool.colourFg);
 	}
 
-	function flood(tool) {
-		// Create a flattened canvas to draw from
-		var scratchCtx = drawScratchCanvas();
+	// function flood(tool) {
+	// 	// Create a flattened canvas to draw from
+	// 	var scratchCtx = drawScratchCanvas();
 
-		// Get the colours from the background image and tool
-		var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-		var newColour = parseColour(tool.colourFg);
-		floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
-	}
+	// 	// Get the colours from the background image and tool
+	// 	var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
+	// 	var newColour = parseColour(tool.colourFg);
+	// 	floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
+	// }
 
 	function drawScratchCanvas() {
 		// // step 1. find the background images
