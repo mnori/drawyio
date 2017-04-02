@@ -334,10 +334,20 @@ input {
 	/*border: 1px solid #ccc;*/
 	color: #666;
 	padding: 15px;
-	font-family: ubuntuRegularItalic;
-	font-size: 16px;
 	text-align: right;
 	clear: both;
+	overflow: hidden;
+}
+
+.thumb_ago { 
+	float: right; 
+	font-family: ubuntuRegularItalic;
+	font-size: 16px;
+}
+.thumb_nusers { 
+	float: left; 
+	font-family: ubuntuRegular;
+	font-size: 16px;
 }
 
 #drawing_container {
@@ -656,15 +666,8 @@ input::selection {
 
 #disconnected_text {
 	color: #fff;
-	font-family: ubuntuBold;
 	font-size: 30px;
 	text-shadow: 0px 0px 16px #000;
-}
-
-.valign {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
 }
 
 .bold_fix {
@@ -675,4 +678,10 @@ input::selection {
 	overflow: hidden; /* forces wrap around */
 	padding: 10px;
 	margin: -10px;
+}
+
+.valign {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
 }

@@ -9,8 +9,12 @@
 		<a href="/d/{{ entry.drawing.id }}" class="thumb">
 			<img src="/d/{{ entry.drawing.id }}.png" class="thumb_img" /><br />
 			<div class="thumb_inf">
-				{{ entry.nUsers }}
-				{{ entry.ago }}
+				{% if entry.nUsers > 0 %}
+					<div class="thumb_nusers">
+						<i class="fa fa-user-circle button_icon" aria-hidden="true"></i>{{ entry.nUsers }}
+					</div>
+				{% endif %}
+				<div class="thumb_ago">{{ entry.ago }}</div>
 			</div>
 		</a>
 	{% endfor %}
