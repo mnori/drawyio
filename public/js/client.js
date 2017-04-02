@@ -836,6 +836,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		colourPicker.spectrum("set", tool.colourFg);
 	}
 
+	// commented out since we don't want flood fill anymore
 	// function flood(tool) {
 	// 	// Create a flattened canvas to draw from
 	// 	var scratchCtx = drawScratchCanvas();

@@ -92,7 +92,11 @@ function getGallery() {
 	for (var i = 0; i < ids.length; i++) {
 		var drawing = getDrawing(ids[i]); // note that this only grabs from memory
 		if (!drawing.emptyImage) { // skip blank images
-			out.push({ drawing: drawing, ago: drawing.getLastEditedStr()});
+			out.push({ 
+				drawing: drawing, 
+				nUsers: drawing.getNSockets(),
+				ago: drawing.getLastEditedStr()
+			});
 		}
 	}
 
