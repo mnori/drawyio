@@ -1399,7 +1399,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				renderLayerHtml(highestLayerID + 1, layer, true);
 
 				// Remove the canvas copy
-				// canvasCopy.remove();
+				canvasCopy.remove();
 
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
@@ -1407,7 +1407,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				fr.onloadend = function() {
 					var base64 = fr.result;
 					socket.emit("add_layer", layer);
-					finaliseTimeout = null; 
 				}
 			}
 			fr.readAsDataURL(blob);
