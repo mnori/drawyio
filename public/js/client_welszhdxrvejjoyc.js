@@ -574,6 +574,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		var firstCoord = entries[0].coord;
 
 		// draw a dot to start off
+		// this is where it breaks - coord is missing
+		// check for null and do nothing if empty
 		plotLine(destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 
 		// now draw the rest of the line
