@@ -124,6 +124,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	Or copy the drawing canvas so that stuff doesn't interfere
 	*/
 	var finaliseTimeoutMs = 1000; 
+
+	// This timeout handles the pointer fading when inactive
 	var pointerTimeoutMs = 4000;
 	var textMargin = 10; // pixels to offset the text box preview
 	var defaultText = "Enter text";
@@ -1372,7 +1374,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		// gotta swap the data around to get the correct crop when it's the text tool
 		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas, toolIn);
 
-		// First generate a png blob
+		// First generate a png blob (async)
 		var blob = croppingCanvas.toBlob(function(blob) {
 
 			// Generate data URL, to be displayed on the front end, from the blob
@@ -1390,6 +1392,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				renderLayerHtml(highestLayerID + 1, layer, true);
 
 				// Clear the canvas
+				// !! Note that this may kill stuff drawn after the finalisation started!
 				ctx.clearRect(0, 0, width, height)
 
 				// // Clear the baseData
