@@ -391,19 +391,19 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				// decide whether to process the canvas at this point
 				// paintCutoffMs
 
-			} else if (tool.meta.lineEntries != null) {
+			} else if (toolIn.meta.lineEntries != null) {
 				// remote user - draw the line using the data
-				drawPaint(tool, emit);
+				drawPaint(toolIn, emit);
 			} 
 
-		} else if (tool.state == "end") { // mouseup or other line end event
-			if (emit) emitTool(tool); // be sure to emit the end event
-			drawPaint(tool, emit);
-			finaliseEdit(tool, emit);
-			tool.state = "idle"; // pretty important to avoid issues
+		} else if (toolIn.state == "end") { // mouseup or other line end event
+			if (emit) emitTool(toolIn); // be sure to emit the end event
+			drawPaint(toolIn, emit);
+			finaliseEdit(toolIn, emit);
+			toolIn.state = "idle"; // pretty important to avoid issues
 
 		} else { // Tool state is idle - just send coords
-			if (emit) emitTool(tool);
+			if (emit) emitTool(toolIn);
 		}
 	}
 
