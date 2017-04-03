@@ -476,7 +476,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				// Processing step
 				// Convert canvas to png and send to the server
-				processCanvas(drawingCanvas[0], croppingCanvas[0], toolOut, thisCtx);
+				processCanvas(croppingCanvas[0], toolOut, thisCtx);
 
 				// this will be executed after the synchronous bit of the processCanvas
 				toolIn.layerCode = null;
@@ -1362,18 +1362,24 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
-	function processCanvas(sourceCanvas, croppingCanvas, toolIn) {
-
-		// // Clear the baseData
-		// if (toolIn.tool == "line") {
-		// 	console.log("baseData deleted");
-		// 	delete ctx.baseData;
-		// }	
+	function processCanvas(croppingCanvas, toolIn) {
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
+		// Create a copy of the drawing canvas - we'll use this for processing
+		// Placed before the drawing canvas element, so it's still visible
+		// We need this to avoid different processCanvas() calls from interfering
+		// with each other.
+		var canvasCopy = duplicateDrawingCanvas(layerCode);
+
+		// Clear the canvas
+		// !! Note that this may kill stuff drawn after the finalisation started!
+		// Instead of clearing the canvas, hide the canvas that was duplicated
+		// in an earlier step
+		ctx.clearRect(0, 0, width, height)
+
 		// gotta swap the data around to get the correct crop when it's the text tool
-		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas, toolIn);
+		var cropCoords = cropCanvas(canvasCopy[0], croppingCanvas, toolIn);
 
 		// First generate a png blob (async)
 		var blob = croppingCanvas.toBlob(function(blob) {
@@ -1389,20 +1395,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 					code: layerCode
 				}
 
-				// true will bump the layer z-index since it's temporary
+				// Render the layer image
 				renderLayerHtml(highestLayerID + 1, layer, true);
 
-				// Clear the canvas
-				// !! Note that this may kill stuff drawn after the finalisation started!
-				// Instead of clearing the canvas, hide the canvas that was duplicated
-				// in an earlier step
-				ctx.clearRect(0, 0, width, height)
-
-				// // Clear the baseData
-				// if (toolIn.tool == "line") {
-				// 	console.log("baseData deleted");
-				// 	delete ctx.baseData;
-				// }
+				// Remove the canvas copy
+				// canvasCopy.remove();
 
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
@@ -1416,6 +1413,22 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			fr.readAsDataURL(blob);
 
 		}, "image/png");
+	}
+
+	function duplicateDrawingCanvas(layerCode) {
+		var duplicateID = "drawing_canvas_cpy_"+layerCode;
+		var html = "<canvas id=\""+duplicateID+"\" class=\"drawing_canvas_cpy\" "+
+			"width=\""+width+"\" height=\""+height+"\"></canvas>"
+		var newElement = $(html);
+		var drawData = ctx.getImageData(0, 0, width, height);
+		newElement[0].getContext("2d").putImageData(drawData, 0, 0);
+		newElement.insertBefore(drawingCanvas);
+
+		// var drawingCanvasCopy = drawingCanvas.clone();
+		// drawingCanvasCopy.attr("id", );
+		// drawingCanvasCopy.insertBefore(drawingCanvas);
+		// return drawingCanvasCopy;
+		return newElement;
 	}
 
 	// Crop a sourceCanvas by alpha=0. Results are written to destCanvas.

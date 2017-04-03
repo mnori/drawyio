@@ -139,7 +139,7 @@ h1 {
 }
 
 /* canvas that the local user is drawing onto. Remote users draw onto seperate canvases */
-#drawing_canvas, #drawing_canvas_preview {
+#drawing_canvas, #drawing_canvas_preview, .drawing_canvas_cpy {
 	z-index: 2000000010;
 	position: absolute;
 	top: 0px;
