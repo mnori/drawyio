@@ -348,15 +348,21 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function handlePaint(toolIn, emit) {
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
-
 				// try to process the canvas at set intervals
-				if (toolIn.state == "drawing") {
-					if ($.now() - lastPaintProcess > paintProcessCutoff) {
-						processCanvas(toolIn); // problem is that this is slow...
-						toolIn.layerCode = null;
-						lastPaintProcess = $.now();
-					}
-				}
+				// problem is that this blocks the drawing due to slowness
+				// Paint interval is very troublesome
+				// Workers might fix it
+
+				// see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+				// for details
+
+				// if (toolIn.state == "drawing") {
+				// 	if ($.now() - lastPaintProcess > paintProcessCutoff) {
+				// 		processCanvas(toolIn); // problem is that this is slow...
+				// 		toolIn.layerCode = null;
+				// 		lastPaintProcess = $.now();
+				// 	}
+				// }
 
 				readBrushSize(toolIn);
 				clearFinalise(); // prevent line drawings getting cut off by finaliser
@@ -1378,8 +1384,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(toolIn) {
 
-		var tl = new Timeline()
-		tl.log("a");
+		// var tl = new Timeline()
+		// tl.log("a");
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
@@ -1389,14 +1395,18 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		// with each other.
 		var canvasCopy = duplicateDrawingCanvas(layerCode);
 
+		// tl.log("b");
+
 		// Clear the drawing canvas, user can now draw more stuff during processing
 		ctx.clearRect(0, 0, width, height)
 
-		// Crop the canvas to save resources
+		// tl.log("c");
+
+		// Crop the canvas to save resources (this is pretty slow, around 20ms)
 		var cropCoords = cropCanvas(canvasCopy[0], croppingCanvas[0], toolIn);
 
-		tl.log("b");
-		tl.dump();
+		// tl.log("d");
+		// tl.dump();
 
 		// First generate a png blob (async)
 		var blob = croppingCanvas[0].toBlob(function(blob) {
