@@ -87,7 +87,7 @@ function setupNickModal() {
 
 // Initialise the drawing image UI
 function drawUI(drawIdIn, widthIn, heightIn) {
-	var emitInterval = 33;
+	var emitInterval = 50;
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
