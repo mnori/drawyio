@@ -122,6 +122,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	Possible fixes - chain timeouts together using Promise
 	Or copy the drawing canvas so that stuff doesn't interfere
+	Might not work, due the problem being related to the clearCanvas in processCanvas
 	*/
 	var finaliseTimeoutMs = 1000; 
 
@@ -1393,6 +1394,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 				// Clear the canvas
 				// !! Note that this may kill stuff drawn after the finalisation started!
+				// Instead of clearing the canvas, hide the canvas that was duplicated
+				// in an earlier step
 				ctx.clearRect(0, 0, width, height)
 
 				// // Clear the baseData

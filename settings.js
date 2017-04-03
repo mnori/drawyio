@@ -13,6 +13,9 @@ module.exports = {
 	// After n ms since last edit, flatten the image
 	// Too high will lead to layering problems
 	// To low and there will be a nasty issue during processCanvas
+	// ^ can't remember when I wrote that, but if it's true, there's a bug to fix,
+	// since the system should be able to handle any timeout. Might mean there is some
+	// unpleasant non-atomic stuff going down in the backend
 	FLATTEN_TIMEOUT: 1000,
 
 	// milliseconds before deleting the drawing from memory
