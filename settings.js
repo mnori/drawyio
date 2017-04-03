@@ -4,7 +4,7 @@ var isLive = false;
 // Define global constants
 module.exports = {
 	IS_LIVE: isLive,
-	VERSION_TXT: "v0.1.1",
+	VERSION_TXT: "v0.1.2",
 	CLIENT_FILE: (isLive) ? "client.js" : "client_welszhdxrvejjoyc.js",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
