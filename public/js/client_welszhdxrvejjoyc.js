@@ -105,6 +105,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var layerCodeLen = 32;
 	var highestLayerID = 1;
 	var lastEmit = $.now(); // part of general purpose intervalling system
+	var lastPaintProcess = $.now(); // paint interval stuff 
+	var paintProcessCutoff = 250;
 	var labelFadeOutMs = 120;
 	// var labelFadeOutMs = 60000;
 	var canvasCeiling = 999999999;
@@ -343,23 +345,33 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	// free form drawing
-	function handlePaint(tool, emit) {
-		if (tool.state == "start" || tool.state == "drawing") { // drawing stroke in progress
+	function handlePaint(toolIn, emit) {
+		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
-				readBrushSize(tool);
+
+				// try to process the canvas at set intervals
+				if (toolIn.state == "drawing") {
+					if ($.now() - lastPaintProcess > paintProcessCutoff) {
+						processCanvas(toolIn); // problem is that this is slow...
+						toolIn.layerCode = null;
+						lastPaintProcess = $.now();
+					}
+				}
+
+				readBrushSize(toolIn);
 				clearFinalise(); // prevent line drawings getting cut off by finaliser
-				var toolOut = JSON.parse(JSON.stringify(tool));
+				var toolOut = JSON.parse(JSON.stringify(toolIn));
 
 				// ensures that starting creates a dot on mousedown
-				if (tool.state == "start") {
-					drawPaint(tool, emit);
+				if (toolIn.state == "start") {
+					drawPaint(toolIn, emit);
 					emitTool(toolOut);
 				}
 
 				// must put drawPaint in the interval, since it's quite a slow operation
 				if ($.now() - lastEmit > paintEmitInterval) { 
 					// reached interval
-					drawPaint(tool, emit); // draw onto canvas
+					drawPaint(toolIn, emit); // draw onto canvas
 					lastEmit = $.now();
 					emitTool(toolOut); // version of tool with line coords array
 
@@ -369,6 +381,9 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 					toolOut.meta.lineEntries = null;
 					emitTool(toolOut)
 				}
+
+				// decide whether to process the canvas at this point
+				// paintCutoffMs
 
 			} else if (tool.meta.lineEntries != null) {
 				// remote user - draw the line using the data
@@ -459,7 +474,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(toolIn, emit) {
 		if (emit) { // local user, not remote user
-			var thisCtx = getDrawCtx(toolIn, emit); 
 
 			// Copy the tool so we can modify it before sending to client
 			var toolOut = JSON.parse(JSON.stringify(toolIn));
@@ -476,7 +490,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				// Processing step
 				// Convert canvas to png and send to the server
-				processCanvas(croppingCanvas[0], toolOut, thisCtx);
+				processCanvas(toolOut);
 
 				// this will be executed after the synchronous bit of the processCanvas
 				toolIn.layerCode = null;
@@ -1362,7 +1376,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
-	function processCanvas(croppingCanvas, toolIn) {
+	function processCanvas(toolIn) {
+
+		var tl = new Timeline()
+		tl.log("a");
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
@@ -1376,10 +1393,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		ctx.clearRect(0, 0, width, height)
 
 		// Crop the canvas to save resources
-		var cropCoords = cropCanvas(canvasCopy[0], croppingCanvas, toolIn);
+		var cropCoords = cropCanvas(canvasCopy[0], croppingCanvas[0], toolIn);
+
+		tl.log("b");
+		tl.dump();
 
 		// First generate a png blob (async)
-		var blob = croppingCanvas.toBlob(function(blob) {
+		var blob = croppingCanvas[0].toBlob(function(blob) {
 
 			// Generate data URL, to be displayed on the front end, from the blob
 			var fr = new FileReader();
@@ -1616,4 +1636,30 @@ function getCookie(cname) {
 		}
 	}
 	return null;
+}
+
+
+// For performance measurements
+function Timeline() {
+	this.entries = [];
+	this.log = function(name) {
+		var ts = Date.now(); // this is in milliseconds
+		this.entries.push({
+			name: name,
+			ts: ts
+		});
+	};
+	this.dump = function() {
+		console.log("Timeline.dump() invoked")
+		var currEntry;
+		var prevEntry = null;
+		for (var i = 0; i < this.entries.length; i++) {
+			var currEntry = this.entries[i];
+			if (prevEntry != null) {
+				var diffMs = currEntry.ts - prevEntry.ts;
+				console.log("["+prevEntry.name+"] => ["+currEntry.name+"] "+diffMs+" ms");
+			}
+			prevEntry = currEntry;
+		}
+	}
 }
