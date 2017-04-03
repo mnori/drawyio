@@ -93,11 +93,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var textEmitInterval = emitInterval;
 	var width = widthIn;
 	var height = heightIn;
-	var canvas = $("#drawing_canvas");
+	var drawingCanvas = $("#drawing_canvas");
 	var previewCanvas = $("#drawing_canvas_preview");
 	var croppingCanvas = $("#crop_canvas");
 	var scratchCanvas = $("#scratch_canvas"); // used by flood
-	var ctx = canvas[0].getContext('2d'); // the user editable element
+	var ctx = drawingCanvas[0].getContext('2d'); // the user editable element
 	var previewCtx = previewCanvas[0].getContext('2d'); // the user editable element
 	var doc = $(document);
 	var socket = io.connect("/drawing_socket_"+drawIdIn);
@@ -124,7 +124,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	Or copy the drawing canvas so that stuff doesn't interfere
 	Might not work, due the problem being related to the clearCanvas in processCanvas
 	*/
-	var finaliseTimeoutMs = 1000; 
+	var finaliseTimeoutMs = 100; 
 
 	// This timeout handles the pointer fading when inactive
 	var pointerTimeoutMs = 4000;
@@ -476,7 +476,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			finaliseTimeout = setTimeout(function() {
 				// Processing step
 				// Convert canvas to png and send to the server
-				processCanvas(canvas[0], croppingCanvas[0], toolOut, thisCtx);
+				processCanvas(drawingCanvas[0], croppingCanvas[0], toolOut, thisCtx);
 
 				// this will be executed after the synchronous bit of the processCanvas
 				toolIn.layerCode = null;
@@ -1219,7 +1219,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// get the mouse position inside the canvas
 	// returns null if the mouse is outside the canvas
 	function getMousePos(ev) {
-		var rect = canvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
+		var rect = drawingCanvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
 
 		if (ev.clientX == undefined || ev.clientY == undefined) {
 			return null;
