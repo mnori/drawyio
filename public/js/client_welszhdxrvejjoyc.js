@@ -115,18 +115,9 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	/*
 	finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
-
-	NOTE:
-	The system will begin to fail with lower timeout values. The issue seems 
-	to be related to the finaliseEdit and processCanvas methods
-	
-	Specifically it seems due to timeouts executing at the same time
-
-	Possible fixes - chain timeouts together using Promise
-	Or copy the drawing canvas so that stuff doesn't interfere
-	Might not work, due the problem being related to the clearCanvas in processCanvas
+	Low values place moar load on the server, higher values mean a shitty user experience
 	*/
-	var finaliseTimeoutMs = 100; 
+	var finaliseTimeoutMs = 500; 
 
 	// This timeout handles the pointer fading when inactive
 	var pointerTimeoutMs = 4000;
