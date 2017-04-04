@@ -188,7 +188,10 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				!$("#text_input").is(":visible")
 			) {
 				openTextInput();
+			} else if (ev.which == 27 &&  tool.tool == "text") {
+				closeTextInput()
 			}
+
 
 		}, this));
 		body.keyup($.proxy(function(ev) {
