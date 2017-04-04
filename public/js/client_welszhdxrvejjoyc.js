@@ -91,7 +91,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
-	var mouseEmitInterval = emitInterval;
+	var mouseEmitInterval = 20; // throttle all misc mouse output
 	var width = widthIn;
 	var height = heightIn;
 	var drawingCanvas = $("#drawing_canvas");
@@ -110,7 +110,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var paintProcessCutoff = 250;
 
 	// Delete a remote canvas after a certain amount of time
-	var remoteCanvasDeleteCutoff = 1000;
+	var remoteCanvasDeleteCutoff = 4000;
 	var labelFadeOutMs = 120;
 	// var labelFadeOutMs = 60000;
 	var canvasCeiling = 999999999;
@@ -281,7 +281,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			eyedropper(tool); 
 
 			// still need to emit those mouse coords though - for the cursor update on the remote
-			if (emit) emitTool(tool); 
+			if (emit) emitToolInterval(tool); 
 
 		} else if (tool.tool == "paint") { // free drawn line
 			handlePaint(tool, emit);
@@ -293,14 +293,14 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			handleText(tool, emit);
 
 		} else { // always emit those mouse coords
-			if (emit) emitTool(tool);
+			if (emit) emitToolInterval(tool);
 		}
 	}
 
 	// drawing a straight line between two points
 	function handleLine(tool, emit) {
 		if (tool.state == "idle") {
-			if (emit) emitTool(tool);
+			if (emit) emitToolInterval(tool);
 			return; // nothing to do when idle
 		}
 
@@ -351,6 +351,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				// see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
 				// for details
 
+				// we probably don't want this anyway cos it increases server load
+
 				// if (toolIn.state == "drawing") {
 				// 	if ($.now() - lastPaintProcess > paintProcessCutoff) {
 				// 		processCanvas(toolIn); // problem is that this is slow...
@@ -379,8 +381,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				} else { 
 					// not reached interval
 					// remove line entries before sending to remote user
-					toolOut.meta.lineEntries = null;
-					emitTool(toolOut)
+					// toolOut.meta.lineEntries = null;
+					emitToolInterval(toolOut);
 				}
 
 				// decide whether to process the canvas at this point
@@ -398,7 +400,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			toolIn.state = "idle"; // pretty important to avoid issues
 
 		} else { // Tool state is idle - just send coords
-			if (emit) emitTool(toolIn);
+			if (emit) emitToolInterval(toolIn);
 		}
 	}
 
@@ -426,7 +428,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				$("#text_input_box").val(defaultText);
 				$("#text_input").hide();
-				emitTool(toolIn);
+				emitToolInterval(toolIn);
 				initTextMeta(toolIn);
 
 			} else { // Remote text click and place
@@ -463,7 +465,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function textIdle(toolIn, emit) {
-		if (emit) emitTool(toolIn);
+		if (emit) emitToolInterval(toolIn);
 		var previewCtx = getDrawCtx(toolIn, emit, "_preview");
 		previewCtx.clearRect(0, 0, width, height); // Clear the canvas
 		if (!emit || toolInCanvas) {
@@ -1172,6 +1174,25 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		}
 		toolIn.nickname = nickname;
 		socket.emit('receive_tool', toolIn);
+	}
+
+	function emitToolInterval(toolIn, beforeEmit) {
+		// emitTool(toolIn); // version of tool with line coords array
+		if ($.now() - lastEmit > mouseEmitInterval) { 
+			if (
+				toolIn.tool == "paint" && 
+				toolIn.meta != null && 
+				toolIn.meta.lineEntries != null
+			) {
+				console.log("Removed line entries");
+				toolIn.meta.lineEntries = null;
+			}
+			// reached interval
+			emitTool(toolIn); // version of tool with line coords array
+			lastEmit = $.now();
+			return true;
+		}
+		return false;
 	}
 
 	// receive a tool action from another user
