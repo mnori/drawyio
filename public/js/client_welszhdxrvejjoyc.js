@@ -108,6 +108,9 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var lastEmit = $.now(); // part of general purpose intervalling system
 	var lastPaintProcess = $.now(); // paint interval stuff 
 	var paintProcessCutoff = 250;
+
+	// Delete a remote canvas after a certain amount of time
+	var remoteCanvasDeleteCutoff = 1000;
 	var labelFadeOutMs = 120;
 	// var labelFadeOutMs = 60000;
 	var canvasCeiling = 999999999;
@@ -615,8 +618,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		return thisCtx;
 	}
 
-	// Return existing remote canvas. Also bumps the canvas's z-index
-	// This causes a flickering "bug" during scribble wars
+	// Return existing remote canvas. Also bumps the canvas's z-index 
+	// if it's the first time
 	function getRemoteCanvas(tool, suffix) {
 		var canvasID = "canvas_layer_"+tool.layerCode+suffix;
 		var existingCanvas = $("#"+canvasID);
@@ -627,8 +630,19 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			// putting bumpCanvas here will eliminate the flicker bug
 			bumpCanvas(existingCanvas);
 		}
+		var element = existingCanvas[0];
+		if (typeof(element.deleteTimeout) !== "undefined") {
+			clearTimeout(element.deleteTimeout);
+		}
+		// note this might be buggy in some edge cases - if the layer hangs around
+		// waiting for processing, it will disappear and then reappear
+		element.deleteTimeout = setTimeout(function() {
+			existingCanvas.remove();
+		}, remoteCanvasDeleteCutoff);
 		return existingCanvas;
 	}
+
+
 
 	function initBaseData(thisCtx) {
 		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
