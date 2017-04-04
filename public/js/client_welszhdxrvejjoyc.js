@@ -87,10 +87,11 @@ function setupNickModal() {
 
 // Initialise the drawing image UI
 function drawUI(drawIdIn, widthIn, heightIn) {
-	var emitInterval = 50;
+	var emitInterval = 33; // ~= 30FPS
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
+	var mouseEmitInterval = emitInterval;
 	var width = widthIn;
 	var height = heightIn;
 	var drawingCanvas = $("#drawing_canvas");
@@ -117,7 +118,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
 	Low values place moar load on the server, higher values mean a shitty user experience
 	*/
-	var finaliseTimeoutMs = 500; 
+	var finaliseTimeoutMs = 1000; 
 
 	// This timeout handles the pointer fading when inactive
 	var pointerTimeoutMs = 4000;
@@ -615,14 +616,17 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	// Return existing remote canvas. Also bumps the canvas's z-index
+	// This causes a flickering "bug" during scribble wars
 	function getRemoteCanvas(tool, suffix) {
 		var canvasID = "canvas_layer_"+tool.layerCode+suffix;
 		var existingCanvas = $("#"+canvasID);
 		if (existingCanvas.length == 0) {
 			createRemoteCanvas(canvasID);
-			existingCanvas = $("#"+canvasID);	
+			existingCanvas = $("#"+canvasID);
+
+			// putting bumpCanvas here will eliminate the flicker bug
+			bumpCanvas(existingCanvas); // also bumps preview canvas
 		}
-		bumpCanvas(existingCanvas); // also bumps preview canvas
 		return existingCanvas;
 	}
 
