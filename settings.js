@@ -19,16 +19,17 @@ module.exports = {
 	// unpleasant non-atomic stuff going down in the backend
 	FLATTEN_TIMEOUT: 1000,
 
-	// milliseconds before deleting the drawing from memory
-	// This affects the disconnection when user is idle, if the drawing is less popular
-	MEMORY_TIMEOUT: 60000, 
+	// Rolling timeout for saving images to disk (5 seconds)
+	SAVE_TIMEOUT: 5000, 
 
-	// at intervals, check memory and cleanup if needed
-	MEMORY_INTERVAL: 1000,
+	// at intervals, check memory and cleanup if needed (1 minutes)
+	CLEANUP_INTERVAL: 60000,
+	// CLEANUP_INTERVAL: 1000,
 
 	// after n ms, delete image from memory, providing there is enough stuff
-	// for the front page
-	DELETE_TIME: 5000,
+	// for the front page (10 minutes)
+	DELETE_TIME: 600000,
+	// DELETE_TIME: 2000,
 
 	// Parameters for creating blank drawings
 	DRAWING_PARAMS: { 

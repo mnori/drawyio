@@ -30,7 +30,7 @@ function main() {
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	// db = new database.DB(settings.DB_CONNECT_PARAMS);
-	checkMemory(settings);
+	cleanup(settings);
 	server.listen(settings.PORT);
 	console.log("Running on http://localhost:" + settings.PORT);
 }
@@ -428,7 +428,6 @@ function Drawing(idIn, startLayer) {
 	}
 
 	// Set rolling timeout for saving drawing data to disk
-	// For deletion, it would be better to run a scan at intervals and delete where needed
 	this.setSaveTimeout = function() {
 		if (this.saveTimeout) {
 			clearTimeout(this.saveTimeout);
@@ -436,10 +435,6 @@ function Drawing(idIn, startLayer) {
 		}
 		var self = this;
 		this.saveTimeout = setTimeout(function() {
-			if (self.emptyImage) { // don't save empty images, just delete them
-				self.destroy();
-				return;
-			}
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
@@ -447,7 +442,7 @@ function Drawing(idIn, startLayer) {
 					saveImage(self.id, buffer, function(err) {});	
 				} 
 			});
-		}, settings.MEMORY_TIMEOUT);
+		}, settings.SAVE_TIMEOUT);
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -698,7 +693,7 @@ function Timeline() {
 }
 
 // Checks drawings in memory and deletes old stuff that has reached an expire time
-function checkMemory() {
+function cleanup() {
 	setTimeout(function() {
 		var entries = drawings.getValues();
 		// Sort with newest at the top
@@ -725,9 +720,9 @@ function checkMemory() {
 			}
 		});
 
-		checkMemory();
+		cleanup();
 
-	}, settings.MEMORY_INTERVAL);
+	}, settings.CLEANUP_INTERVAL);
 }
 
 // Get the party started
