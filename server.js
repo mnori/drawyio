@@ -700,7 +700,6 @@ function Timeline() {
 // Checks drawings in memory and deletes old stuff that has reached an expire time
 function checkMemory() {
 	setTimeout(function() {
-		console.log("Check memory timeout");
 		var entries = drawings.getValues();
 		// Sort with newest at the top
 		entries.sort(function(a, b) {
