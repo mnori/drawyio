@@ -30,6 +30,7 @@ function main() {
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	// db = new database.DB(settings.DB_CONNECT_PARAMS);
+	checkMemory(settings);
 	server.listen(settings.PORT);
 	console.log("Running on http://localhost:" + settings.PORT);
 }
@@ -442,43 +443,11 @@ function Drawing(idIn, startLayer) {
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
-				// only remove from memory if it falls outside the window
-				if (self.isModified) { // save modified image
-					saveImage(self.id, buffer, function(err) {
-						self.deleteIfOldEnough();	
-						// console.log("Saved image and destroyed");
-					});	
-				} else { // not modified - just cleanup, don't save
-					self.deleteIfOldEnough();
-				}
+				if (self.isModified) { // save modified images
+					saveImage(self.id, buffer, function(err) {});	
+				} 
 			});
 		}, settings.MEMORY_TIMEOUT);
-	}
-
-	// Decide whether this drawing is old enough to be deleted, delete if it is.
-	// Old enough means it falls outside the window
-	this.deleteIfOldEnough = function() {
-		var entries = drawings.getValues();
-		var self = this;
-		// Sort with newest at the top
-		entries.sort(function(a, b) {
-			var diff = b.lastEdited.getTime() - a.lastEdited.getTime();
-			return diff;
-		});
-
-		// Slice the entries
-		var entries = entries.slice(0, settings.MIN_DRAWINGS_MEMORY);
-
-		// Is this drawing inside the top most recent drawings?
-		var inWindow = false;
-		entries.forEach(function(entry) {
-			if (entry.id == self.id) {
-				inWindow = true;
-			}
-		});
-		if (!inWindow) {
-			this.destroy();
-		}
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -726,6 +695,40 @@ function Timeline() {
 			prevEntry = currEntry;
 		}
 	}
+}
+
+// Checks drawings in memory and deletes old stuff that has reached an expire time
+function checkMemory() {
+	setTimeout(function() {
+		console.log("Check memory timeout");
+		var entries = drawings.getValues();
+		// Sort with newest at the top
+		entries.sort(function(a, b) {
+			var diff = b.lastEdited.getTime() - a.lastEdited.getTime();
+			return diff;
+		});
+
+		var nVisible = 0;
+		entries.forEach(function(drawing) {
+			var diff = new Date().getTime() - drawing.lastEdited;
+			var expired = diff >= settings.DELETE_TIME;
+			// If drawing is empty and expired, delete it
+			if (drawing.emptyImage && expired) {
+				drawing.destroy();
+
+			} else if (!drawing.emptyImage) {
+				nVisible += 1;
+
+				// only delete if there is enough stuff for the front page
+				if (nVisible > settings.MIN_DRAWINGS_MEMORY) {
+					drawing.destroy();
+				}
+			}
+		});
+
+		checkMemory();
+
+	}, settings.MEMORY_INTERVAL);
 }
 
 // Get the party started

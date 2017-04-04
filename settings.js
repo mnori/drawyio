@@ -23,6 +23,13 @@ module.exports = {
 	// This affects the disconnection when user is idle, if the drawing is less popular
 	MEMORY_TIMEOUT: 60000, 
 
+	// at intervals, check memory and cleanup if needed
+	MEMORY_INTERVAL: 1000,
+
+	// after n ms, delete image from memory, providing there is enough stuff
+	// for the front page
+	DELETE_TIME: 5000,
+
 	// Parameters for creating blank drawings
 	DRAWING_PARAMS: { 
 		width: 800,
