@@ -343,24 +343,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	function handlePaint(toolIn, emit) {
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
-				// try to process the canvas at set intervals
-				// problem is that this blocks the drawing due to slowness
-				// Paint interval is very troublesome
-				// Workers might fix it
-
-				// see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
-				// for details
-
-				// we probably don't want this anyway cos it increases server load
-
-				// if (toolIn.state == "drawing") {
-				// 	if ($.now() - lastPaintProcess > paintProcessCutoff) {
-				// 		processCanvas(toolIn); // problem is that this is slow...
-				// 		toolIn.layerCode = null;
-				// 		lastPaintProcess = $.now();
-				// 	}
-				// }
-
 				readBrushSize(toolIn);
 				clearFinalise(); // prevent line drawings getting cut off by finaliser
 				var toolOut = JSON.parse(JSON.stringify(toolIn));
@@ -378,16 +360,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 					lastEmit = $.now();
 					emitTool(toolOut); // version of tool with line coords array
 
-				} else { 
-					// not reached interval
-					// remove line entries before sending to remote user
-					// toolOut.meta.lineEntries = null;
-					emitToolInterval(toolOut);
 				}
-
-				// decide whether to process the canvas at this point
-				// paintCutoffMs
-
 			} else if (toolIn.meta.lineEntries != null) {
 				// remote user - draw the line using the data
 				drawPaint(toolIn, emit);
