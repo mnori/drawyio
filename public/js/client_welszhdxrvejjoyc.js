@@ -401,7 +401,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				$("#text_input_box").val(defaultText);
 				$("#text_input").hide();
-				emitToolInterval(toolIn);
+				emitTool(toolIn);
 				initTextMeta(toolIn);
 
 			} else { // Remote text click and place
