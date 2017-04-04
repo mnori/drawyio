@@ -1160,7 +1160,6 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				toolIn.meta != null && 
 				toolIn.meta.lineEntries != null
 			) {
-				console.log("Removed line entries");
 				toolIn.meta.lineEntries = null;
 			}
 			// reached interval
