@@ -9,6 +9,8 @@ var migrations = [
 	{ 
 		name: "beginning", 
 		run: function() {
+			var fs = require("fs");
+
 			db.querySync("DROP DATABASE IF EXISTS "+settings.DB_NAME)
 
 			// create the database and use
@@ -25,8 +27,9 @@ var migrations = [
 				"CREATE TABLE room (",
 				"	id CHAR("+settings.ID_LEN+"),",
 				"	snapshot_id CHAR("+settings.ID_LEN+") REFERENCES snapshot(id),",
-				"	last_active DATETIME NOT NULL,",
 				"	is_private BOOLEAN NOT NULL,",
+				"	created DATETIME NOT NULL,",
+				"	modified DATETIME NOT NULL,",
 				"	PRIMARY KEY (id)",
 				// "	FOREIGN KEY (snapshot_id) REFERENCES snapshot(id)",
 				")"
@@ -47,6 +50,16 @@ var migrations = [
 				"ALTER TABLE room",
 				"ADD CONSTRAINT FOREIGN KEY (snapshot_id) REFERENCES snapshot(id);"
 			].join("\n"));
+
+			// now populate the database using the files on disk
+
+			// drawings = new AssocArray();
+			var dir = settings.IMAGES_DIR;
+			var files = fs.readdirSync(dir);
+			files.forEach(filename => {
+				var modified = fs.statSync(dir+"/"+filename).mtime.getTime()
+				console.log(filename, modified);
+			});
 		}
 	}
 ]
