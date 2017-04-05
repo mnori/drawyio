@@ -298,11 +298,9 @@ function base64ToBuffer(base64) {
 function getRoom(drawID, loadCallback) {
 	var drawing = drawings.get(drawID);	
 	if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
-		drawing.setSaveTimeout(); // pip the timout
 		return drawing;
 	} else if (typeof(loadCallback) !== "undefined") {
 		if (drawing != null) { // already in memory
-			drawing.setSaveTimeout(); // reset the save timeout
 			loadCallback(drawing);
 		} else { // drawing is not in memory. try to load it
 			fetchRoom(drawID, loadCallback);
@@ -383,7 +381,7 @@ function Room(idIn, startLayer, fields) {
 		this.layers.set(this.nLayers, startLayer);
 
 		this.isModified = false; // intial image is not modified
-		this.setSaveTimeout();
+		// this.setSaveTimeout();
 		drawings.set(this.id, this);
 		this.configureRoomNS();
 		console.log("["+drawings.getLength()+"] total, drawing created");
@@ -521,7 +519,7 @@ function Room(idIn, startLayer, fields) {
 		this.nLayers++;
 		// console.log("["+this.nLayers+", "+layerObj.code+"] layer added");
 		this.layers.set(this.nLayers, layerObj);
-		this.updateEdited();
+		this.updateModified();
 		this.isModified = true;
 		return this.nLayers;
 	}
@@ -540,7 +538,7 @@ function Room(idIn, startLayer, fields) {
 	this.getJson = function() { return this.layers.getJson(); }
 
 	// store timestamp of the most recent edit
-	this.updateEdited = function() {
+	this.updateModified = function() {
 		this.modified = new Date();
 	}
 
