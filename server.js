@@ -16,8 +16,7 @@ const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
 const settings = require("./settings") // Our settings
 const validation = require("./validation") // Validation tools
-
-// const database = require("./database") // Our database wrapper
+const database = require("./database") // Our database wrapper
 
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
@@ -29,7 +28,7 @@ function main() {
 	loadDrawingsInitial();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
-	// db = new database.DB(settings.DB_CONNECT_PARAMS);
+	db = new database.DB(settings.DB_CONNECT_PARAMS);
 	cleanup(settings);
 	server.listen(settings.PORT);
 	console.log("Running on http://localhost:" + settings.PORT);

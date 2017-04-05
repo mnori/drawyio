@@ -23,9 +23,10 @@ var migrations = [
 			// create room table
 			db.querySync([
 				"CREATE TABLE room (",
-				"	id VARCHAR("+settings.LAYER_CODE_LEN+"),",
-				"	snapshot_id VARCHAR("+settings.LAYER_CODE_LEN+") REFERENCES snapshot(id),",
+				"	id CHAR("+settings.ID_LEN+"),",
+				"	snapshot_id CHAR("+settings.ID_LEN+") REFERENCES snapshot(id),",
 				"	last_active DATETIME NOT NULL,",
+				"	is_private BOOLEAN NOT NULL,",
 				"	PRIMARY KEY (id)",
 				// "	FOREIGN KEY (snapshot_id) REFERENCES snapshot(id)",
 				")"
@@ -34,8 +35,8 @@ var migrations = [
 			// create snapshot table
 			db.querySync([
 				"CREATE TABLE snapshot (",
-				"	id VARCHAR("+settings.LAYER_CODE_LEN+") PRIMARY KEY,",
-				"	room_id VARCHAR("+settings.LAYER_CODE_LEN+") NOT NULL REFERENCES room(id),",
+				"	id CHAR("+settings.ID_LEN+"),",
+				"	room_id CHAR("+settings.ID_LEN+") NOT NULL REFERENCES room(id),",
 				"	taken_on DATETIME NOT NULL,",
 				"	PRIMARY KEY (id),",
 				"	FOREIGN KEY (room_id) REFERENCES room(id)",
