@@ -52,13 +52,21 @@ var migrations = [
 			].join("\n"));
 
 			// now populate the database using the files on disk
-
-			// drawings = new AssocArray();
 			var dir = settings.IMAGES_DIR;
 			var files = fs.readdirSync(dir);
 			files.forEach(filename => {
-				var modified = fs.statSync(dir+"/"+filename).mtime.getTime()
-				console.log(filename, modified);
+				var modified = fs.statSync(dir+"/"+filename).mtime.getTime() / 1000;
+				var id = filename.split(".")[0]
+				db.querySync([
+					"INSERT INTO room (id, snapshot_id, is_private, created, modified) ",
+					"VALUES (",
+					"	'"+id+"',", // id
+					"	NULL,", // snapshot_id
+					"	0,", // is_private
+					"	FROM_UNIXTIME("+modified+"),", // created
+					"	FROM_UNIXTIME("+modified+")", // modified
+					");"
+				].join("\n"));
 			});
 		}
 	}

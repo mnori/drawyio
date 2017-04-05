@@ -2,7 +2,7 @@
 // This wrapper means we can get some nice debugging and also run synchronous queries.
 // (c) 2017 drawy.io
 
-const mysql = require('mysql');
+const mysql = require('mysql'); // https://www.npmjs.com/package/mysql
 const settings = require("./settings")
 
 class DB {
