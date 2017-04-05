@@ -27,7 +27,7 @@ function main() {
 	setupDebug();
 	db = new database.DB(settings.DB_CONNECT_PARAMS);
 	db.query("USE "+settings.DB_NAME+";");
-	fetchDrawingsInitial();
+	fetchRoomsInitial();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	cleanup(settings);
@@ -37,7 +37,7 @@ function main() {
 
 // This is a bit of a dirty solution
 // will be replaced with a proper DB based storage soon.
-function fetchDrawingsInitial() {
+function fetchRoomsInitial() {
 	drawings = new AssocArray();
 	var dir = settings.IMAGES_DIR;
 	var files = fs.readdirSync(dir);
@@ -48,14 +48,14 @@ function fetchDrawingsInitial() {
 		? files.length : settings.MIN_DRAWINGS_MEMORY;
 	for (var i = 0; i < max; i++) {
 		console.log("["+files[i].split(".")[0]+"]");
-		getDrawing(files[i].split(".")[0], function(drawing) {
-			drawing.emptyImage = false;
-	 		// checking the modified date is asynchronous
-	 		var filepath = dir+"/"+drawing.id+".png"
-	 		fs.stat(filepath, function(err, stats) {
-	 			drawing.lastEdited = stats["mtime"]
-	 		})
-		});
+		// getRoom(files[i].split(".")[0], function(drawing) {
+	 // 		// checking the modified date is asynchronous
+	 // 		var filepath = dir+"/"+drawing.id+".png"
+	 // 		fs.stat(filepath, function(err, stats) {
+	 // 			drawing.lastEdited = stats["mtime"]
+	 // 		})
+		// });
+		getRoom(files[i].split(".")[0], function(drawing) {});
 	}
 }
 
@@ -66,13 +66,13 @@ function configureRoutes(app) {
 	app.use(express.static("public"));
 
 	// Create a new drawing in memory, and return its unique ID to the client
-	app.get("/create_drawing", createDrawing);
+	app.get("/create_drawing", createRoom);
 
 	// Render a drawing's page or its image
 	app.get("/d/:id", function(req, res) {
 		req.params.id.includes(".png") ? 
-			sendDrawingImage(req, res) : 
-			renderDrawingPage(req, res);
+			sendRoomImage(req, res) : 
+			renderRoomPage(req, res);
 	});
 
 	// The index page
@@ -91,7 +91,7 @@ function getGallery() {
 	var out = []
 	var ids = drawings.getKeys();
 	for (var i = 0; i < ids.length; i++) {
-		var drawing = getDrawing(ids[i]); // note that this only grabs from memory
+		var drawing = getRoom(ids[i]); // note that this only grabs from memory
 		if (!drawing.emptyImage) { // skip blank images
 			out.push({ 
 				drawing: drawing, 
@@ -115,7 +115,7 @@ function getGallery() {
 }
 
 function receiveTool(data, socket) {
-	getDrawing(socket.drawID, function(drawing) {
+	getRoom(socket.drawID, function(drawing) {
 		if (drawing != null) {
 			drawing.broadcastTool(data, socket);
 		}
@@ -123,9 +123,9 @@ function receiveTool(data, socket) {
 }
 
 // Send drawing data to client
-function sendDrawing(data, socket) {
+function sendRoom(data, socket) {
 	var drawID = data.drawID;
-	getDrawing(drawID, function(drawing) {
+	getRoom(drawID, function(drawing) {
 		var output = drawing.getJson();
 		socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
 		socket.emit("update_drawing", drawing.getJson());
@@ -142,7 +142,7 @@ function receiveLayer(data, socket) {
 	) { // invalid draw ID or layer code supplied
 		return; // nothing to do, there is no client side confirmation -yet
 	} else {
-		getDrawing(drawID, function(drawing) {
+		getRoom(drawID, function(drawing) {
 			if (drawing == null) {
 				console.log("WARNING: "+drawID+" does not exist!");
 			} else {
@@ -158,12 +158,12 @@ function send404(res) {
 	res.status(404).render("404.html")
 }
 
-function renderDrawingPage(req, res) {
+function renderRoomPage(req, res) {
 	var drawID = req.params.id
 	if (!validation.checkDrawID(drawID)) { // check code is valid
 		send404(res);
 	} else {
-		getDrawing(drawID, function(drawing) {
+		getRoom(drawID, function(drawing) {
 			if (drawing != null) {
 				res.render("drawing.html", { 
 					settings: settings,
@@ -179,12 +179,12 @@ function renderDrawingPage(req, res) {
 }
 
 // Return png image as buffer
-function sendDrawingImage(req, res) {
+function sendRoomImage(req, res) {
 	var drawID = req.params.id.replace(".png", "");
 	if (!validation.checkDrawID(drawID)) { // check code is valid
 		send404(res);
 	} else {
-		getDrawing(drawID, function(drawing) {
+		getRoom(drawID, function(drawing) {
 			if (drawing == null) {
 				send404(res)	
 			} else {
@@ -201,7 +201,7 @@ function sendDrawingImage(req, res) {
 }
 
 // Create a blank canvas image to draw on
-function createDrawing(req, res) {
+function createRoom(req, res) {
 	// 1. Find a unique drawing ID
 	makeDrawID(function(drawID) {
 		if (drawID == null) { // exceeded max tries
@@ -229,9 +229,9 @@ function createDrawing(req, res) {
 		// Sends a base64 encoded string
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
-			var drawing = new Drawing(drawID, layer);
+			var drawing = new Room(drawID, layer);
 			res.send(drawID);
-			// console.log("Drawing "+drawID+" created.");
+			// console.log("Room "+drawID+" created.");
 		});
 	});
 }
@@ -255,7 +255,7 @@ function makeDrawID(callback) {
 
 	function recurse() {
 		newDrawID = randomString(settings.ID_LEN);
-		getDrawing(newDrawID, function(drawing) {
+		getRoom(newDrawID, function(drawing) {
 			if (drawing == null) {
 				callback(newDrawID)
 			} else {
@@ -299,7 +299,7 @@ function base64ToBuffer(base64) {
 	return Buffer.from(str, 'base64')
 }
 
-function getDrawing(drawID, loadCallback) {
+function getRoom(drawID, loadCallback) {
 	var drawing = drawings.get(drawID);	
 	if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
 		drawing.setSaveTimeout(); // pip the timout
@@ -309,7 +309,7 @@ function getDrawing(drawID, loadCallback) {
 			drawing.setSaveTimeout(); // reset the save timeout
 			loadCallback(drawing);
 		} else { // drawing is not in memory. try to load it
-			fetchDrawing(drawID, loadCallback);
+			fetchRoom(drawID, loadCallback);
 		}
 	}
 }
@@ -321,8 +321,8 @@ function saveImage(drawID, data, callback) {
 }
 
 // checks mysql database, then disk
-function fetchDrawing(drawID, loadCallback) {
-	console.log("fetchDrawing() invoked");
+function fetchRoom(drawID, loadCallback) {
+	console.log("fetchRoom() invoked");
 	db.query("SELECT * FROM room WHERE id='"+db.esc(drawID)+"'", function(results, fields) {
 		if (results.length == 0) {
 			console.log("Length zero!");
@@ -343,7 +343,7 @@ function loadImage(drawID, callback, fields) {
 	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
-		var drawing = new Drawing(drawID, layer, fields);
+		var drawing = new Room(drawID, layer, fields);
 		callback(drawing);				
 	}).catch(function(err) {
 		console.log("Warning - loadImage failed with "+drawID+"!")
@@ -351,7 +351,9 @@ function loadImage(drawID, callback, fields) {
 	});
 }
 // Stores the data for a drawing
-function Drawing(idIn, startLayer, fields) {
+function Room(idIn, startLayer, fields) {
+	
+
 	this.id = idIn;
 	this.layers = new AssocArray();
 	this.socketNS = null; // contains all the sockets attached to this drawing
@@ -360,17 +362,27 @@ function Drawing(idIn, startLayer, fields) {
 	this.emptyImage = true; // whether the PNG is empty
 	this.isModified = false; // whether the image has been modified since loading from disk
 	this.saveTimeout = null;
+	this.created = null;
 	this.lastEdited = null;
+
 	// used to generate unique sequential layer IDs
 	// Keeps going up, even after baking the image into a new single layer
 	this.nLayers = 0;
 
 	this.init = function(startLayer) {
+		var fromDB = typeof(fields) !== "undefined";
+		if (fromDB) {
+			this.emptyImage = false;
+
+		} else { // creating a new drawing object (room)
+			this.created = new Date();
+			this.lastEdited = new Date();
+		}
 		this.addLayer(startLayer);
 		this.isModified = false; // intial image is not modified
 		this.setSaveTimeout();
 		drawings.set(this.id, this);
-		this.configureDrawingNS();
+		this.configureRoomNS();
 		console.log("["+drawings.getLength()+"] total, drawing created");
 	}
 
@@ -407,7 +419,7 @@ function Drawing(idIn, startLayer, fields) {
 	}
 
 	// Set up drawing-specific event handlers for the socket namespace endpoints
-	this.configureDrawingNS = function() {
+	this.configureRoomNS = function() {
 
 		// set up the drawing's socket namespace
 		var drawingNS = io.of("/drawing_socket_"+this.id);
@@ -426,7 +438,7 @@ function Drawing(idIn, startLayer, fields) {
 				) {
 					socket.emit("update_drawing", "error");
 				} else {
-					sendDrawing(data, socket);	
+					sendRoom(data, socket);	
 				}
 			});
 
@@ -434,7 +446,7 @@ function Drawing(idIn, startLayer, fields) {
 			// The server doesn't touch the tool - it just gets relayed to clients
 			socket.on("receive_tool", function(data) { receiveTool(data, socket); });
 
-			// Receive new png draw data as base64 encoded string and add to the Drawing
+			// Receive new png draw data as base64 encoded string and add to the Room
 			socket.on("add_layer", function(data) { receiveLayer(data, socket); });
 
 			// disconnect a socket
@@ -616,7 +628,7 @@ function Drawing(idIn, startLayer, fields) {
 							code: randomString(settings.LAYER_CODE_LEN),
 							components: componentCodes
 						});
-						// console.log("["+flattenedLayerID+"] Drawing has been flattened, "+ind+" layers total");
+						// console.log("["+flattenedLayerID+"] Room has been flattened, "+ind+" layers total");
 						// console.log("Here are the components:");
 						// console.log(componentCodes);
 
