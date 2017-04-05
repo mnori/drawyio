@@ -48,13 +48,6 @@ function fetchRoomsInitial() {
 		? files.length : settings.MIN_DRAWINGS_MEMORY;
 	for (var i = 0; i < max; i++) {
 		console.log("["+files[i].split(".")[0]+"]");
-		// getRoom(files[i].split(".")[0], function(drawing) {
-	 // 		// checking the modified date is asynchronous
-	 // 		var filepath = dir+"/"+drawing.id+".png"
-	 // 		fs.stat(filepath, function(err, stats) {
-	 // 			drawing.lastEdited = stats["mtime"]
-	 // 		})
-		// });
 		getRoom(files[i].split(".")[0], function(drawing) {});
 	}
 }
@@ -96,16 +89,16 @@ function getGallery() {
 			out.push({ 
 				drawing: drawing, 
 				nUsers: drawing.getNSockets(),
-				ago: drawing.getLastEditedStr()
+				ago: drawing.getmodifiedStr()
 			});
 		}
 	}
 
 	// sort by most recent first
 	out.sort(function(a, b) {
-		if (a.drawing.lastEdited > b.drawing.lastEdited) {
+		if (a.drawing.modified > b.drawing.modified) {
 			return -1;
-		} else if (a.drawing.lastEdited < b.drawing.lastEdited) {
+		} else if (a.drawing.modified < b.drawing.modified) {
 			return 1;
 		}
 		return 0;
@@ -325,11 +318,8 @@ function fetchRoom(drawID, loadCallback) {
 	console.log("fetchRoom() invoked");
 	db.query("SELECT * FROM room WHERE id='"+db.esc(drawID)+"'", function(results, fields) {
 		if (results.length == 0) {
-			console.log("Length zero!");
 			loadCallback(null);
 		} else {
-			console.log("Length not zero!")
-			console.log(results);
 			loadImage(drawID, loadCallback, results[0]);
 		}
 	});
@@ -337,8 +327,6 @@ function fetchRoom(drawID, loadCallback) {
 
 // Try to load a drawing from disk
 function loadImage(drawID, callback, fields) {
-	console.log("fields");
-	console.log("[["+fields.id+"]]");
 	// must sanitise the drawID
 	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
@@ -352,33 +340,45 @@ function loadImage(drawID, callback, fields) {
 }
 // Stores the data for a drawing
 function Room(idIn, startLayer, fields) {
-	
-
-	this.id = idIn;
-	this.layers = new AssocArray();
-	this.socketNS = null; // contains all the sockets attached to this drawing
-	this.isFlattening = false;
-	this.flattenTimeout = null;
-	this.emptyImage = true; // whether the PNG is empty
-	this.isModified = false; // whether the image has been modified since loading from disk
-	this.saveTimeout = null;
-	this.created = null;
-	this.lastEdited = null;
-
-	// used to generate unique sequential layer IDs
-	// Keeps going up, even after baking the image into a new single layer
-	this.nLayers = 0;
-
-	this.init = function(startLayer) {
+	this.init = function(idIn, startLayer, fields) {
 		var fromDB = typeof(fields) !== "undefined";
-		if (fromDB) {
-			this.emptyImage = false;
+		this.id = idIn;
+		this.layers = new AssocArray();
+		this.socketNS = null; // contains all the sockets attached to this drawing
+		this.isFlattening = false;
+		this.flattenTimeout = null;
 
-		} else { // creating a new drawing object (room)
-			this.created = new Date();
-			this.lastEdited = new Date();
+		// whether the image has been modified since loading from disk
+		this.isModified = false; 
+
+		// rolling timeout for saving to disk
+		this.saveTimeout = null;
+
+		// used to generate unique sequential layer IDs
+		// Keeps going up, even after baking the image into a new single layer
+		this.nLayers = 0;
+
+		if (fromDB) {
+			console.log("Creating from DB")
+			console.log(fields);
+			this.emptyImage = false;
+			this.created = new Date(fields.created);
+			this.modified = new Date(fields.modified);
+
+			console.log("created:");
+			console.log(this.created);
+			
+		} else { // creating a new room from nothing
+			this.emptyImage = true; // whether the PNG is empty
+
+			// created and modified are right now
+			this.created = new Date(); 
+			this.modified = new Date();
 		}
-		this.addLayer(startLayer);
+		// add the first layer, bypass the addLayer since it updates modified flags
+		this.nLayers++;
+		this.layers.set(this.nLayers, startLayer);
+
 		this.isModified = false; // intial image is not modified
 		this.setSaveTimeout();
 		drawings.set(this.id, this);
@@ -525,16 +525,16 @@ function Room(idIn, startLayer, fields) {
 
 	// store timestamp of the most recent edit
 	this.updateEdited = function() {
-		this.lastEdited = new Date();
+		this.modified = new Date();
 	}
 
-	this.getLastEditedStr = function() {
-		var diff = new Date() - this.lastEdited;
+	this.getmodifiedStr = function() {
+		var diff = new Date() - this.modified;
 		if (diff < 1000) { // less than 1 second = a moment ago
 			return "A moment ago";
 		}
 		// otherwise use the string from the library
-		return ta.ago(this.lastEdited);
+		return ta.ago(this.modified);
 	}
 
 	// Handles timeout logic for flattening. Called from outside and also inside
@@ -656,8 +656,7 @@ function Room(idIn, startLayer, fields) {
 		var self = this;
 		flattenRecursive(self, baseBuf, 0);
 	}
-
-	this.init(startLayer);
+	this.init(idIn, startLayer, fields);
 }
 
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.
@@ -728,13 +727,13 @@ function cleanup() {
 		var entries = drawings.getValues();
 		// Sort with newest at the top
 		entries.sort(function(a, b) {
-			var diff = b.lastEdited.getTime() - a.lastEdited.getTime();
+			var diff = b.modified.getTime() - a.modified.getTime();
 			return diff;
 		});
 
 		var nVisible = 0;
 		entries.forEach(function(drawing) {
-			var diff = new Date().getTime() - drawing.lastEdited;
+			var diff = new Date().getTime() - drawing.modified;
 			var expired = diff >= settings.DELETE_TIME;
 			// If drawing is empty and expired, delete it
 			if (drawing.emptyImage && expired) {

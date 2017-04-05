@@ -16,7 +16,7 @@ class DB {
 	// Do a query async. Correct way to do a query on the server.
 	query(sql, callback) {
 		if (settings.SQL_DEBUG) {
-			console.log("Sync query:\n"+this.addTab(sql))		
+			console.log("Async query:\n"+this.addTab(sql))		
 		}
 		this.connection.query(sql, function(error, results, fields) {
 			if (error) {
@@ -53,6 +53,7 @@ class DB {
 	}
 
 	esc(strIn) {
+		// !! fill this out
 		return strIn;
 	}
 };
