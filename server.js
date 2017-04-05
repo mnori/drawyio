@@ -27,7 +27,7 @@ function main() {
 	setupDebug();
 	db = new database.DB(settings.DB_CONNECT_PARAMS);
 	db.query("USE "+settings.DB_NAME+";");
-	loadDrawingsInitial();
+	fetchDrawingsInitial();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	cleanup(settings);
@@ -37,7 +37,7 @@ function main() {
 
 // This is a bit of a dirty solution
 // will be replaced with a proper DB based storage soon.
-function loadDrawingsInitial() {
+function fetchDrawingsInitial() {
 	drawings = new AssocArray();
 	var dir = settings.IMAGES_DIR;
 	var files = fs.readdirSync(dir);
@@ -309,7 +309,7 @@ function getDrawing(drawID, loadCallback) {
 			drawing.setSaveTimeout(); // reset the save timeout
 			loadCallback(drawing);
 		} else { // drawing is not in memory. try to load it
-			loadDrawing(drawID, loadCallback);
+			fetchDrawing(drawID, loadCallback);
 		}
 	}
 }
@@ -321,22 +321,29 @@ function saveImage(drawID, data, callback) {
 }
 
 // checks mysql database, then disk
-function loadDrawing(drawID, loadCallback) {
-	console.log("loadDrawing() invoked");
+function fetchDrawing(drawID, loadCallback) {
+	console.log("fetchDrawing() invoked");
 	db.query("SELECT * FROM room WHERE id='"+db.esc(drawID)+"'", function(results, fields) {
-		console.log(results[0]);
+		if (results.length == 0) {
+			console.log("Length zero!");
+			loadCallback(null);
+		} else {
+			console.log("Length not zero!")
+			console.log(results);
+			loadImage(drawID, loadCallback, results[0]);
+		}
 	});
-
-	return loadImage(drawID, loadCallback);
 }
 
 // Try to load a drawing from disk
-function loadImage(drawID, callback) {
+function loadImage(drawID, callback, fields) {
+	console.log("fields");
+	console.log("[["+fields.id+"]]");
 	// must sanitise the drawID
 	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
-		var drawing = new Drawing(drawID, layer);
+		var drawing = new Drawing(drawID, layer, fields);
 		callback(drawing);				
 	}).catch(function(err) {
 		console.log("Warning - loadImage failed with "+drawID+"!")
@@ -344,7 +351,7 @@ function loadImage(drawID, callback) {
 	});
 }
 // Stores the data for a drawing
-function Drawing(idIn, startLayer) {
+function Drawing(idIn, startLayer, fields) {
 	this.id = idIn;
 	this.layers = new AssocArray();
 	this.socketNS = null; // contains all the sockets attached to this drawing
