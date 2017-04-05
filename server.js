@@ -16,7 +16,7 @@ const server = require("http").Server(app) // set up socket.io
 const io = require("socket.io")(server)    //
 const settings = require("./settings") // Our settings
 const validation = require("./validation") // Validation tools
-const database = require("./database") // Our database wrapper
+const database = require("./database") // Our db wrapper
 
 // Associative array containing [alphanumeric code] => [drawing object]
 var drawings;
@@ -25,10 +25,11 @@ var db = null; // filled later
 // Set up the app
 function main() {
 	setupDebug();
+	db = new database.DB(settings.DB_CONNECT_PARAMS);
+	db.query("USE "+settings.DB_NAME+";");
 	loadDrawingsInitial();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
-	db = new database.DB(settings.DB_CONNECT_PARAMS);
 	cleanup(settings);
 	server.listen(settings.PORT);
 	console.log("Running on http://localhost:" + settings.PORT);
@@ -303,12 +304,12 @@ function getDrawing(drawID, loadCallback) {
 	if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
 		drawing.setSaveTimeout(); // pip the timout
 		return drawing;
-	} else if (typeof(loadCallback) !== "undefined") { // callback the value
-		if (drawing != null) {
-			drawing.setSaveTimeout(); // pip the timout
+	} else if (typeof(loadCallback) !== "undefined") {
+		if (drawing != null) { // already in memory
+			drawing.setSaveTimeout(); // reset the save timeout
 			loadCallback(drawing);
-		} else {
-			loadImage(drawID, loadCallback);
+		} else { // drawing is not in memory. try to load it
+			loadDrawing(drawID, loadCallback);
 		}
 	}
 }
@@ -317,6 +318,16 @@ function getDrawing(drawID, loadCallback) {
 function saveImage(drawID, data, callback) {
 	var outFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
 	fs.writeFile(outFilepath, data, callback);
+}
+
+function loadDrawing(drawID, loadCallback) {
+	console.log("loadDrawing() invoked");
+
+	db.query("SELECT * FROM room", function(results, fields) {
+		console.log(results);
+	});
+
+	return loadImage(drawID, loadCallback);
 }
 
 // Try to load a drawing from disk
@@ -328,6 +339,7 @@ function loadImage(drawID, callback) {
 		var drawing = new Drawing(drawID, layer);
 		callback(drawing);				
 	}).catch(function(err) {
+		console.log("Warning - loadImage failed with "+drawID+"!")
 		callback(null);
 	});
 }

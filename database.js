@@ -14,6 +14,9 @@ class DB {
 
 	// Do a query async. Correct way to do a query on the server.
 	query(sql, callback) {
+		if (settings.SQL_DEBUG) {
+			console.log("Sync query:\n"+this.addTab(sql))		
+		}
 		this.connection.query(sql, function(error, results, fields) {
 			if (error) {
 				console.log("Database error");
