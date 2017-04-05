@@ -320,11 +320,11 @@ function saveImage(drawID, data, callback) {
 	fs.writeFile(outFilepath, data, callback);
 }
 
+// checks mysql database, then disk
 function loadDrawing(drawID, loadCallback) {
 	console.log("loadDrawing() invoked");
-
-	db.query("SELECT * FROM room", function(results, fields) {
-		console.log(results);
+	db.query("SELECT * FROM room WHERE id='"+db.esc(drawID)+"'", function(results, fields) {
+		console.log(results[0]);
 	});
 
 	return loadImage(drawID, loadCallback);

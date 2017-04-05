@@ -3,6 +3,7 @@
 // (c) 2017 drawy.io
 
 const mysql = require('mysql'); // https://www.npmjs.com/package/mysql
+const sqlstring = require("sqlstring") // Our db wrapper
 const settings = require("./settings")
 
 class DB {
@@ -49,6 +50,10 @@ class DB {
 			buf += bits[i] = "\t"+bits[i];
 		}
 		return bits.join("\n");
+	}
+
+	esc(strIn) {
+		return strIn;
 	}
 };
 
