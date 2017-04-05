@@ -222,9 +222,14 @@ function createRoom(req, res) {
 		// Sends a base64 encoded string
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
+
+			// insert the room into the database
+
+			// create room in memory
 			var drawing = new Room(drawID, layer);
+
+			// respond with drawing ID
 			res.send(drawID);
-			// console.log("Room "+drawID+" created.");
 		});
 	});
 }
@@ -338,6 +343,7 @@ function loadImage(drawID, callback, fields) {
 		callback(null);
 	});
 }
+
 // Stores the data for a drawing
 function Room(idIn, startLayer, fields) {
 	this.init = function(idIn, startLayer, fields) {
@@ -364,16 +370,15 @@ function Room(idIn, startLayer, fields) {
 			this.emptyImage = false;
 			this.created = new Date(fields.created);
 			this.modified = new Date(fields.modified);
+			this.isPrivate = (fields.is_private == "1") ? true : false;
 
-			console.log("created:");
-			console.log(this.created);
-			
 		} else { // creating a new room from nothing
 			this.emptyImage = true; // whether the PNG is empty
 
 			// created and modified are right now
 			this.created = new Date(); 
 			this.modified = new Date();
+			this.isPrivate = false;
 		}
 		// add the first layer, bypass the addLayer since it updates modified flags
 		this.nLayers++;
@@ -467,9 +472,15 @@ function Room(idIn, startLayer, fields) {
 		this.saveTimeout = setTimeout(function() {
 			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
-
 				if (self.isModified) { // save modified images
-					saveImage(self.id, buffer, function(err) {});	
+					saveImage(self.id, buffer, function(err) { // save image file to disk
+						var timeMs = parseInt(self.modified.getTime() / 1000);
+						db.query([ // update the database
+							"UPDATE room SET",
+							"	modified=FROM_UNIXTIME("+timeMs+")",
+							"WHERE id='"+db.esc(self.id)+"';"
+						].join("\n"));
+					});	
 				} 
 			});
 		}, settings.SAVE_TIMEOUT);
