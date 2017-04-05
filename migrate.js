@@ -60,7 +60,7 @@ var migrations = [
 				db.querySync([
 					"INSERT INTO room (id, snapshot_id, is_private, created, modified) ",
 					"VALUES (",
-					"	'"+id+"',", // id
+					"	'"+db.esc(id)+"',", // id
 					"	NULL,", // snapshot_id
 					"	0,", // is_private
 					"	FROM_UNIXTIME("+modified+"),", // created

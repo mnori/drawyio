@@ -89,7 +89,7 @@ function getGallery() {
 			out.push({ 
 				drawing: drawing, 
 				nUsers: drawing.getNSockets(),
-				ago: drawing.getmodifiedStr()
+				ago: drawing.getModifiedStr()
 			});
 		}
 	}
@@ -222,8 +222,6 @@ function createRoom(req, res) {
 		// Sends a base64 encoded string
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
-
-			// insert the room into the database
 
 			// create room in memory
 			var drawing = new Room(drawID, layer);
@@ -474,11 +472,18 @@ function Room(idIn, startLayer, fields) {
 			sharp(baseBuf).png().toBuffer().then(function(buffer) {
 				if (self.isModified) { // save modified images
 					saveImage(self.id, buffer, function(err) { // save image file to disk
-						var timeMs = parseInt(self.modified.getTime() / 1000);
-						db.query([ // update the database
-							"UPDATE room SET",
-							"	modified=FROM_UNIXTIME("+timeMs+")",
-							"WHERE id='"+db.esc(self.id)+"';"
+						// insert or update the room in the database
+						db.query([
+							"INSERT INTO room (id, snapshot_id, is_private, created, modified)",
+							"VALUES (",
+							"	'"+db.esc(self.id)+"',", // id
+							"	NULL,", // snapshot_id
+							"	"+(self.isPrivate ? "1" : "0")+",", // is_private
+							"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
+							"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
+							")",
+							"ON DUPLICATE KEY UPDATE",
+							"	modified=FROM_UNIXTIME("+self.getModifiedS()+")"
 						].join("\n"));
 					});	
 				} 
@@ -539,13 +544,25 @@ function Room(idIn, startLayer, fields) {
 		this.modified = new Date();
 	}
 
-	this.getmodifiedStr = function() {
+	this.getModifiedStr = function() {
 		var diff = new Date() - this.modified;
 		if (diff < 1000) { // less than 1 second = a moment ago
 			return "A moment ago";
 		}
 		// otherwise use the string from the library
 		return ta.ago(this.modified);
+	}
+
+	this.getCreatedS = function() {
+		return this.getUnixtime(this.created);	
+	};
+
+	this.getModifiedS = function() {
+		return this.getUnixtime(this.modified);
+	};
+
+	this.getUnixtime = function(val) {
+		return parseInt(val.getTime() / 1000)
 	}
 
 	// Handles timeout logic for flattening. Called from outside and also inside
