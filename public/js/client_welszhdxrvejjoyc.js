@@ -48,11 +48,11 @@ function SnapshotModal() {
 				setModalCss();
 
 				// Set up radio buttons 
-				$(".modal_radio").checkboxradio();
+				$(".snapshot_visibility").checkboxradio();
 
-				$(".modal_radio:first").attr("checked", "checked");
-				$(".modal_radio").checkboxradio("refresh");				
-				$(".modal_radio").change(function() {
+				$(".snapshot_visibility:first").attr("checked", "checked");
+				$(".snapshot_visibility").checkboxradio("refresh");				
+				$(".snapshot_visibility").change(function() {
 					var value = $(this).attr("id");
 					if (value == "snapshot_visibility_public") {
 						$("#snapshot_public_info").show();
@@ -79,12 +79,21 @@ function SnapshotModal() {
 	}
 	function process() {
 		console.log("process() invoked");
+
 		var snapshotName = $("#snapshot_name_input").val();
 		console.log("snapshotName: "+snapshotName);
+
+		var visibility = $("input[type='radio']:checked.snapshot_visibility").attr("id");
+		console.log("visibility: "+visibility);
+
+		// var options = $(".modal_radio").checkboxradio("option");
+		// console.log("options:");
+		// console.log(options);
 	}
 
 	function show(rename) {
 		$("#snapshot_dialog").dialog("open");
+		var value = $(".modal_radio:checked").attr("id");
 	}
 
 	init();
