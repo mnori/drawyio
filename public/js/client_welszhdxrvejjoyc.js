@@ -45,14 +45,7 @@ function SnapshotModal() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-		        $(".ui-widget-overlay").css({
-					"background-color": "#000",
-					"opacity": 0.5,
-					"z-index": 2000000020
-				});
-				$(".ui-dialog").css({
-					"z-index": 2000000021
-				})
+				setModalCss();
 
 				// Make text input highlight when clicked
 				$("#snapshot_name_input").click(function() { $(this).select(); })
@@ -103,15 +96,7 @@ function NickModal() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-		        $(".ui-widget-overlay").css({
-					"background-color": "#000",
-					"opacity": 0.5,
-					"z-index": 2000000020
-				});
-
-				$(".ui-dialog").css({
-					"z-index": 2000000021
-				})
+		        setModalCss();
 
 				// Make text input highlight when clicked
 				$("#nick_input").click(function() { $(this).select(); })
@@ -143,6 +128,17 @@ function NickModal() {
 	}
 
 	init();
+}
+
+function setModalCss() {
+	$(".ui-widget-overlay").css({
+		"background-color": "#000",
+		"opacity": 0.5,
+		"z-index": 2000000020
+	});
+	$(".ui-dialog").css({
+		"z-index": 2000000021
+	})
 }
 
 // DRAWING UI ///////////////////////////////////////////////////////////////////////////////
