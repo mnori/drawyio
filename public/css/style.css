@@ -513,16 +513,16 @@ input {
 	text-overflow: initial;
 }
 
-/* not needed? */
-/*.ui-button:focus {
+
+.ui-button:focus {
 	background-color: #d9d9d9;
 	border: 1px solid #777;
-}*/
+}
 
-/*.ui-button:active {
+.ui-button:active {
 	padding: 12px 10px 8px 10px;
 	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
-}*/
+}
 
 .ui-widget.ui-widget-content {
     border: none;
@@ -737,6 +737,7 @@ input::selection {
 	line-height: 18px !important;
 	border: 1px solid #bbb !important;
     background-color: #eee !important;
+    box-shadow: 0px 0px 0px 0px;
     margin: 0px !important;
     padding: 6px 10px 6px 10px;
 }
