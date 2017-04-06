@@ -38,7 +38,7 @@ function SnapshotModal() {
 	function setup() {
 		$("#snapshot_dialog").dialog({
 			resizable: false,
-			height: 202,
+			height: 402,
 			width: 400,
 			modal: true,
 			draggable: false,

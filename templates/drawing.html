@@ -4,12 +4,12 @@
 
 {% block content %}
 	<!-- Nickname dialog -->
-    <div id="snapshot_dialog" title="Snapshot" style="display: none;">
-        <p id="snapshot_name_label">Name your snapshot</p>
-        <input id="snapshot_name_input" type="text" value="Anonymous" maxlength="20" />
-        <p id="snapshot_name_label">Make private?</p>
-        
-        <a id="snapshot_ok" class="button" href="javascript:void(0)">
+    <div id="snapshot_dialog" class="modal_dialog" title="Snapshot" style="display: none;">
+        <p id="snapshot_name_label" class="modal_message">Name your snapshot</p>
+        <input id="snapshot_name_input" class="modal_input" type="text" value="Snapshot" maxlength="20" />
+        <p id="snapshot_name_label" class="modal_message">Make private?</p>
+
+        <a id="snapshot_ok" class="button modal_button" href="javascript:void(0)">
             <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
         </a>
     </div>
