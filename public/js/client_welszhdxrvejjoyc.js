@@ -28,14 +28,61 @@ function initGlobalResizeHandler() {
 
 // MODALS ///////////////////////////////////////////////////////////////////////////////
 
+function SnapshotModal() {
+	function init() {
+		console.log("SnapshotModal()");
+		$("#snapshot").click(function() { show(); });
+		setup();
+	}
+
+	function setup() {
+		$("#snapshot_dialog").dialog({
+			resizable: false,
+			height: 202,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+		        $(".ui-widget-overlay").css({
+					"background-color": "#000",
+					"opacity": 0.5,
+					"z-index": 2000000020
+				});
+				$(".ui-dialog").css({
+					"z-index": 2000000021
+				})
+
+				// Make text input highlight when clicked
+				$("#snapshot_name_input").click(function() { $(this).select(); })
+				$("#snapshot_name_input").select();
+
+				// Set up OK button event handler
+				$("#snapshot_ok").click(function() {
+					$("#snapshot_dialog").dialog("close");
+				})
+				$(".ui-dialog-titlebar-close").hide();
+				$("#nick_dialog").show();
+		    }
+		});
+	}
+
+	function show(rename) {
+		$("#snapshot_dialog").dialog("open");
+	}
+
+	init();
+}
+
 function NickModal() {
 	// Set up a modal asking about setting the nickname
 	function init() {
 		setup();
 		var existingNick = getCookie("nick");
-		if (existingNick == null) {
+		if (existingNick == null) { // no nick defined
 			show();
-		} else {
+		} else { // nick already exists
 			$("#nick_dialog").hide();
 			$("#nick_indicator").text(existingNick); // using .text() escapes html
 		}
@@ -643,6 +690,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function setupControls() {
+		SnapshotModal();
+
 		bindToolButton("eyedropper");
 		bindToolButton("paint");
 		bindToolButton("line");
