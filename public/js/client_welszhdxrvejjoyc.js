@@ -2,7 +2,7 @@
 // (C) 2017 drawy.io
 
 // Intialise the splash screen
-function initSplash() {
+function initGlobal() {
 	$("#create_drawing_btn").click(function() {
 		// "New drawing" button AJAX
 		$.ajax({url: "/create_drawing"}).done(function(drawingID) {
