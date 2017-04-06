@@ -11,15 +11,16 @@ function initSplash() {
 		});
 	});
 	configureNick();
-	setupGlobalResizeHandler();
+	initGlobalResizeHandler();
 }
 
-function setupGlobalResizeHandler() {
+function initGlobalResizeHandler() {
 	$(window).resize(function() {
-		// if any other resize handlers are added, those will also fire
-		// e.g on the Room page.
-		winHeight = parseInt($(window).height());
-	    winWidth = parseInt($(window).width());
+		// jquery dialog window resize positioning fix
+	 	// see https://stackoverflow.com/questions/3060146/how-to-auto-center-jquery-ui-dialog-when-resizing-browser
+		$(".ui-dialog-content:visible").each(function () {
+			$( this ).dialog("option","position",$(this).dialog("option","position"));
+		});
 	})
 }
 
