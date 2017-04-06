@@ -108,8 +108,8 @@ function getGallery() {
 
 function receiveTool(data, socket) {
 	if (
-		typeof(data.drawID) == undefined || 
-		!validation.checkDrawID(data.drawID)
+		typeof(socket.drawID) == undefined || 
+		!validation.checkDrawID(socket.drawID)
 	) {
 		return;
 	}

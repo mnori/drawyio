@@ -4,7 +4,7 @@ var isLive = false;
 // Define global constants
 module.exports = {
 	IS_LIVE: isLive,
-	VERSION_TXT: "v0.1.3",
+	VERSION_TXT: "v0.2.0",
 	CLIENT_FILE: (isLive) ? "client.js" : "client_welszhdxrvejjoyc.js",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
@@ -28,8 +28,7 @@ module.exports = {
 
 	// after n ms, delete image from memory, providing there is enough stuff
 	// for the front page (10 minutes)
-	DELETE_TIME: 5000,
-	// DELETE_TIME: 2000,
+	DELETE_TIME: 600000,
 
 	// Parameters for creating blank drawings
 	DRAWING_PARAMS: { 
