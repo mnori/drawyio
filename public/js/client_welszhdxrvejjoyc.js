@@ -47,10 +47,6 @@ function SnapshotModal() {
 			open: function(event, ui) {
 				setModalCss();
 
-				// Make text input highlight when clicked
-				$("#snapshot_name_input").click(function() { $(this).select(); })
-				$("#snapshot_name_input").select();
-
 				// Set up radio buttons 
 				$(".modal_radio").checkboxradio();
 
@@ -67,14 +63,24 @@ function SnapshotModal() {
 					}
 				})
 
-				// Set up OK button event handler
-				$("#snapshot_ok").click(function() {
-					$("#snapshot_dialog").dialog("close");
-				})
 				$(".ui-dialog-titlebar-close").hide();
 				$("#nick_dialog").show();
 		    }
 		});
+		// Make text input highlight when clicked
+		$("#snapshot_name_input").click(function() { $(this).select(); })
+		$("#snapshot_name_input").select();
+
+		// Set up OK button event handler
+		$("#snapshot_ok").click(function() {
+			process();
+			$("#snapshot_dialog").dialog("close");
+		});
+	}
+	function process() {
+		console.log("process() invoked");
+		var snapshotName = $("#snapshot_name_input").val();
+		console.log("snapshotName: "+snapshotName);
 	}
 
 	function show(rename) {
@@ -113,22 +119,22 @@ function NickModal() {
 			closeOnEscape: false,
 			open: function(event, ui) {
 		        setModalCss();
-
-				// Make text input highlight when clicked
-				$("#nick_input").click(function() { $(this).select(); })
 				$("#nick_input").select();
-
-				// Set up OK button event handler
-				$("#nick_button").click(function() {
-					var nick = $("#nick_input").val();
-					setCookie("nick", nick, 30); // Set nickname cookie for 30 days
-					$("#nick_indicator").text(nick);
-					$("#nick_dialog").dialog("close");
-				})
 				$(".ui-dialog-titlebar-close").hide();
 				$("#nick_dialog").show();
 		    }
 		});
+
+		// Make text input highlight when clicked
+		$("#nick_input").click(function() { $(this).select(); })
+
+		// Set up OK button event handler
+		$("#nick_button").click(function() {
+			var nick = $("#nick_input").val();
+			setCookie("nick", nick, 30); // Set nickname cookie for 30 days
+			$("#nick_indicator").text(nick);
+			$("#nick_dialog").dialog("close");
+		})
 	}
 
 	function show(rename) {
