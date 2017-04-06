@@ -321,7 +321,7 @@ function saveImage(drawID, data, callback) {
 // checks mysql database, then disk
 function fetchRoom(drawID, loadCallback) {
 	console.log("fetchRoom() invoked");
-	db.query("SELECT * FROM room WHERE id='"+db.esc(drawID)+"'", function(results, fields) {
+	db.query("SELECT * FROM room WHERE id="+db.esc(drawID), function(results, fields) {
 		if (results.length == 0) {
 			loadCallback(null);
 		} else {
@@ -476,7 +476,7 @@ function Room(idIn, startLayer, fields) {
 						db.query([
 							"INSERT INTO room (id, snapshot_id, is_private, created, modified)",
 							"VALUES (",
-							"	'"+db.esc(self.id)+"',", // id
+							"	"+db.esc(self.id)+",", // id
 							"	NULL,", // snapshot_id
 							"	"+(self.isPrivate ? "1" : "0")+",", // is_private
 							"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created

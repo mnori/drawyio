@@ -54,7 +54,7 @@ class DB {
 
 	esc(strIn) {
 		// !! fill this out
-		return strIn;
+		return sqlstring.escape(strIn);
 	}
 };
 
