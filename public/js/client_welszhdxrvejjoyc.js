@@ -38,7 +38,7 @@ function SnapshotModal() {
 	function setup() {
 		$("#snapshot_dialog").dialog({
 			resizable: false,
-			height: 402,
+			height: 382,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -50,6 +50,22 @@ function SnapshotModal() {
 				// Make text input highlight when clicked
 				$("#snapshot_name_input").click(function() { $(this).select(); })
 				$("#snapshot_name_input").select();
+
+				// Set up radio buttons 
+				$(".modal_radio").checkboxradio();
+
+				$(".modal_radio:first").attr("checked", "checked");
+				$(".modal_radio").checkboxradio("refresh");				
+				$(".modal_radio").change(function() {
+					var value = $(this).attr("id");
+					if (value == "snapshot_visibility_public") {
+						$("#snapshot_public_info").show();
+						$("#snapshot_private_info").hide();
+					} else {
+						$("#snapshot_public_info").hide();
+						$("#snapshot_private_info").show();
+					}
+				})
 
 				// Set up OK button event handler
 				$("#snapshot_ok").click(function() {
@@ -89,7 +105,7 @@ function NickModal() {
 		// Create modal using jqueryui
 		$("#nick_dialog").dialog({
 			resizable: false,
-			height: 202,
+			height: 218,
 			width: 400,
 			modal: true,
 			draggable: false,

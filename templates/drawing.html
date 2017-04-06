@@ -4,15 +4,26 @@
 
 {% block content %}
 	<!-- Nickname dialog -->
-    <div id="snapshot_dialog" class="modal_dialog" title="Snapshot" style="display: none;">
-        <p id="snapshot_name_label" class="modal_message">Name your snapshot</p>
-        <input id="snapshot_name_input" class="modal_input" type="text" value="Snapshot" maxlength="20" />
-        <p id="snapshot_name_label" class="modal_message">Make private?</p>
-
-        <a id="snapshot_ok" class="button modal_button" href="javascript:void(0)">
-            <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
-        </a>
-    </div>
+	<div id="snapshot_dialog" class="modal_dialog" title="Snapshot" style="display: none;">
+		<p id="snapshot_name_label" class="modal_message">Name your snapshot</p>
+		<input id="snapshot_name_input" class="modal_input" type="text" value="Snapshot" maxlength="50" />
+		<p id="snapshot_name_label" class="modal_message">Visibility</p>
+		<div>
+			<label for="snapshot_visibility_public">Public</label>
+			<input class="modal_radio" type="radio" name="snapshot_visibility" id="snapshot_visibility_public">
+			<label for="snapshot_visibility_private">Private</label>
+			<input class="modal_radio" type="radio" name="snapshot_visibility" id="snapshot_visibility_private">
+		</div>
+		<p id="snapshot_public_info" class="modal_info">
+			The snapshot will appear in public galleries on this website.
+		</p>
+		<p id="snapshot_private_info" class="modal_info" style="display: none;">
+			Won't appear in public galleries. Only people with the link can see the snapshot. 
+		</p>
+		<a id="snapshot_ok" class="button modal_button" href="javascript:void(0)">
+			<i class="fa fa-check button_icon" aria-hidden="true"></i>OK
+		</a>
+	</div>
 
 	<span class="bold_fix"></span>
 	<div id="drawing_form">	
