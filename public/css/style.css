@@ -123,6 +123,7 @@ h1 {
 	background-color: #eee;
 	float: left;
 	margin-bottom: 20px;
+	position: relative;
 }
 
 .drawing_pointer {
@@ -684,4 +685,29 @@ input::selection {
     position: relative;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.bars_button {
+	float: left;
+	text-align: center;
+	font-size: 26px;
+
+	margin-top: -1px;
+	padding-left: 7px;
+}
+
+.ui-selectmenu-text > .fa-caret-left {
+	float: left;
+	padding-top: 7px;
+}
+
+#room_menu-button {
+	position: absolute;
+	bottom: 0;
+	margin-bottom: 12px;
+}
+
+#snapshot > .fa-camera {
+	margin-left: -2px;
+	font-size: 26px;
 }

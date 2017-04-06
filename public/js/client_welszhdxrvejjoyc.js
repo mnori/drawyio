@@ -127,6 +127,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var pointerTimeoutMs = 4000;
 	var textMargin = 10; // pixels to offset the text box preview
 	var defaultText = "Enter text";
+	var roomMenu = null;
 	var brushSizeMenu = null; // initialised later
 	var fontSizeMenu = null; // initialised later
 	var fontFaceMenu = null
@@ -651,6 +652,11 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			return "<span style=\"font-family: "+getFontValue(htmlIn)+";\">Font</span>"
 		});
 
+		// getVal
+		roomMenu = new ToolOptionMenu(this, "room_menu", null, function(htmlIn) { 
+			return "<i class=\"fa fa-snowflake-o bars_button\" aria-hidden=\"true\"></i>"
+		});
+
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
@@ -1031,6 +1037,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			var option = $(this).attr("id")
 			var el = $("#"+option+"_container");
 			if (
+				option == "room_menu" || 
 				(toolID == "text" && (option == "font_face" || option == "font_size")) ||
 				((toolID == "paint" || toolID == "line") && option == "brush_size")
 			) {

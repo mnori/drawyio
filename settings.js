@@ -28,7 +28,7 @@ module.exports = {
 
 	// after n ms, delete image from memory, providing there is enough stuff
 	// for the front page (10 minutes)
-	DELETE_TIME: 600000,
+	DELETE_TIME: 5000,
 	// DELETE_TIME: 2000,
 
 	// Parameters for creating blank drawings
@@ -44,7 +44,7 @@ module.exports = {
 		password: ""
 	},
 	DB_NAME: "drawyio",
-	SQL_DEBUG: true,
+	SQL_DEBUG: (isLive) ? false : true,
 	IMAGES_DIR: "/usr/src/app/code/images",
 	MIN_DRAWINGS_MEMORY: 16 // this is also the max number of images in the gallery
 }

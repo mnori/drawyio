@@ -1,13 +1,15 @@
 // General purpose endpoint validation methods for drawyio
 const settings = require("./settings")
 
+const verbose = false;
+
 module.exports = {
 	// Check drawing identifier
 	checkDrawID: function(drawID) {
 		if (this.checkCode(drawID, settings.ID_LEN)) {
 			return true;
 		}
-		console.log("Invalid drawID ["+drawID+"]");
+		if (verbose) console.log("Invalid drawID ["+drawID+"]");
 		return false;
 	},
 
@@ -16,7 +18,7 @@ module.exports = {
 		if (this.checkCode(layerCode, settings.LAYER_CODE_LEN)) {
 			return true;
 		}
-		console.log("Invalid layerCode ["+layerCode+"]");
+		if (verbose) console.log("Invalid layerCode ["+layerCode+"]");
 		return false;
 	},
 

@@ -79,7 +79,6 @@ function configureRoutes(app) {
 }
 
 function getGallery() {
-
 	// build some gallery objects
 	var out = []
 	var ids = drawings.getKeys();
@@ -108,6 +107,12 @@ function getGallery() {
 }
 
 function receiveTool(data, socket) {
+	if (
+		typeof(data.drawID) == undefined || 
+		!validation.checkDrawID(data.drawID)
+	) {
+		return;
+	}
 	getRoom(socket.drawID, function(drawing) {
 		if (drawing != null) {
 			drawing.broadcastTool(data, socket);
@@ -134,21 +139,20 @@ function receiveLayer(data, socket) {
 		!validation.checkLayerCode(layer.code)
 	) { // invalid draw ID or layer code supplied
 		return; // nothing to do, there is no client side confirmation -yet
-	} else {
-		getRoom(drawID, function(drawing) {
-			if (drawing == null) {
-				console.log("WARNING: "+drawID+" does not exist!");
-			} else {
-				var layerID = drawing.addLayer(layer);
-				drawing.broadcastLayer(layerID, layer, socket);
-				drawing.handleFlatten();
-			}	
-		});
 	}
+	getRoom(drawID, function(drawing) {
+		if (drawing == null) {
+			console.log("WARNING: "+drawID+" does not exist!");
+		} else {
+			var layerID = drawing.addLayer(layer);
+			drawing.broadcastLayer(layerID, layer, socket);
+			drawing.handleFlatten();
+		}	
+	});
 }
 
 function send404(res) {
-	res.status(404).render("404.html")
+	res.status(404).render("404.html", {settings: settings})
 }
 
 function renderRoomPage(req, res) {
@@ -361,8 +365,6 @@ function Room(idIn, startLayer, fields) {
 		this.nLayers = 0;
 
 		if (fromDB) {
-			console.log("Creating from DB")
-			console.log(fields);
 			this.emptyImage = false;
 			this.created = new Date(fields.created);
 			this.modified = new Date(fields.modified);
