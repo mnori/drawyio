@@ -1,6 +1,8 @@
 // The non-minified draw.io front end client
 // (C) 2017 drawy.io
 
+// GLOBAL ///////////////////////////////////////////////////////////////////////////////
+
 // Intialise the splash screen
 function initGlobal() {
 	$("#create_drawing_btn").click(function() {
@@ -10,7 +12,7 @@ function initGlobal() {
 			window.location.href = "/d/"+drawingID
 		});
 	});
-	configureNick();
+	NickModal();
 	initGlobalResizeHandler();
 }
 
@@ -24,69 +26,79 @@ function initGlobalResizeHandler() {
 	})
 }
 
-// Set up a modal asking about setting the nickname
-function configureNick() {
-	setupNickModal();
-	var existingNick = getCookie("nick");
-	if (existingNick == null) {
-		showNickModal();
-	} else {
-		$("#nick_dialog").hide();
-		$("#nick_indicator").text(existingNick); // using .text() escapes html
+// MODALS ///////////////////////////////////////////////////////////////////////////////
+
+function NickModal() {
+	// Set up a modal asking about setting the nickname
+	function init() {
+		setup();
+		var existingNick = getCookie("nick");
+		if (existingNick == null) {
+			show();
+		} else {
+			$("#nick_dialog").hide();
+			$("#nick_indicator").text(existingNick); // using .text() escapes html
+		}
+
+		// activate the nickname button
+		$("#change_nick_btn").click(function() { show(true); });
 	}
-	$("#change_nick_btn").click(function() { showNickModal(true); });
+
+	// Set up modal dialogue for changing the nickname
+	function setup() {
+		// Create modal using jqueryui
+		$("#nick_dialog").dialog({
+			resizable: false,
+			height: 202,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+		        $(".ui-widget-overlay").css({
+					"background-color": "#000",
+					"opacity": 0.5,
+					"z-index": 2000000020
+				});
+
+				$(".ui-dialog").css({
+					"z-index": 2000000021
+				})
+
+				// Make text input highlight when clicked
+				$("#nick_input").click(function() { $(this).select(); })
+				$("#nick_input").select();
+
+				// Set up OK button event handler
+				$("#nick_button").click(function() {
+					var nick = $("#nick_input").val();
+					setCookie("nick", nick, 30); // Set nickname cookie for 30 days
+					$("#nick_indicator").text(nick);
+					$("#nick_dialog").dialog("close");
+				})
+				$(".ui-dialog-titlebar-close").hide();
+				$("#nick_dialog").show();
+		    }
+		});
+	}
+
+	function show(rename) {
+		var existingNick = getCookie("nick");
+		if (existingNick != null) {
+			$("#nick_input").val(existingNick);
+		}
+		$("#nick_dialog").dialog("open");
+		if (rename) {
+			$("#nick_message").html("Please enter a new nickname.");
+			$(".ui-dialog-title").html("Alert");
+		}
+	}
+
+	init();
 }
 
-function showNickModal(rename) {
-	var existingNick = getCookie("nick");
-	if (existingNick != null) {
-		$("#nick_input").val(existingNick);
-	}
-	$("#nick_dialog").dialog("open");
-	if (rename) {
-		$("#nick_message").html("Please enter a new nickname.");
-		$(".ui-dialog-title").html("Alert");
-	}
-}
-
-// Set up modal dialogue for changing the nickname
-function setupNickModal() {
-	// Create modal using jqueryui
-	$("#nick_dialog").dialog({
-		resizable: false,
-		height: 202,
-		width: 400,
-		modal: true,
-		draggable: false,
-		autoOpen: false,
-		closeOnEscape: false,
-		open: function(event, ui) {
-	        $(".ui-widget-overlay").css({
-				"background-color": "#000",
-				"opacity": 0.5,
-				"z-index": 2000000020
-			});
-
-			$(".ui-dialog").css({
-				"z-index": 2000000021
-			})
-
-			// Make text input highlight when clicked
-			$("#nick_input").click(function() { $(this).select(); })
-			$("#nick_input").select();
-
-			// Set up OK button event handler
-			$("#nick_button").click(function() {
-				var nick = $("#nick_input").val();
-				setCookie("nick", nick, 30); // Set nickname cookie for 30 days
-				$("#nick_indicator").text(nick);
-				$("#nick_dialog").dialog("close");
-			})
-			$(".ui-dialog-titlebar-close").hide();
-			$("#nick_dialog").show();
-	    }
-	});
-}
+// DRAWING UI ///////////////////////////////////////////////////////////////////////////////
 
 // Initialise the drawing image UI
 function drawUI(drawIdIn, widthIn, heightIn) {
@@ -1546,6 +1558,8 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	// Public stuff
 	setup();
 }
+// MODALS /////////////////////////////////////////////////////////////
+
 
 // Wrapper for tool menu UI elements, which use jquery selectmenu
 function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
