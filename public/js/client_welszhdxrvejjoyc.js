@@ -11,11 +11,13 @@ function initSplash() {
 		});
 	});
 	configureNick();
-	setupResizeHandler();
+	setupGlobalResizeHandler();
 }
 
-function setupResizeHandler() {
-	$("body").resize(function() {
+function setupGlobalResizeHandler() {
+	$(window).resize(function() {
+		// if any other resize handlers are added, those will also fire
+		// e.g on the Room page.
 		winHeight = parseInt($(window).height());
 	    winWidth = parseInt($(window).width());
 	})
