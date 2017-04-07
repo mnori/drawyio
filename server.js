@@ -240,7 +240,7 @@ function createRoom(req, res) {
 }
 
 function createSnapshot(req, res) {
-	console.log("createRoom() invoked");
+	console.log("createSnapshot() invoked");
 	var roomID = req.query.roomID;
 	if (!validation.checkRoomID(roomID)) {
 		req.send("error");
@@ -257,7 +257,14 @@ function createSnapshot(req, res) {
 
 	console.log("name :["+name+"]")
 	console.log("id :["+roomID+"]")
+
+	// create snapshot ID
+
+
 	// create snapshot in database
+
+
+
 	// copy the image (the difficult bit)
 }
 
@@ -274,15 +281,19 @@ function bufferToLayer(drawID, bufferIn) {
 
 // Make a unique drawing ID by attempting to random generate one up to n times
 function makeDrawID(callback) {
+	makeRandomID(getRoom, callback, settings.ID_LEN)
+}
+
+function makeRandomID(getter, callback, length) {
 	var maxTries = 10;
 	var nTries = 0;
-	var newDrawID;
+	var newID;
 
 	function recurse() {
-		newDrawID = randomString(settings.ID_LEN);
-		getRoom(newDrawID, function(drawing) {
-			if (drawing == null) {
-				callback(newDrawID)
+		newID = randomString(length);
+		getter(newID, function(entity) {
+			if (entity == null) {
+				callback(newID)
 			} else {
 				nTries += 1
 				if (nTries >= maxTries) {
