@@ -214,7 +214,7 @@ function renderSnapshotPage(req, res) {
 	} else {
 		getSnapshot(snapID, function(snapshot) {
 			if (snapshot != null) {
-				res.render("snapshot.html", { settings: settings, snapID: snapID });	
+				res.render("snapshot.html", { snapshot: snapshot, settings: settings });	
 			} else {
 				send404(res);
 			}
