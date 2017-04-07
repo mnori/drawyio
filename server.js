@@ -39,7 +39,7 @@ function main() {
 // will be replaced with a proper DB based storage soon.
 function fetchRoomsInitial() {
 	drawings = new AssocArray();
-	var dir = settings.IMAGES_DIR;
+	var dir = settings.ROOMS_DIR;
 	var files = fs.readdirSync(dir);
 	files.sort(function(a, b) {
 		return fs.statSync(dir+"/"+b).mtime.getTime() - fs.statSync(dir+"/"+a).mtime.getTime();
@@ -246,29 +246,36 @@ function createSnapshot(req, res) {
 		req.send("error");
 		return;
 	}
-
 	var name = req.query.name;
 	var isPrivate = req.query.isPrivate === "true" ? true : false;
-	if (isPrivate) {
-		console.log("is private");
-	} else {
-		console.log("is NOT private");
-	}
 
-	console.log("name :["+name+"]")
-	console.log("id :["+roomID+"]")
+	// get the room
+	getRoom(roomID, function(room) {
+		if (room == null) {
+			req.send("error");
+			return;
+		}
 
-	// create snapshot ID
-	makeSnapshotID(function(snapID) {
-		console.log("snapID: "+snapID);
-	});
+		// create snapshot ID
+		makeSnapshotID(function(snapID) {
+			console.log("snapID: "+snapID);
+			// copy the image into the right folder
+			var sourceFilepath = settings.ROOMS_DIR+"/"+room.id+".png"
+			var destFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
 
-	// create snapshot in database
+			copyFile(sourceFilepath, destFilepath, function() {
+				console.log(room);
+				if (isPrivate) {
+					console.log("is private");
+				} else {
+					console.log("is NOT private");
+				}
 
-
-
-
-	// copy the image (the difficult bit)
+				console.log("name :["+name+"]")
+				console.log("id :["+roomID+"]")
+			});
+		});
+	})
 }
 
 function bufferToLayer(drawID, bufferIn) {
@@ -358,7 +365,7 @@ function getRoom(drawID, loadCallback) {
 
 // Save a drawing to disk
 function saveImage(drawID, data, callback) {
-	var outFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
+	var outFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
 	fs.writeFile(outFilepath, data, callback);
 }
 
@@ -377,7 +384,7 @@ function fetchRoom(drawID, loadCallback) {
 // Try to load a drawing from disk
 function loadImage(drawID, callback, fields) {
 	// must sanitise the drawID
-	var inFilepath = settings.IMAGES_DIR+"/"+drawID+".png"
+	var inFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
 		var drawing = new Room(drawID, layer, fields);
@@ -829,6 +836,27 @@ function cleanup() {
 function getSnapshot(snapID, callback) {
 	// TODO fill with snapshot get code
 	callback(null);
+}
+
+function copyFile(source, target, cb) {
+	var cbCalled = false;
+
+	var rd = fs.createReadStream(source);
+	rd.on("error", done);
+
+	var wr = fs.createWriteStream(target);
+	wr.on("error", done);
+	wr.on("close", function(ex) {
+		done();
+	});
+	rd.pipe(wr);
+
+	function done(err) {
+		if (!cbCalled) {
+			cb(err);
+			cbCalled = true;
+		}
+	}
 }
 
 // Get the party started

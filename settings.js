@@ -47,7 +47,8 @@ module.exports = {
 	},
 	DB_NAME: "drawyio",
 	SQL_DEBUG: (isLive) ? false : true,
-	IMAGES_DIR: "/usr/src/app/code/images",
+	ROOMS_DIR: "/usr/src/app/code/images/rooms",
+	SNAPSHOTS_DIR: "/usr/src/app/code/images/snapshots",
 	MIN_DRAWINGS_MEMORY: 16 // this is also the max number of images in the gallery
 }
 
