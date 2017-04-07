@@ -40,7 +40,8 @@ var migrations = [
 				"CREATE TABLE snapshot (",
 				"	id CHAR("+settings.ID_LEN+"),",
 				"	room_id CHAR("+settings.ID_LEN+") NOT NULL REFERENCES room(id),",
-				"	taken_on DATETIME NOT NULL,",
+				"	is_private BOOLEAN NOT NULL,",
+				"	created DATETIME NOT NULL,",
 				"	PRIMARY KEY (id),",
 				"	FOREIGN KEY (room_id) REFERENCES room(id)",
 				")"
@@ -60,7 +61,7 @@ var migrations = [
 				db.querySync([
 					"INSERT INTO room (id, snapshot_id, is_private, created, modified) ",
 					"VALUES (",
-					"	'"+db.esc(id)+"',", // id
+					"	"+db.esc(id)+",", // id
 					"	NULL,", // snapshot_id
 					"	0,", // is_private
 					"	FROM_UNIXTIME("+modified+"),", // created
