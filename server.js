@@ -264,6 +264,7 @@ function createSnapshot(req, res) {
 			var sourceFilepath = settings.ROOMS_DIR+"/"+room.id+".png"
 			var destFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
 
+			// copy file into a new snapshot file
 			copyFile(sourceFilepath, destFilepath, function() {
 				if (isPrivate) {
 					console.log("is private");
@@ -284,6 +285,8 @@ function createSnapshot(req, res) {
 					"	NOW()",
 					")",
 				].join("\n"), function() {
+
+					// send response to client
 					res.send(snapID);
 				})
 			});

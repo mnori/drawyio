@@ -27,6 +27,7 @@ var migrations = [
 				"CREATE TABLE room (",
 				"	id CHAR("+settings.ID_LEN+"),",
 				"	snapshot_id CHAR("+settings.ID_LEN+") REFERENCES snapshot(id),",
+				"	name VARCHAR("+settings.ROOM_NAME_LEN+") DEFAULT 'Room',",
 				"	is_private BOOLEAN NOT NULL,",
 				"	created DATETIME NOT NULL,",
 				"	modified DATETIME NOT NULL,",
@@ -40,6 +41,7 @@ var migrations = [
 				"CREATE TABLE snapshot (",
 				"	id CHAR("+settings.ID_LEN+"),",
 				"	room_id CHAR("+settings.ID_LEN+") NOT NULL REFERENCES room(id),",
+				"	name VARCHAR("+settings.SNAPSHOT_NAME_LEN+") DEFAULT 'Snapshot',",
 				"	is_private BOOLEAN NOT NULL,",
 				"	created DATETIME NOT NULL,",
 				"	PRIMARY KEY (id),",
@@ -53,7 +55,7 @@ var migrations = [
 			].join("\n"));
 
 			// now populate the database using the files on disk
-			var dir = settings.IMAGES_DIR;
+			var dir = settings.ROOMS_DIR;
 			var files = fs.readdirSync(dir);
 			files.forEach(filename => {
 				var modified = fs.statSync(dir+"/"+filename).mtime.getTime() / 1000;
