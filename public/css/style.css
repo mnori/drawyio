@@ -761,3 +761,17 @@ input::selection {
 .ui-checkboxradio-label .ui-icon-background {
 	box-shadow: 0px 0px 0px 0px;
 }
+
+#snapshot_img {
+	border: 1px solid #aaa;
+	box-shadow: 0px 0px 10px 3px #bbb;
+	float: left;
+}
+
+#snapshot_controls {
+	float: left;
+	width: 71px;
+	padding: 12px 12px 12px 12px;
+	width: 47px;
+}
+

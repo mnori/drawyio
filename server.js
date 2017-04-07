@@ -207,7 +207,19 @@ function sendRoomImage(req, res) {
 }
 
 function renderSnapshotPage(req, res) {
-	send404(res);	
+	console.log("renderSnapshotPage() invoked");
+	var snapID = req.params.id.replace(".png", "");
+	if (!validation.checkSnapshotID(snapID)) { // check code is valid
+		send404(res);
+	} else {
+		getSnapshot(snapID, function(snapshot) {
+			if (snapshot != null) {
+				res.render("snapshot.html", { settings: settings, snapID: snapID });	
+			} else {
+				send404(res);
+			}
+		});
+	}
 }
 
 function sendSnapshotImage(req, res) {

@@ -1,0 +1,14 @@
+{% block title %}Drawy.io - {{ snapshot.name }}{% endblock %}
+
+{% extends "wrapper.html" %}
+
+{% block content %}
+	<div id="drawing_form">	
+		<img id="snapshot_img" src="/s/{{ snapID }}.png">
+		<div id="snapshot_controls">
+			
+		</div>
+	</div>
+{% endblock %}
+
+{% block js %}<script>initGlobal();</script>{% endblock %}
