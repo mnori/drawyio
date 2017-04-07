@@ -259,9 +259,12 @@ function createSnapshot(req, res) {
 	console.log("id :["+roomID+"]")
 
 	// create snapshot ID
-
+	makeSnapshotID(function(snapID) {
+		console.log("snapID: "+snapID);
+	});
 
 	// create snapshot in database
+
 
 
 
@@ -281,7 +284,12 @@ function bufferToLayer(drawID, bufferIn) {
 
 // Make a unique drawing ID by attempting to random generate one up to n times
 function makeDrawID(callback) {
-	makeRandomID(getRoom, callback, settings.ID_LEN)
+	makeRandomID(getRoom, callback, settings.ID_LEN);
+}
+
+// Make a unique drawing ID by attempting to random generate one up to n times
+function makeSnapshotID(callback) {
+	makeRandomID(getSnapshot, callback, settings.SNAPSHOT_ID_LEN);
 }
 
 function makeRandomID(getter, callback, length) {
@@ -292,7 +300,7 @@ function makeRandomID(getter, callback, length) {
 	function recurse() {
 		newID = randomString(length);
 		getter(newID, function(entity) {
-			if (entity == null) {
+			if (entity === null) {
 				callback(newID)
 			} else {
 				nTries += 1
@@ -816,6 +824,11 @@ function cleanup() {
 		cleanup();
 
 	}, settings.CLEANUP_INTERVAL);
+}
+
+function getSnapshot(snapID, callback) {
+	// TODO fill with snapshot get code
+	callback(null);
 }
 
 // Get the party started

@@ -8,6 +8,7 @@ module.exports = {
 	CLIENT_FILE: (isLive) ? "client.js" : "client_welszhdxrvejjoyc.js",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
+	SNAPSHOT_ID_LEN: 16,
 	LAYER_CODE_LEN: 32, // Length of layer codes
 	MAX_LAYERS: 5, // Max number of layers to store before flattening the image
 
