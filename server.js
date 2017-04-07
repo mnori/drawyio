@@ -216,13 +216,11 @@ function sendSnapshotImage(req, res) {
 		send404(res);
 	} else {
 		getSnapshot(snapID, function(snapshot) {
-			var layer = drawing.getUnmergedLayer(0);
-			var buf = base64ToBuffer(layer.base64);
 			res.writeHead(200, {
 				'Content-Type': 'image/png',
-				'Content-Length': buf.length
+				'Content-Length': snapshot.buf.length
 			});
-			res.end(buf);
+			res.end(snapshot.buf);
 		})
 	}
 }
@@ -902,7 +900,7 @@ function getSnapshot(snapID, callback) {
 
 // Try to load a drawing from disk
 function loadImageBuffer(dir, snapID, callback, fields) {
-	var inFilepath = dir+"/"+drawID+".png"
+	var inFilepath = dir+"/"+snapID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var snapshot = new Snapshot(snapID, buffer, fields);
 		callback(snapshot);
@@ -915,7 +913,11 @@ function loadImageBuffer(dir, snapID, callback, fields) {
 // Stores the data for a drawing
 function Snapshot(snapID, buffer, fields) {
 	this.init = function(snapID, buffer, fields) {
-		console.log("Snapshot.init() invoked");
+		this.id = snapID;
+		this.buf = buffer;
+
+		console.log("Snapshot init called with")
+		console.log(fields);
 	}
 	this.init(snapID, buffer, fields);
 }
