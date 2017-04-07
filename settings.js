@@ -30,6 +30,8 @@ module.exports = {
 	// for the front page (10 minutes)
 	DELETE_TIME: 600000,
 
+	TITLE_LEN: 50,
+
 	// Parameters for creating blank drawings
 	DRAWING_PARAMS: { 
 		width: 800,

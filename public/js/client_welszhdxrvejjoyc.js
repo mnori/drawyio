@@ -28,7 +28,9 @@ function initGlobalResizeHandler() {
 
 // MODALS ///////////////////////////////////////////////////////////////////////////////
 
-function SnapshotModal() {
+function SnapshotModal(roomIDIn) {
+
+	var roomID = roomIDIn;
 	function init() {
 		console.log("SnapshotModal()");
 		$("#snapshot").click(function() { show(); });
@@ -84,7 +86,19 @@ function SnapshotModal() {
 		console.log("snapshotName: "+snapshotName);
 
 		var visibility = $("input[type='radio']:checked.snapshot_visibility").attr("id");
-		console.log("visibility: "+visibility);
+		var isPrivate = (visibility == "snapshot_visibility_private") ? true : false;
+
+		$.ajax({
+			url: "/create_snapshot", 
+			data: {
+				roomID: roomID,
+				name: snapshotName,
+				isPrivate: isPrivate
+			}
+		}).done(function(snapshotID) {
+			// Redirect to the snapshot's page
+			window.location.href = "/s/"+snapshotID;
+		});
 
 		// var options = $(".modal_radio").checkboxradio("option");
 		// console.log("options:");
@@ -717,7 +731,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function setupControls() {
-		SnapshotModal();
+		SnapshotModal(drawID);
 
 		bindToolButton("eyedropper");
 		bindToolButton("paint");

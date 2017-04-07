@@ -5,7 +5,7 @@ const verbose = false;
 
 module.exports = {
 	// Check drawing identifier
-	checkDrawID: function(drawID) {
+	checkRoomID: function(drawID) {
 		if (this.checkCode(drawID, settings.ID_LEN)) {
 			return true;
 		}

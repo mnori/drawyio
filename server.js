@@ -61,6 +61,9 @@ function configureRoutes(app) {
 	// Create a new drawing in memory, and return its unique ID to the client
 	app.get("/create_drawing", createRoom);
 
+	// Create a new drawing in memory, and return its unique ID to the client
+	app.get("/create_snapshot", createSnapshot);
+
 	// Render a drawing's page or its image
 	app.get("/d/:id", function(req, res) {
 		req.params.id.includes(".png") ? 
@@ -109,7 +112,7 @@ function getGallery() {
 function receiveTool(data, socket) {
 	if (
 		typeof(socket.drawID) == undefined || 
-		!validation.checkDrawID(socket.drawID)
+		!validation.checkRoomID(socket.drawID)
 	) {
 		return;
 	}
@@ -135,7 +138,7 @@ function receiveLayer(data, socket) {
 	var layer = data;
 	var drawID = layer.drawID;
 	if (
-		!validation.checkDrawID(drawID) ||
+		!validation.checkRoomID(drawID) ||
 		!validation.checkLayerCode(layer.code)
 	) { // invalid draw ID or layer code supplied
 		return; // nothing to do, there is no client side confirmation -yet
@@ -157,7 +160,7 @@ function send404(res) {
 
 function renderRoomPage(req, res) {
 	var drawID = req.params.id
-	if (!validation.checkDrawID(drawID)) { // check code is valid
+	if (!validation.checkRoomID(drawID)) { // check code is valid
 		send404(res);
 	} else {
 		getRoom(drawID, function(drawing) {
@@ -178,7 +181,7 @@ function renderRoomPage(req, res) {
 // Return png image as buffer
 function sendRoomImage(req, res) {
 	var drawID = req.params.id.replace(".png", "");
-	if (!validation.checkDrawID(drawID)) { // check code is valid
+	if (!validation.checkRoomID(drawID)) { // check code is valid
 		send404(res);
 	} else {
 		getRoom(drawID, function(drawing) {
@@ -234,6 +237,28 @@ function createRoom(req, res) {
 			res.send(drawID);
 		});
 	});
+}
+
+function createSnapshot(req, res) {
+	console.log("createRoom() invoked");
+	var roomID = req.query.roomID;
+	if (!validation.checkRoomID(roomID)) {
+		req.send("error");
+		return;
+	}
+
+	var name = req.query.name;
+	var isPrivate = req.query.isPrivate === "true" ? true : false;
+	if (isPrivate) {
+		console.log("is private");
+	} else {
+		console.log("is NOT private");
+	}
+
+	console.log("name :["+name+"]")
+	console.log("id :["+roomID+"]")
+	// create snapshot in database
+	// copy the image (the difficult bit)
 }
 
 function bufferToLayer(drawID, bufferIn) {
@@ -437,7 +462,7 @@ function Room(idIn, startLayer, fields) {
 				// validate
 				if (
 					typeof(data.drawID) == undefined ||
-					!validation.checkDrawID(data.drawID)
+					!validation.checkRoomID(data.drawID)
 				) {
 					socket.emit("update_drawing", "error");
 				} else {
