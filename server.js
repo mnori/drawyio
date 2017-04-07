@@ -71,6 +71,12 @@ function configureRoutes(app) {
 			renderRoomPage(req, res);
 	});
 
+	app.get("/s/:id", function(req, res) {
+		req.params.id.includes(".png") ? 
+			sendSnapshotImage(req, res) : 
+			renderSnapshotPage(req, res);
+	});
+
 	// The index page
 	app.get("/", function(req, res) { res.render("index.html", { 
 		settings: settings,
@@ -200,6 +206,27 @@ function sendRoomImage(req, res) {
 	}
 }
 
+function renderSnapshotPage(req, res) {
+	send404(res);	
+}
+
+function sendSnapshotImage(req, res) {
+	var snapID = req.params.id.replace(".png", "");
+	if (!validation.checkSnapshotID(snapID)) { // check code is valid
+		send404(res);
+	} else {
+		getSnapshot(snapID, function(snapshot) {
+			var layer = drawing.getUnmergedLayer(0);
+			var buf = base64ToBuffer(layer.base64);
+			res.writeHead(200, {
+				'Content-Type': 'image/png',
+				'Content-Length': buf.length
+			});
+			res.end(buf);
+		})
+	}
+}
+
 // Create a blank canvas image to draw on
 function createRoom(req, res) {
 	// 1. Find a unique drawing ID
@@ -291,6 +318,7 @@ function createSnapshot(req, res) {
 						if (error) {
 							// Error occured
 							// Due to missing room ID
+							// Drawing probably hasn't been saved yet
 							res.send("error");
 
 						} else {
@@ -391,12 +419,6 @@ function getRoom(drawID, loadCallback) {
 	}
 }
 
-// Save a drawing to disk
-function saveImage(drawID, data, callback) {
-	var outFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
-	fs.writeFile(outFilepath, data, callback);
-}
-
 // checks mysql database, then disk
 function fetchRoom(drawID, loadCallback) {
 	console.log("fetchRoom() invoked");
@@ -404,15 +426,15 @@ function fetchRoom(drawID, loadCallback) {
 		if (results.length == 0) {
 			loadCallback(null);
 		} else {
-			loadImage(drawID, loadCallback, results[0]);
+			loadImage(settings.ROOMS_DIR, drawID, loadCallback, results[0]);
 		}
 	});
 }
 
 // Try to load a drawing from disk
-function loadImage(drawID, callback, fields) {
+function loadImage(dir, drawID, callback, fields) {
 	// must sanitise the drawID
-	var inFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
+	var inFilepath = dir+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
 		var drawing = new Room(drawID, layer, fields);
@@ -421,6 +443,12 @@ function loadImage(drawID, callback, fields) {
 		console.log("Warning - loadImage failed with "+drawID+"!")
 		callback(null);
 	});
+}
+
+// Save a drawing to disk
+function saveImage(drawID, data, callback) {
+	var outFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
+	fs.writeFile(outFilepath, data, callback);
 }
 
 // Stores the data for a drawing
@@ -862,8 +890,34 @@ function cleanup() {
 }
 
 function getSnapshot(snapID, callback) {
-	// TODO fill with snapshot get code
-	callback(null);
+	console.log("getSnapshot()");
+	db.query("SELECT * FROM snapshot WHERE id="+db.esc(snapID), function(results, fields) {
+		if (results.length == 0) {
+			callback(null);
+		} else {
+			loadImageBuffer(settings.SNAPSHOTS_DIR, snapID, callback, results[0]);
+		}
+	});
+}
+
+// Try to load a drawing from disk
+function loadImageBuffer(dir, snapID, callback, fields) {
+	var inFilepath = dir+"/"+drawID+".png"
+	sharp(inFilepath).png().toBuffer().then(function(buffer) {
+		var snapshot = new Snapshot(snapID, buffer, fields);
+		callback(snapshot);
+	}).catch(function(err) {
+		console.log("Warning - loadImageBuffer failed with "+snapID+"!")
+		callback(null);
+	});
+}
+
+// Stores the data for a drawing
+function Snapshot(snapID, buffer, fields) {
+	this.init = function(snapID, buffer, fields) {
+		console.log("Snapshot.init() invoked");
+	}
+	this.init(snapID, buffer, fields);
 }
 
 function copyFile(source, target, cb) {

@@ -5,12 +5,20 @@ const verbose = false;
 
 module.exports = {
 	// Check drawing identifier
-	checkRoomID: function(drawID) {
-		if (this.checkCode(drawID, settings.ID_LEN)) {
+	checkRoomID: function(roomID) {
+		if (this.checkCode(roomID, settings.ID_LEN)) {
 			return true;
 		}
-		if (verbose) console.log("Invalid drawID ["+drawID+"]");
+		if (verbose) console.log("Invalid roomID ["+roomID+"]");
 		return false;
+	},
+
+	checkSnapshotID: function(snapID) {
+		if (this.checkCode(snapID, settings.SNAPSHOT_ID_LEN)) {
+			return true;
+		}
+		if (verbose) console.log("Invalid snapshotID ["+snapID+"]");
+		return false;	
 	},
 
 	// Check layer code
