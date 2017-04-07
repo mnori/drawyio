@@ -246,8 +246,9 @@ function createSnapshot(req, res) {
 		req.send("error");
 		return;
 	}
+
 	var name = req.query.name;
-	var isPrivate = req.query.isPrivate === "true" ? true : false;
+	var isPrivate = req.query.isPrivate === "true" ? "1" : "0";
 
 	// get the room
 	getRoom(roomID, function(room) {
@@ -264,7 +265,6 @@ function createSnapshot(req, res) {
 			var destFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
 
 			copyFile(sourceFilepath, destFilepath, function() {
-				console.log(room);
 				if (isPrivate) {
 					console.log("is private");
 				} else {
@@ -273,6 +273,19 @@ function createSnapshot(req, res) {
 
 				console.log("name :["+name+"]")
 				console.log("id :["+roomID+"]")
+
+				// now insert the entry into the database
+				db.query([
+					"INSERT INTO snapshot (id, room_id, is_private, created)",
+					"VALUES (",
+					"	'"+snapID+"',",
+					"	'"+roomID+"',",
+					"	'"+isPrivate+"',",
+					"	NOW()",
+					")",
+				].join("\n"), function() {
+					res.send(snapID);
+				})
 			});
 		});
 	})
