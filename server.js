@@ -247,7 +247,7 @@ function createSnapshot(req, res) {
 		return;
 	}
 
-	var name = req.query.name;
+	var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
 	var isPrivate = req.query.isPrivate === "true" ? "1" : "0";
 
 	// get the room
@@ -276,19 +276,31 @@ function createSnapshot(req, res) {
 				console.log("id :["+roomID+"]")
 
 				// now insert the entry into the database
-				db.query([
-					"INSERT INTO snapshot (id, room_id, is_private, created)",
-					"VALUES (",
-					"	'"+snapID+"',",
-					"	'"+roomID+"',",
-					"	'"+isPrivate+"',",
-					"	NOW()",
-					")",
-				].join("\n"), function() {
+				try {
+					db.query([
+						"INSERT INTO snapshot (id, room_id, name, is_private, created)",
+						"VALUES (",
+						"	'"+snapID+"',",
+						"	'"+roomID+"',",
+						"	"+db.esc(name)+",",
+						"	'"+isPrivate+"',",
+						"	NOW()",
+						")",
+					].join("\n"), function(results, fields, error) {
+						// send response to client
+						if (error) {
+							// Error occured
+							// Due to missing room ID
+							res.send("error");
 
-					// send response to client
-					res.send(snapID);
-				})
+						} else {
+							res.send(snapID);
+						}
+					})
+				} catch (ex) {
+					console.log("CAUGHT IT!");
+					console.log(ex);
+				}
 			});
 		});
 	})

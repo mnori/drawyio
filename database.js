@@ -19,13 +19,13 @@ class DB {
 			console.log("Async query:\n"+this.addTab(sql))		
 		}
 		this.connection.query(sql, function(error, results, fields) {
-			if (error) {
-				console.log("Database error");
-				console.log(error);
-				throw error;
-			}
+			// if (error) {
+			// 	console.log("Database error");
+			// 	console.log(error);
+			// 	throw error;
+			// }
 			if (typeof(callback) != "undefined") {
-				return callback(results, fields);
+				return callback(results, fields, error);
 			}
 		});
 	}
