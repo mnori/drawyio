@@ -240,6 +240,9 @@ function sendSnapshotImage(req, res) {
 // Create a blank canvas image to draw on
 function createRoom(req, res) {
 
+	var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
+	var isPrivate = req.query.isPrivate === "true" ? "1" : "0";
+
 	// 1. Find a unique drawing ID
 	makeDrawID(function(drawID) {
 		if (drawID == null) { // exceeded max tries
@@ -268,8 +271,17 @@ function createRoom(req, res) {
 		png.toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
 
+			// create a dummy mysql row to initialise the object
+			var nowMysql = getNowMysql();
+			var fields = {
+				"name": name,
+				"is_private": "1",
+				"created": nowMysql,
+				"modified": nowMysql
+			}
+
 			// create room in memory
-			var drawing = new Room(drawID, layer);
+			var drawing = new Room(drawID, layer, fields);
 
 			// respond with drawing ID
 			res.send(drawID);
@@ -297,22 +309,12 @@ function createSnapshot(req, res) {
 
 		// create snapshot ID
 		makeSnapshotID(function(snapID) {
-			console.log("snapID: "+snapID);
 			// copy the image into the right folder
 			var sourceFilepath = settings.ROOMS_DIR+"/"+room.id+".png"
 			var destFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
 
 			// copy file into a new snapshot file
 			copyFile(sourceFilepath, destFilepath, function() {
-				if (isPrivate) {
-					console.log("is private");
-				} else {
-					console.log("is NOT private");
-				}
-
-				console.log("name :["+name+"]")
-				console.log("id :["+roomID+"]")
-
 				// now insert the entry into the database
 				try {
 					db.query([
@@ -467,6 +469,7 @@ function Room(idIn, startLayer, fields) {
 	this.init = function(idIn, startLayer, fields) {
 		var fromDB = typeof(fields) !== "undefined";
 		this.id = idIn;
+		this.name = fields.name;
 		this.layers = new AssocArray();
 		this.socketNS = null; // contains all the sockets attached to this drawing
 		this.isFlattening = false;
@@ -501,7 +504,6 @@ function Room(idIn, startLayer, fields) {
 		this.layers.set(this.nLayers, startLayer);
 
 		this.isModified = false; // intial image is not modified
-		// this.setSaveTimeout();
 		drawings.set(this.id, this);
 		this.configureRoomNS();
 		console.log("["+drawings.getLength()+"] total, drawing created");
@@ -579,6 +581,7 @@ function Room(idIn, startLayer, fields) {
 	}
 
 	// Set rolling timeout for saving drawing data to disk
+	// @deprecated - use save() instead
 	this.setSaveTimeout = function() {
 		if (this.saveTimeout) {
 			clearTimeout(this.saveTimeout);
@@ -592,10 +595,11 @@ function Room(idIn, startLayer, fields) {
 					saveImage(self.id, buffer, function(err) { // save image file to disk
 						// insert or update the room in the database
 						db.query([
-							"INSERT INTO room (id, snapshot_id, is_private, created, modified)",
+							"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
 							"VALUES (",
 							"	"+db.esc(self.id)+",", // id
 							"	NULL,", // snapshot_id
+							"	"+db.esc(self.name)+",", // name
 							"	"+(self.isPrivate ? "1" : "0")+",", // is_private
 							"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
 							"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
@@ -607,6 +611,31 @@ function Room(idIn, startLayer, fields) {
 				} 
 			});
 		}, settings.SAVE_TIMEOUT);
+	}
+
+	this.save = function() {
+		var self = this;
+		var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
+		sharp(baseBuf).png().toBuffer().then(function(buffer) {
+			if (self.isModified) { // save modified images
+				saveImage(self.id, buffer, function(err) { // save image file to disk
+					// insert or update the room in the database
+					db.query([
+						"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
+						"VALUES (",
+						"	"+db.esc(self.id)+",", // id
+						"	NULL,", // snapshot_id
+						"	"+db.esc(self.name)+",", // name
+						"	"+(self.isPrivate ? "1" : "0")+",", // is_private
+						"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
+						"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
+						")",
+						"ON DUPLICATE KEY UPDATE",
+						"	modified=FROM_UNIXTIME("+self.getModifiedS()+")"
+					].join("\n"));
+				});	
+			} 
+		});
 	}
 
 	// Broadcast a single layer to all sockets except originator
@@ -782,7 +811,7 @@ function Room(idIn, startLayer, fields) {
 						self.broadcast();
 						self.isFlattening = false;
 						self.emptyImage = false;
-						self.setSaveTimeout();
+						self.save();
 					});
 				});
 			}
@@ -958,6 +987,10 @@ function copyFile(source, target, cb) {
 			cbCalled = true;
 		}
 	}
+}
+
+function getNowMysql() {
+	return (new Date ((new Date((new Date(new Date())).toISOString() )).getTime() - ((new Date()).getTimezoneOffset()*60000))).toISOString().slice(0, 19).replace('T', ' ');
 }
 
 // Get the party started
