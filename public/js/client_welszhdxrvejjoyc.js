@@ -79,6 +79,10 @@ function RoomModal(roomIDIn) {
 			process();
 			$("#room_dialog").dialog("close");
 		});
+
+		$("#room_cancel").click(function() {
+			$("#room_dialog").dialog("close");
+		});
 	}
 	function process() {
 		console.log("process() invoked");
@@ -245,6 +249,10 @@ function NickModal() {
 			$("#nick_indicator").text(nick);
 			$("#nick_dialog").dialog("close");
 		})
+
+		$("#nick_cancel").click(function() {
+			$("#nick_dialog").dialog("close");
+		});
 	}
 
 	function show(rename) {
