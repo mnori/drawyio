@@ -6,8 +6,8 @@
 	<h1>Recents</h1>
 	<div id="gallery">
 	{% for entry in gallery %}
-		<a href="/d/{{ entry.drawing.id }}" class="thumb">
-			<img src="/d/{{ entry.drawing.id }}.png" class="thumb_img" style=
+		<a href="/r/{{ entry.drawing.id }}" class="thumb">
+			<img src="/r/{{ entry.drawing.id }}.png" class="thumb_img" style=
 				"width: {{ width }}, height: {{ height }}" /><br />
 			<div class="thumb_inf">
 				{% if entry.nUsers > 0 %}

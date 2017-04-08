@@ -3,7 +3,7 @@
 {% extends "wrapper.html" %}
 
 {% block content %}
-	<!-- Nickname dialog -->
+	<!-- Snapshot dialog -->
 	<div id="snapshot_dialog" class="modal_dialog" title="Create a permanent snapshot" style="display: none;">
 		<p id="snapshot_name_label" class="modal_message">Name your snapshot</p>
 		<input id="snapshot_name_input" class="modal_input" type="text" value="Snapshot" maxlength="50" />
@@ -115,9 +115,6 @@
 					<option>45px</option>
 				</select>
 			</div>
-
-			<!-- Doesn't work anymore so commented out. Will fix when implementing chat -->
-			<!-- <input id="nickname" type="text" value="Anonymous" /> -->
 		</div>
 	</div>
 {% endblock %}

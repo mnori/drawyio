@@ -59,13 +59,13 @@ function configureRoutes(app) {
 	app.use(express.static("public"));
 
 	// Create a new drawing in memory, and return its unique ID to the client
-	app.get("/create_drawing", createRoom);
+	app.get("/create_room", createRoom);
 
 	// Create a new drawing in memory, and return its unique ID to the client
 	app.get("/create_snapshot", createSnapshot);
 
 	// Render a drawing's page or its image
-	app.get("/d/:id", function(req, res) {
+	app.get("/r/:id", function(req, res) {
 		req.params.id.includes(".png") ? 
 			sendRoomImage(req, res) : 
 			renderRoomPage(req, res);
@@ -171,7 +171,7 @@ function renderRoomPage(req, res) {
 	} else {
 		getRoom(drawID, function(drawing) {
 			if (drawing != null) {
-				res.render("drawing.html", { 
+				res.render("room.html", { 
 					settings: settings,
 					drawID: drawID,
 					width: settings.DRAWING_PARAMS.width,
@@ -239,6 +239,7 @@ function sendSnapshotImage(req, res) {
 
 // Create a blank canvas image to draw on
 function createRoom(req, res) {
+
 	// 1. Find a unique drawing ID
 	makeDrawID(function(drawID) {
 		if (drawID == null) { // exceeded max tries

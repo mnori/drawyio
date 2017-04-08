@@ -5,14 +5,15 @@
 
 // Intialise the splash screen
 function initGlobal() {
-	$("#create_drawing_btn").click(function() {
-		// "New drawing" button AJAX
-		$.ajax({url: "/create_drawing"}).done(function(drawingID) {
-			// Redirect to the drawing's page
-			window.location.href = "/d/"+drawingID
-		});
-	});
+	// $("#create_drawing_btn").click(function() {
+	// 	// "New drawing" button AJAX
+	// 	$.ajax({url: "/create_drawing"}).done(function(drawingID) {
+	// 		// Redirect to the drawing's page
+	// 		window.location.href = "/d/"+drawingID
+	// 	});
+	// });
 	NickModal();
+	RoomModal();
 	initGlobalResizeHandler();
 }
 
@@ -27,6 +28,89 @@ function initGlobalResizeHandler() {
 }
 
 // MODALS ///////////////////////////////////////////////////////////////////////////////
+
+function RoomModal(roomIDIn) {
+
+	var roomID = roomIDIn;
+	function init() {
+		console.log("RoomModal()");
+		$("#create_drawing_btn").click(function() { show(); });
+		setup();
+	}
+
+	function setup() {
+		$("#room_dialog").dialog({
+			resizable: false,
+			height: 382,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				setModalCss();
+
+				// Set up radio buttons 
+				$(".room_visibility").checkboxradio();
+
+				$(".room_visibility:first").attr("checked", "checked");
+				$(".room_visibility").checkboxradio("refresh");				
+				$(".room_visibility").change(function() {
+					var value = $(this).attr("id");
+					if (value == "room_visibility_public") {
+						$("#room_public_info").show();
+						$("#room_private_info").hide();
+					} else {
+						$("#room_public_info").hide();
+						$("#room_private_info").show();
+					}
+				})
+
+				$(".ui-dialog-titlebar-close").hide();
+				$("#nick_dialog").show();
+		    }
+		});
+		// Make text input highlight when clicked
+		$("#room_name_input").click(function() { $(this).select(); })
+		$("#room_name_input").select();
+
+		// Set up OK button event handler
+		$("#room_ok").click(function() {
+			process();
+			$("#room_dialog").dialog("close");
+		});
+	}
+	function process() {
+		console.log("process() invoked");
+
+		var roomName = $("#room_name_input").val();
+		console.log("roomName: "+roomName);
+
+		var visibility = $("input[type='radio']:checked.room_visibility").attr("id");
+		var isPrivate = (visibility == "room_visibility_private") ? true : false;
+
+		$.ajax({
+			url: "/create_room", 
+			data: {
+				name: roomName,
+				isPrivate: isPrivate
+			}
+		}).done(function(roomID) {
+			// Redirect to the snapshot's page
+			window.location.href = "/r/"+roomID;
+		});
+
+		// var options = $(".modal_radio").checkboxradio("option");
+		// console.log("options:");
+		// console.log(options);
+	}
+
+	function show(rename) {
+		$("#room_dialog").dialog("open");
+	}
+
+	init();
+}
 
 function SnapshotModal(roomIDIn) {
 
@@ -107,7 +191,6 @@ function SnapshotModal(roomIDIn) {
 
 	function show(rename) {
 		$("#snapshot_dialog").dialog("open");
-		var value = $(".modal_radio:checked").attr("id");
 	}
 
 	init();
