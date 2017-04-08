@@ -747,7 +747,7 @@ input::selection {
 	border: 1px solid #777 !important;
 }
 
-.ui-checkboxradio-checked, .ui-checkboxradio-checked:hover, .ui-state-active {
+.ui-checkboxradio-checked, .ui-checkboxradio-checked:hover {
     border: 1px solid #003eff !important;
     background: #007fff !important;
     color: #fff !important;
