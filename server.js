@@ -580,38 +580,38 @@ function Room(idIn, startLayer, fields, fromDB) {
 		});
 	}
 
-	// Set rolling timeout for saving drawing data to disk
-	// @deprecated - use save() instead
-	this.setSaveTimeout = function() {
-		if (this.saveTimeout) {
-			clearTimeout(this.saveTimeout);
-			this.saveTimeout = null;
-		}
-		var self = this;
-		this.saveTimeout = setTimeout(function() {
-			var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
-			sharp(baseBuf).png().toBuffer().then(function(buffer) {
-				if (self.isModified) { // save modified images
-					saveImage(self.id, buffer, function(err) { // save image file to disk
-						// insert or update the room in the database
-						db.query([
-							"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
-							"VALUES (",
-							"	"+db.esc(self.id)+",", // id
-							"	NULL,", // snapshot_id
-							"	"+db.esc(self.name)+",", // name
-							"	"+(self.isPrivate ? "1" : "0")+",", // is_private
-							"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
-							"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
-							")",
-							"ON DUPLICATE KEY UPDATE",
-							"	modified=FROM_UNIXTIME("+self.getModifiedS()+")"
-						].join("\n"));
-					});	
-				} 
-			});
-		}, settings.SAVE_TIMEOUT);
-	}
+	// // Set rolling timeout for saving drawing data to disk
+	// // @deprecated - use save() instead
+	// this.setSaveTimeout = function() {
+	// 	if (this.saveTimeout) {
+	// 		clearTimeout(this.saveTimeout);
+	// 		this.saveTimeout = null;
+	// 	}
+	// 	var self = this;
+	// 	this.saveTimeout = setTimeout(function() {
+	// 		var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
+	// 		sharp(baseBuf).png().toBuffer().then(function(buffer) {
+	// 			if (self.isModified) { // save modified images
+	// 				saveImage(self.id, buffer, function(err) { // save image file to disk
+	// 					// insert or update the room in the database
+	// 					db.query([
+	// 						"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
+	// 						"VALUES (",
+	// 						"	"+db.esc(self.id)+",", // id
+	// 						"	NULL,", // snapshot_id
+	// 						"	"+db.esc(self.name)+",", // name
+	// 						"	"+(self.isPrivate ? "1" : "0")+",", // is_private
+	// 						"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
+	// 						"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
+	// 						")",
+	// 						"ON DUPLICATE KEY UPDATE",
+	// 						"	modified=FROM_UNIXTIME("+self.getModifiedS()+")"
+	// 					].join("\n"));
+	// 				});	
+	// 			} 
+	// 		});
+	// 	}, settings.SAVE_TIMEOUT);
+	// }
 
 	this.save = function() {
 		var self = this;

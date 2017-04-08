@@ -162,6 +162,10 @@ function SnapshotModal(roomIDIn) {
 			process();
 			$("#snapshot_dialog").dialog("close");
 		});
+
+		$("#snapshot_cancel").click(function() {
+			$("#snapshot_dialog").dialog("close");
+		});
 	}
 	function process() {
 		console.log("process() invoked");
