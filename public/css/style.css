@@ -760,6 +760,7 @@ input::selection {
 
 .ui-checkboxradio-label .ui-icon-background {
 	box-shadow: 0px 0px 0px 0px;
+	background-color: #fff;
 }
 
 #snapshot_img {
