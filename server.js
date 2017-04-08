@@ -450,7 +450,7 @@ function loadImage(dir, drawID, callback, fields) {
 	var inFilepath = dir+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
-		var drawing = new Room(drawID, layer, fields);
+		var drawing = new Room(drawID, layer, fields, true);
 		callback(drawing);				
 	}).catch(function(err) {
 		console.log("Warning - loadImage failed with "+drawID+"!")
@@ -465,9 +465,9 @@ function saveImage(drawID, data, callback) {
 }
 
 // Stores the data for a drawing
-function Room(idIn, startLayer, fields) {
-	this.init = function(idIn, startLayer, fields) {
-		var fromDB = typeof(fields) !== "undefined";
+function Room(idIn, startLayer, fields, fromDB) {
+	this.init = function(idIn, startLayer, fields, fromDB) {
+		var fromDB = (fromDB) ? true : false;
 		this.id = idIn;
 		this.name = fields.name;
 		this.layers = new AssocArray();
@@ -831,7 +831,7 @@ function Room(idIn, startLayer, fields) {
 		var self = this;
 		flattenRecursive(self, baseBuf, 0);
 	}
-	this.init(idIn, startLayer, fields);
+	this.init(idIn, startLayer, fields, fromDB);
 }
 
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.
