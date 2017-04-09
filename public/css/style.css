@@ -378,7 +378,7 @@ input {
 
 #drawing_title {
 	background-color: #333;
-	color: #fff;
+	color: #ddd;
 	padding: 12px;
 }
 
@@ -408,6 +408,16 @@ input {
 	z-index: 2000000011;
 	float: left;
 	margin-bottom: 5px;
+}
+
+#room_menu_container {
+	position: absolute;
+	bottom: 12px;
+	right: 12px;
+}
+
+#room_menu-button {
+	margin: 0px;
 }
 
 /* Peer pointer stuff */
@@ -665,7 +675,7 @@ input::selection {
 	padding-top: 7px;
 }
 
-#room_menu-button {
+#menu-button {
 	position: absolute;
 	bottom: 0;
 	margin-bottom: 12px;
