@@ -70,19 +70,31 @@ function configureRoutes(app) {
 	// Galleries page
 	app.get("/galleries", function(req, res) { res.render("galleries.html", { 
 		settings: settings,
-		gallery: getGallery()
+		gallery: getGallery({"type": "room"})
+	}); });
+
+	// Galleries AJAX	
+	app.get("/gallery", function(req, res) { res.render("gallery_rooms.html", { 
+		settings: settings,
+		gallery: getGallery(req.query)
 	}); });
 
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
 }
 
-function getGallery(req) {
+function getGallery(params) {
+	console.log(params);
+	if (params["type"] == "snapshot") {
+		return [];
+	}
+
 	// build some gallery objects
 	var out = []
 	var ids = drawings.getKeys();
 	for (var i = 0; i < ids.length; i++) {
-		var room = getRoom(ids[i]); // note that this only grabs from memory
+		// note that this only grabs from memory
+		var room = getRoom(ids[i]);
 		if (room.emptyImage || room.isPrivate) { // skip hidden images
 			continue;
 		}

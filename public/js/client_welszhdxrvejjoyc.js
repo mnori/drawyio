@@ -33,16 +33,20 @@ function GalleryUI() {
 		$(".galleries_type:first").attr("checked", "checked");
 		$(".galleries_type").checkboxradio("refresh");				
 		$(".galleries_type").change(function() {
+			// Fetch gallery data using ajax
+			
 			var value = $(this).attr("id");
-			console.log("value: "+value);
-
-			// if (value == "snapshot_visibility_public") {
-			// 	$("#snapshot_public_info").show();
-			// 	$("#snapshot_private_info").hide();
-			// } else {
-			// 	$("#snapshot_public_info").hide();
-			// 	$("#snapshot_private_info").show();
-			// }
+			var type = (value == "galleries_snapshots") ? "snapshot" : "room";
+			$.ajax({
+				url: "/gallery", 
+				data: {
+					type: type,
+					// can also add dates here
+				}
+			}).done(function(html) {
+				console.log(type);
+				$("#gallery").html(html);
+			});
 		})
 	}
 	init();
