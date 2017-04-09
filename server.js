@@ -94,13 +94,14 @@ function getGallery() {
 	var ids = drawings.getKeys();
 	for (var i = 0; i < ids.length; i++) {
 		var drawing = getRoom(ids[i]); // note that this only grabs from memory
-		if (!drawing.emptyImage) { // skip blank images
-			out.push({ 
-				drawing: drawing, 
-				nUsers: drawing.getNSockets(),
-				ago: drawing.getModifiedStr()
-			});
+		if (drawing.emptyImage || drawing.isPrivate) { // skip hidden images
+			continue;
 		}
+		out.push({ 
+			drawing: drawing, 
+			nUsers: drawing.getNSockets(),
+			ago: drawing.getModifiedStr()
+		});
 	}
 
 	// sort by most recent first
