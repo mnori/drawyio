@@ -319,9 +319,6 @@ input {
 }
 
 .thumb_title, .thumb_title:link, .thumb_title:visited, .thumb_title:hover, .thumb_title:active  {
-	margin-left: -1px;
-	margin-right: -1px;
-	margin-top: -1px;
 	width: 400px;
 	padding: 12px;
 	color: #ddd;
@@ -818,5 +815,6 @@ input::selection {
 
 .control_bar {
 	margin-bottom: 20px;
+	margin-left: 1px; /* due to gallery hover borders */
 }
 
