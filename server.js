@@ -62,70 +62,64 @@ function configureRoutes(app) {
 	});
 
 	// The index page (will be replaced with something else soon)
-	app.get("/", function(req, res) { res.render("index.html", { 
-		settings: settings,
-		gallery: getGallery({"type": "room"})
-	}); });
+	app.get("/", function(req, res) { 
+		getGalleryRooms({"type": "room"}, function(entries) {
+			res.render("index.html", { 
+				settings: settings,
+				entries: entries
+			});
+		});
+	}); 
 
 	// Galleries page
 	app.get("/galleries", function(req, res) { res.render("galleries.html", { 
 		settings: settings,
-		gallery: getGallery({"type": "room"})
+		gallery: getGalleryRooms({"type": "room"})
 	}); });
 
 	// Galleries AJAX	
 	app.get("/gallery", function(req, res) { res.render("gallery_rooms.html", { 
 		settings: settings,
-		gallery: getGallery(req.query)
+		gallery: getGalleryRooms(req.query)
 	}); });
 
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
 }
 
-function getGallery(params) {
+function getGalleryRooms(params, callback) {
 	console.log(params);
 	if (params["type"] == "snapshot") {
 		return [];
 	}
-
+	var out = []
 	db.query([
-		"SELECT * FROM room WHERE is_private = '0'",
+		"SELECT * FROM room",
+		"WHERE is_private = '0'",
 		"ORDER BY modified DESC",
 		"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
 	].join("\n"), function(results, fields, error) {
-		console.log(results);
-	})
 
-	return [];
+		// Arrange into template format
+		results.forEach(row => {
 
-	// build some gallery objects
-	var out = []
-	var ids = drawings.getKeys();
-	for (var i = 0; i < ids.length; i++) {
-		// note that this only grabs from memory
-		var room = getRoom(ids[i]);
-		if (room.emptyImage || room.isPrivate) { // skip hidden images
-			continue;
-		}
-		out.push({ 
-			room: room, 
-			nUsers: room.getNSockets(),
-			ago: room.getModifiedStr()
+			// Generate the row of data for the template
+			var nUsers = 0;
+			var roomMemory = drawings.get(row.id);
+			if (roomMemory != null) {
+				nUsers = roomMemory.getNSockets();
+			}
+			var agoStr = getAgo(row["modified"])
+			out.push({ 
+				row: row, 
+				nUsers: nUsers,
+				ago: agoStr
+			});	
 		});
-	}
 
-	// sort by most recent first
-	out.sort(function(a, b) {
-		if (a.room.modified > b.room.modified) {
-			return -1;
-		} else if (a.room.modified < b.room.modified) {
-			return 1;
-		}
-		return 0;
+		// Respond with the filled out template
+		callback(out);
 	});
-
-	return out.slice(0, settings.MIN_DRAWINGS_MEMORY);
 }
 
 // Fetch non-private rooms from the DB to display in gallery
@@ -722,12 +716,7 @@ function Room(idIn, startLayer, fields, fromDB) {
 	}
 
 	this.getModifiedStr = function() {
-		var diff = new Date() - this.modified;
-		if (diff < 1000) { // less than 1 second = a moment ago
-			return "A moment ago";
-		}
-		// otherwise use the string from the library
-		return ta.ago(this.modified);
+		return getAgo(this.modified);
 	}
 
 	this.getCreatedS = function() {
@@ -1018,6 +1007,15 @@ function copyFile(source, target, cb) {
 
 function getNowMysql() {
 	return (new Date ((new Date((new Date(new Date())).toISOString() )).getTime() - ((new Date()).getTimezoneOffset()*60000))).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function getAgo(timestamp) {
+	var diff = new Date() - timestamp;
+	if (diff < 1000) { // less than 1 second = a moment ago
+		return "A moment ago";
+	}
+	// otherwise use the string from the library
+	return ta.ago(timestamp);
 }
 
 // Get the party started
