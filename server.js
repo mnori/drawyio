@@ -499,7 +499,7 @@ function Room(idIn, startLayer, fields, fromDB) {
 			this.modified = new Date();
 		}
 		this.isPrivate = (fields.is_private == "1") ? true : false;
-		
+
 		// add the first layer, bypass the addLayer since it updates modified flags
 		this.nLayers++;
 		this.layers.set(this.nLayers, startLayer);
@@ -899,6 +899,7 @@ function Timeline() {
 
 // Checks drawings in memory and deletes old stuff that has reached an expire time
 function cleanup() {
+	console.log("cleanup() invoked");
 	setTimeout(function() {
 		var entries = drawings.getValues();
 		// Sort with newest at the top
@@ -912,10 +913,10 @@ function cleanup() {
 			var diff = new Date().getTime() - drawing.modified;
 			var expired = diff >= settings.DELETE_TIME;
 			// If drawing is empty and expired, delete it
-			if (drawing.emptyImage && expired) {
+			if (expired && (drawing.emptyImage || drawing.isPrivate)) {
 				drawing.destroy();
 
-			} else if (!drawing.emptyImage) {
+			} else if (expired && !drawing.emptyImage) {
 				nVisible += 1;
 
 				// only delete if there is enough stuff for the front page
