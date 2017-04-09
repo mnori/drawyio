@@ -119,7 +119,7 @@ function getGallerySnapshots(callback) {
 		// Arrange into template format
 		results.forEach(row => {
 			// Generate the row of data for the template
-			var agoStr = getAgo(row["modified"])
+			var agoStr = getAgo(row["created"])
 			out.push({ 
 				row: row, 
 				ago: agoStr
