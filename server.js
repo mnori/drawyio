@@ -165,15 +165,15 @@ function send404(res) {
 }
 
 function renderRoomPage(req, res) {
-	var drawID = req.params.id
-	if (!validation.checkRoomID(drawID)) { // check code is valid
+	var roomID = req.params.id
+	if (!validation.checkRoomID(roomID)) { // check code is valid
 		send404(res);
 	} else {
-		getRoom(drawID, function(drawing) {
-			if (drawing != null) {
+		getRoom(roomID, function(room) {
+			if (room != null) {
 				res.render("room.html", { 
 					settings: settings,
-					drawID: drawID,
+					room: room,
 					width: settings.DRAWING_PARAMS.width,
 					height: settings.DRAWING_PARAMS.height
 				});	

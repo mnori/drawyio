@@ -1,4 +1,4 @@
-{% block title %}Drawy.io - Drawing{% endblock %}
+{% block title %}Drawy.io - {{ room.name }}{% endblock %}
 
 {% extends "wrapper.html" %}
 
@@ -129,6 +129,6 @@
 	</div>
 	<script>
 		initGlobal();
-		drawUI("{{ drawID }}", {{ width }}, {{ height }});
+		drawUI("{{ room.id }}", {{ width }}, {{ height }});
 	</script>
 {% endblock %}
