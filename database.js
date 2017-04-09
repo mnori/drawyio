@@ -47,7 +47,7 @@ class DB {
 		var bits = sql.split("\n");
 		var buf = ""
 		for (var i = 0; i < bits.length; i++) {
-			buf += bits[i] = "\t"+bits[i];
+			buf += bits[i] = "    "+bits[i].replace("\t", "    ");
 		}
 		return bits.join("\n");
 	}

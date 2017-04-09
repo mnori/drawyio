@@ -73,7 +73,7 @@ function configureRoutes(app) {
 
 	// Galleries page
 	app.get("/galleries", function(req, res) { 
-		getGallery({"type": "room"}, function(entries) {
+		getGallery({"type": "snapshot"}, function(entries) {
 			res.render("galleries.html", { 
 				settings: settings,
 				entries: entries
@@ -84,7 +84,8 @@ function configureRoutes(app) {
 	// Galleries AJAX - can switch between rooms or snapshots
 	app.get("/gallery", function(req, res) { 
 		getGallery({"type": req.query.type}, function(entries) {
-			res.render("gallery_rooms.html", { 
+			var galType = (req.query.type == "room") ? "room" : "snapshot";
+			res.render("gallery_"+req.query.type+"s.html", { 
 				settings: settings,
 				entries: entries
 			});
@@ -105,6 +106,31 @@ function getGallery(params, callback) {
 		console.log("Invalid type ["+params["type"]+"]")
 	}
 }
+
+function getGallerySnapshots(callback) {
+	var out = []
+	db.query([
+		"SELECT * FROM snapshot",
+		"WHERE is_private = '0'",
+		"ORDER BY created DESC",
+		"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
+	].join("\n"), function(results, fields, error) {
+
+		// Arrange into template format
+		results.forEach(row => {
+			// Generate the row of data for the template
+			var agoStr = getAgo(row["modified"])
+			out.push({ 
+				row: row, 
+				ago: agoStr
+			});	
+		});
+
+		// Respond with the filled out template
+		callback(out);
+	});
+}
+
 
 function getGalleryRooms(callback) {
 	var out = []
@@ -135,10 +161,6 @@ function getGalleryRooms(callback) {
 		// Respond with the filled out template
 		callback(out);
 	});
-}
-
-function getGallerySnapshots(callback) {
-	callback([])
 }
 
 // Fetch non-private rooms from the DB to display in gallery
