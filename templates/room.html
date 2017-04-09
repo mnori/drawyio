@@ -29,7 +29,10 @@
 	</div>
 
 	<span class="bold_fix"></span>
-	<div id="drawing_form">	
+	<div id="drawing_form">
+		<div id="drawing_header">
+			<div id="drawing_title">{{ room.name }}</div>
+		</div>
 		<div id="drawing_container">
 			<div id="drawing_layers" style="width: {{ width }}px; height: {{ height }}px;">
 				<canvas id="drawing_canvas" width="{{ width }}" height="{{ height }}"></canvas>

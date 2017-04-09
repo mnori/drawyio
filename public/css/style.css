@@ -39,7 +39,7 @@ body {
 	padding-left: 20px;
 	padding-right: 20px;
 	height: 70px;
-	box-shadow: 0px 0px 10px 3px #bbb;
+	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
 	border-bottom: 2px solid #000;
 }
 
@@ -124,6 +124,8 @@ h1 {
 	float: left;
 	margin-bottom: 20px;
 	position: relative;
+	border: 1px 1px 1px 1px solid #aaa;
+	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
 }
 
 .drawing_pointer {
@@ -132,8 +134,7 @@ h1 {
 }
 
 #drawing_layers {
-	border: 1px solid #aaa;
-	box-shadow: 0px 0px 10px 3px #bbb;
+	border-right: 1px solid #888;
 	cursor: crosshair;
 	position: relative;
 	user-select: none;
@@ -179,7 +180,7 @@ h1 {
 	height: 45px;
 
 	border: 1px solid #888;
-    box-shadow: 0px 0px 10px 3px #bbb;
+    box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
 }
 
 #text_input_box {
@@ -341,7 +342,7 @@ input {
 }
 
 .thumb:hover {
-	box-shadow: 0px 0px 10px 3px #bbb;
+	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
 	border: 1px solid #aaa;
 }
 
@@ -369,6 +370,16 @@ input {
 #drawing_container {
 	float: left;
 	image-rendering: pixelated;
+}
+
+#drawing_header {
+	width: 100%;
+}
+
+#drawing_title {
+	background-color: #333;
+	color: #fff;
+	padding: 12px;
 }
 
 #controls {
@@ -459,7 +470,7 @@ input {
 .sp-container{
 	border: 1px solid #aaa;
 	background-color: #fff;
-	box-shadow: 0px 0px 10px 3px #bbb;
+	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
 	z-index: 2000000008;
 }
 
@@ -513,7 +524,7 @@ input {
 
 .ui-selectmenu-menu {
 	border: 1px solid #888;
-	box-shadow: 0px 0px 10px 3px #bbb;
+	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
 	font-family: ubuntuRegular;
 	font-size: 16px;
 }
@@ -678,7 +689,7 @@ input::selection {
 	font-size: 25px !important;
 	width: 354px !important;
 	border: 1px solid #888 !important;
-    box-shadow: 0px 0px 10px 3px #bbb !important;
+    box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3) !important;
     padding-left: 10px !important;
 	padding-right: 10px !important;
 }
@@ -780,7 +791,7 @@ input::selection {
 
 #snapshot_img {
 	border: 1px solid #aaa;
-	box-shadow: 0px 0px 10px 3px #bbb;
+	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
 	float: left;
 }
 
