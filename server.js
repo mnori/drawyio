@@ -75,22 +75,22 @@ function getGallery() {
 	var out = []
 	var ids = drawings.getKeys();
 	for (var i = 0; i < ids.length; i++) {
-		var drawing = getRoom(ids[i]); // note that this only grabs from memory
-		if (drawing.emptyImage || drawing.isPrivate) { // skip hidden images
+		var room = getRoom(ids[i]); // note that this only grabs from memory
+		if (room.emptyImage || room.isPrivate) { // skip hidden images
 			continue;
 		}
 		out.push({ 
-			drawing: drawing, 
-			nUsers: drawing.getNSockets(),
-			ago: drawing.getModifiedStr()
+			room: room, 
+			nUsers: room.getNSockets(),
+			ago: room.getModifiedStr()
 		});
 	}
 
 	// sort by most recent first
 	out.sort(function(a, b) {
-		if (a.drawing.modified > b.drawing.modified) {
+		if (a.room.modified > b.room.modified) {
 			return -1;
-		} else if (a.drawing.modified < b.drawing.modified) {
+		} else if (a.room.modified < b.room.modified) {
 			return 1;
 		}
 		return 0;
