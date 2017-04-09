@@ -61,10 +61,10 @@ function configureRoutes(app) {
 			renderSnapshotPage(req, res);
 	});
 
-	// The index page
+	// The index page (will be replaced with something else soon)
 	app.get("/", function(req, res) { res.render("index.html", { 
 		settings: settings,
-		gallery: getGallery()
+		gallery: getGallery({"type": "room"})
 	}); });
 
 	// Galleries page
