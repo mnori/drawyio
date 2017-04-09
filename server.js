@@ -38,18 +38,20 @@ function main() {
 // This is a bit of a dirty solution
 // will be replaced with a proper DB based storage soon.
 function fetchRoomsInitial() {
+	console.log("fetchRoomsInitial() invoked");
 	drawings = new AssocArray();
-	var dir = settings.ROOMS_DIR;
-	var files = fs.readdirSync(dir);
-	files.sort(function(a, b) {
-		return fs.statSync(dir+"/"+b).mtime.getTime() - fs.statSync(dir+"/"+a).mtime.getTime();
-	});	
-	var max = files.length <= settings.MIN_DRAWINGS_MEMORY 
-		? files.length : settings.MIN_DRAWINGS_MEMORY;
-	for (var i = 0; i < max; i++) {
-		console.log("["+files[i].split(".")[0]+"]");
-		getRoom(files[i].split(".")[0], function(drawing) {});
-	}
+
+	db.query([
+		"SELECT * FROM room",
+		"WHERE is_private = '0'",
+		"ORDER BY modified DESC",
+		"LIMIT "+settings.MIN_DRAWINGS_MEMORY
+	].join("\n"), function(results, fields, error) {
+		results.forEach(row => {
+			console.log(row);
+			loadImage(settings.ROOMS_DIR, row.id, function() {}, row);
+		});	
+	});
 }
 
 // Set up all the basic http endpoints
