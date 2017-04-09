@@ -962,9 +962,6 @@ function Snapshot(snapID, buffer, fields) {
 		this.name = fields["name"]
 		this.isPrivate = fields["is_private"] == 0 ? false : true;
 		this.created = new Date(fields["created"]);
-
-		console.log("Snapshot init called")
-		console.log(this);
 	}
 	this.init(snapID, buffer, fields);
 }

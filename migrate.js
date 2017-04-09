@@ -27,7 +27,7 @@ var migrations = [
 				"CREATE TABLE room (",
 				"	id CHAR("+settings.ID_LEN+"),",
 				"	snapshot_id CHAR("+settings.ID_LEN+") REFERENCES snapshot(id),",
-				"	name VARCHAR("+settings.ROOM_NAME_LEN+") DEFAULT 'Room',",
+				"	name VARCHAR("+settings.ROOM_NAME_LEN+") DEFAULT 'An unnamed room',",
 				"	is_private BOOLEAN NOT NULL DEFAULT '0',",
 				"	created DATETIME NOT NULL,",
 				"	modified DATETIME NOT NULL,",
