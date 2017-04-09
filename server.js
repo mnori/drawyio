@@ -953,7 +953,7 @@ function loadSnapshotImage(dir, snapID, callback, fields) {
 	});
 }
 
-// Stores the data for a drawing
+// Stores a permanent snapshot of a drawing image
 function Snapshot(snapID, buffer, fields) {
 	this.init = function(snapID, buffer, fields) {
 		this.id = snapID;

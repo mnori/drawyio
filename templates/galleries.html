@@ -1,0 +1,27 @@
+{% block title %}Drawy.io{% endblock %}
+
+{% extends "wrapper.html" %}
+
+{% block content %}
+	<h1>Recents</h1>
+	<div id="gallery">
+	{% for entry in gallery %}
+		<a href="/r/{{ entry.room.id }}" class="thumb">
+			<div class="thumb_title">{{ entry.room.name }}</div>
+			<img src="/r/{{ entry.room.id }}.png" class="thumb_img" style="width: {{ width }}, height: {{ height }}" /><br />
+			<div class="thumb_inf">
+
+				{% if entry.nUsers > 0 %}
+					<div class="thumb_nusers">
+						<i class="fa fa-user-circle button_icon" aria-hidden="true"></i>{{ entry.nUsers }}
+					</div>
+				{% endif %}
+				<div class="thumb_ago">{{ entry.ago }}</div>
+
+			</div>
+		</a>
+	{% endfor %}
+	</div>
+{% endblock %}
+
+{% block js %}<script>initGlobal();</script>{% endblock %}
