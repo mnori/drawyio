@@ -35,24 +35,6 @@ function main() {
 	console.log("Running on http://localhost:" + settings.PORT);
 }
 
-// Fetch non-private rooms from the DB to display in gallery
-function fetchRoomsInitial() {
-	console.log("fetchRoomsInitial() invoked");
-	drawings = new AssocArray();
-
-	db.query([
-		"SELECT * FROM room",
-		"WHERE is_private = '0'",
-		"ORDER BY modified DESC",
-		"LIMIT "+settings.MIN_DRAWINGS_MEMORY
-	].join("\n"), function(results, fields, error) {
-		results.forEach(row => {
-			console.log(row);
-			loadImage(settings.ROOMS_DIR, row.id, function() {}, row);
-		});	
-	});
-}
-
 // Set up all the basic http endpoints
 function configureRoutes(app) {
 
@@ -115,6 +97,23 @@ function getGallery() {
 	});
 
 	return out.slice(0, settings.MIN_DRAWINGS_MEMORY);
+}
+
+// Fetch non-private rooms from the DB to display in gallery
+function fetchRoomsInitial() {
+	console.log("fetchRoomsInitial() invoked");
+	drawings = new AssocArray();
+
+	db.query([
+		"SELECT * FROM room",
+		"WHERE is_private = '0'",
+		"ORDER BY modified DESC",
+		"LIMIT "+settings.MIN_DRAWINGS_MEMORY
+	].join("\n"), function(results, fields, error) {
+		results.forEach(row => {
+			loadRoomImage(settings.ROOMS_DIR, row.id, function() {}, row);
+		});	
+	});
 }
 
 function receiveTool(data, socket) {
@@ -441,13 +440,13 @@ function fetchRoom(drawID, loadCallback) {
 		if (results.length == 0) {
 			loadCallback(null);
 		} else {
-			loadImage(settings.ROOMS_DIR, drawID, loadCallback, results[0]);
+			loadRoomImage(settings.ROOMS_DIR, drawID, loadCallback, results[0]);
 		}
 	});
 }
 
 // Try to load a drawing from disk
-function loadImage(dir, drawID, callback, fields) {
+function loadRoomImage(dir, drawID, callback, fields) {
 	// must sanitise the drawID
 	var inFilepath = dir+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
@@ -455,7 +454,7 @@ function loadImage(dir, drawID, callback, fields) {
 		var drawing = new Room(drawID, layer, fields, true);
 		callback(drawing);				
 	}).catch(function(err) {
-		console.log("Warning - loadImage failed with "+drawID+"!")
+		console.log("Warning - loadRoomImage failed with "+drawID+"!")
 		callback(null);
 	});
 }
@@ -900,7 +899,6 @@ function Timeline() {
 
 // Checks drawings in memory and deletes old stuff that has reached an expire time
 function cleanup() {
-	console.log("cleanup() invoked");
 	setTimeout(function() {
 		var entries = drawings.getValues();
 		// Sort with newest at the top
@@ -938,19 +936,19 @@ function getSnapshot(snapID, callback) {
 		if (results.length == 0) {
 			callback(null);
 		} else {
-			loadImageBuffer(settings.SNAPSHOTS_DIR, snapID, callback, results[0]);
+			loadSnapshotImage(settings.SNAPSHOTS_DIR, snapID, callback, results[0]);
 		}
 	});
 }
 
 // Try to load a drawing from disk
-function loadImageBuffer(dir, snapID, callback, fields) {
+function loadSnapshotImage(dir, snapID, callback, fields) {
 	var inFilepath = dir+"/"+snapID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var snapshot = new Snapshot(snapID, buffer, fields);
 		callback(snapshot);
 	}).catch(function(err) {
-		console.log("Warning - loadImageBuffer failed with "+snapID+"!")
+		console.log("Warning - loadSnapshotImage failed with "+snapID+"!")
 		callback(null);
 	});
 }
