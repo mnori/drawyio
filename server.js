@@ -35,8 +35,7 @@ function main() {
 	console.log("Running on http://localhost:" + settings.PORT);
 }
 
-// This is a bit of a dirty solution
-// will be replaced with a proper DB based storage soon.
+// Fetch non-private rooms from the DB to display in gallery
 function fetchRoomsInitial() {
 	console.log("fetchRoomsInitial() invoked");
 	drawings = new AssocArray();
@@ -277,7 +276,7 @@ function createRoom(req, res) {
 			var nowMysql = getNowMysql();
 			var fields = {
 				"name": name,
-				"is_private": "1",
+				"is_private": isPrivate,
 				"created": nowMysql,
 				"modified": nowMysql
 			}
@@ -491,7 +490,6 @@ function Room(idIn, startLayer, fields, fromDB) {
 			this.emptyImage = false;
 			this.created = new Date(fields.created);
 			this.modified = new Date(fields.modified);
-			this.isPrivate = (fields.is_private == "1") ? true : false;
 
 		} else { // creating a new room from nothing
 			this.emptyImage = true; // whether the PNG is empty
@@ -499,8 +497,9 @@ function Room(idIn, startLayer, fields, fromDB) {
 			// created and modified are right now
 			this.created = new Date(); 
 			this.modified = new Date();
-			this.isPrivate = false;
 		}
+		this.isPrivate = (fields.is_private == "1") ? true : false;
+		
 		// add the first layer, bypass the addLayer since it updates modified flags
 		this.nLayers++;
 		this.layers.set(this.nLayers, startLayer);
