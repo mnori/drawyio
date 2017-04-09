@@ -63,7 +63,7 @@ function configureRoutes(app) {
 
 	// The index page (will be replaced with something else soon)
 	app.get("/", function(req, res) { 
-		getGalleryRooms({"type": "room"}, function(entries) {
+		getGallery({"type": "room"}, function(entries) {
 			res.render("index.html", { 
 				settings: settings,
 				entries: entries
@@ -72,26 +72,41 @@ function configureRoutes(app) {
 	}); 
 
 	// Galleries page
-	app.get("/galleries", function(req, res) { res.render("galleries.html", { 
-		settings: settings,
-		gallery: getGalleryRooms({"type": "room"})
-	}); });
+	app.get("/galleries", function(req, res) { 
+		getGallery({"type": "room"}, function(entries) {
+			res.render("galleries.html", { 
+				settings: settings,
+				entries: entries
+			});
+		});
+	});
 
-	// Galleries AJAX	
-	app.get("/gallery", function(req, res) { res.render("gallery_rooms.html", { 
-		settings: settings,
-		gallery: getGalleryRooms(req.query)
-	}); });
+	// Galleries AJAX - can switch between rooms or snapshots
+	app.get("/gallery", function(req, res) { 
+		getGallery({"type": req.query.type}, function(entries) {
+			res.render("gallery_rooms.html", { 
+				settings: settings,
+				entries: entries
+			});
+		});
+	});
 
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
 }
 
-function getGalleryRooms(params, callback) {
+function getGallery(params, callback) {
 	console.log(params);
-	if (params["type"] == "snapshot") {
-		return [];
+	if (params["type"] == "room") {
+		getGalleryRooms(callback);
+	} else if (params["type"] == "snapshot") {
+		getGallerySnapshots(callback);
+	} else {
+		console.log("Invalid type ["+params["type"]+"]")
 	}
+}
+
+function getGalleryRooms(callback) {
 	var out = []
 	db.query([
 		"SELECT * FROM room",
@@ -120,6 +135,10 @@ function getGalleryRooms(params, callback) {
 		// Respond with the filled out template
 		callback(out);
 	});
+}
+
+function getGallerySnapshots(callback) {
+	callback([])
 }
 
 // Fetch non-private rooms from the DB to display in gallery
