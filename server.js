@@ -89,6 +89,16 @@ function getGallery(params) {
 		return [];
 	}
 
+	db.query([
+		"SELECT * FROM room WHERE is_private = '0'",
+		"ORDER BY modified DESC",
+		"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
+	].join("\n"), function(results, fields, error) {
+		console.log(results);
+	})
+
+	return [];
+
 	// build some gallery objects
 	var out = []
 	var ids = drawings.getKeys();
