@@ -138,6 +138,7 @@ h1 {
 	cursor: crosshair;
 	position: relative;
 	user-select: none;
+	overflow: hidden;
 }
 
 /* canvas that the local user is drawing onto. Remote users draw onto seperate canvases */
