@@ -780,6 +780,7 @@ input::selection {
     box-shadow: 0px 0px 0px 0px;
     margin: 0px !important;
     padding: 6px 10px 6px 10px;
+    display: inline-block;
 }
 
 .ui-checkboxradio-radio-label:hover {
