@@ -54,6 +54,7 @@ function configureRoutes(app) {
 			renderRoomPage(req, res);
 	});
 
+	// Render snapshot page or image
 	app.get("/s/:id", function(req, res) {
 		req.params.id.includes(".png") ? 
 			sendSnapshotImage(req, res) : 
@@ -66,11 +67,17 @@ function configureRoutes(app) {
 		gallery: getGallery()
 	}); });
 
+	// Galleries page
+	app.get("/galleries", function(req, res) { res.render("galleries.html", { 
+		settings: settings,
+		gallery: getGallery()
+	}); });
+
 	// Default action if nothing else matched - 404
 	app.use(function(req, res, next) { send404(res); })
 }
 
-function getGallery() {
+function getGallery(req) {
 	// build some gallery objects
 	var out = []
 	var ids = drawings.getKeys();

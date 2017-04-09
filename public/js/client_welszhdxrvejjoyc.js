@@ -27,6 +27,27 @@ function initGlobalResizeHandler() {
 	})
 }
 
+function GalleryUI() {
+	var init = function() {
+		$(".galleries_type").checkboxradio();
+		$(".galleries_type:first").attr("checked", "checked");
+		$(".galleries_type").checkboxradio("refresh");				
+		$(".galleries_type").change(function() {
+			var value = $(this).attr("id");
+			console.log("value: "+value);
+
+			// if (value == "snapshot_visibility_public") {
+			// 	$("#snapshot_public_info").show();
+			// 	$("#snapshot_private_info").hide();
+			// } else {
+			// 	$("#snapshot_public_info").hide();
+			// 	$("#snapshot_private_info").show();
+			// }
+		})
+	}
+	init();
+}
+
 // MODALS ///////////////////////////////////////////////////////////////////////////////
 
 function RoomModal(roomIDIn) {
