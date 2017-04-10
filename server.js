@@ -101,14 +101,16 @@ function getGallery(params, callback) {
 	if (params["type"] == "room") {
 		getGalleryRooms(callback);
 	} else if (params["type"] == "snapshot") {
-		getGallerySnapshots(callback);
+		getGallerySnapshots(params, callback);
 	} else {
 		console.log("Invalid type ["+params["type"]+"]")
 	}
 }
 
-function getGallerySnapshots(callback) {
+function getGallerySnapshots(params, callback) {
 	var out = []
+	console.log(params);
+
 	db.query([
 		"SELECT * FROM snapshot",
 		"WHERE is_private = '0'",
@@ -122,6 +124,7 @@ function getGallerySnapshots(callback) {
 			var agoStr = getAgo(row["created"])
 			out.push({ 
 				row: row, 
+				unixtime: new Date(row.created).getTime() / 1000,
 				ago: agoStr
 			});	
 		});
@@ -130,7 +133,6 @@ function getGallerySnapshots(callback) {
 		callback(out);
 	});
 }
-
 
 function getGalleryRooms(callback) {
 	var out = []

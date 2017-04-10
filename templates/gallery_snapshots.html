@@ -3,7 +3,7 @@
 		<div class="thumb_title">{{ entry.row.name }}</div>
 		<img src="/s/{{ entry.row.id }}.png" class="thumb_img" style="width: {{ width }}, height: {{ height }}" /><br />
 		<div class="thumb_inf">
-			<div class="thumb_ago">{{ entry.ago }}</div>
+			<div class="thumb_ago" data-unixtime="{{ entry.unixtime }}">{{ entry.ago }}</div>
 		</div>
 	</a>
 {% endfor %}

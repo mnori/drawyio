@@ -33,22 +33,47 @@ function GalleryUI() {
 		$(".galleries_type:first").attr("checked", "checked");
 		$(".galleries_type").checkboxradio("refresh");				
 		$(".galleries_type").change(function() {
+
 			// Fetch gallery data using ajax
-			
 			var value = $(this).attr("id");
 			var type = (value == "galleries_snapshots") ? "snapshot" : "room";
 			$.ajax({
 				url: "/gallery", 
-				data: {
-					type: type,
-					// can also add dates here
-				}
+				data: {type: type}
 			}).done(function(html) {
-				console.log(type);
 				$("#gallery").html(html);
 			});
 		})
+
+		$("#gallery_more").click(function() {
+
+			// Fetch more gallery data using ajax
+			console.log("Gallery more clicked");
+			var checkedID = $("input[type='radio']:checked.room_visibility").attr("id");
+			var type = (checkedID == "galleries_snapshots") ? "snapshot" : "room";
+			$.ajax({
+				url: "/gallery", 
+				data: {
+					type: type,
+					oldestTime: findOldestUnixtime()
+				}
+			}).done(function(html) {
+				$("#gallery").append(html);
+			});
+		});
 	}
+
+	var findOldestUnixtime = function() {
+		var oldest = null;
+		$(".thumb_ago").each(function(entry) {
+			var thisVal = parseInt($(entry).attr("data-unixtime"));
+			if (oldest == null || thisVal < oldest) {
+				oldest = thisVal;
+			}
+		});
+		return oldest;
+	}
+
 	init();
 }
 
