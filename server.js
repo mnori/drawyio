@@ -27,7 +27,7 @@ function main() {
 	setupDebug();
 	db = new database.DB(settings.DB_CONNECT_PARAMS);
 	db.query("USE "+settings.DB_NAME+";");
-	fetchRoomsInitial();
+	drawings = new AssocArray();
 	nunjucks.configure("templates", {express: app});
 	configureRoutes(app);
 	cleanup(settings);
@@ -171,23 +171,6 @@ function getGalleryRooms(params, callback) {
 
 		// Respond with the filled out template
 		callback(out);
-	});
-}
-
-// Fetch non-private rooms from the DB to display in gallery
-function fetchRoomsInitial() {
-	console.log("fetchRoomsInitial() invoked");
-	drawings = new AssocArray();
-
-	db.query([
-		"SELECT * FROM room",
-		"WHERE is_private = '0'",
-		"ORDER BY modified DESC",
-		"LIMIT "+settings.MIN_DRAWINGS_MEMORY
-	].join("\n"), function(results, fields, error) {
-		results.forEach(row => {
-			loadRoomImage(settings.ROOMS_DIR, row.id, function() {}, row);
-		});	
 	});
 }
 
@@ -520,15 +503,15 @@ function fetchRoom(drawID, loadCallback) {
 		if (results.length == 0) {
 			loadCallback(null);
 		} else {
-			loadRoomImage(settings.ROOMS_DIR, drawID, loadCallback, results[0]);
+			loadRoomImage(drawID, loadCallback, results[0]);
 		}
 	});
 }
 
 // Try to load a drawing from disk
-function loadRoomImage(dir, drawID, callback, fields) {
+function loadRoomImage(drawID, callback, fields) {
 	// must sanitise the drawID
-	var inFilepath = dir+"/"+drawID+".png"
+	var inFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var layer = bufferToLayer(drawID, buffer);
 		var drawing = new Room(drawID, layer, fields, true);
@@ -784,12 +767,11 @@ function Room(idIn, startLayer, fields, fromDB) {
 			return;
 		}
 		this.isFlattening = true;
-		// must increment at the beginning to avoid new layers getting overwritten
 
+		// must increment at the beginning to avoid new layers getting overwritten
 		// make room for the flattened image
 		this.nLayers++;
 		var flattenedLayerID = this.nLayers;
-		// console.log("["+flattenedLayerID+"] Started flattening");
 
 		// String codes of the component layers of the flatten
 		var componentCodes = []
@@ -801,13 +783,9 @@ function Room(idIn, startLayer, fields, fromDB) {
 			// And that layer is not part of the component codes.
 			// It looks broken but still works since the extra layer is resting in memory
 			// When the client requests the drawing, the extra layer will be sent
-
 			// We could mop this up with some extra calls, but it works so not a priority
 
 			if (overlay != null) { // we must merge a layer
-
-			// no limit to the amount of stuff flattened
-			// if (ind < settings.MAX_LAYERS && overlay != null) { // we must merge a layer
 
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
@@ -846,9 +824,6 @@ function Room(idIn, startLayer, fields, fromDB) {
 							code: randomString(settings.LAYER_CODE_LEN),
 							components: componentCodes
 						});
-						// console.log("["+flattenedLayerID+"] Room has been flattened, "+ind+" layers total");
-						// console.log("Here are the components:");
-						// console.log(componentCodes);
 
 						// now we must update each client
 						self.broadcast();
