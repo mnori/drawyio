@@ -818,3 +818,49 @@ input::selection {
 	margin-left: 1px; /* due to gallery hover borders */
 }
 
+#gallery_more_container {
+	text-align: center;
+}
+
+#gallery_more {
+	display: inline-block;
+	margin: 0 none;
+}
+
+.big_button, .big_button:hover, .big_button:active {
+	border: 1px solid #bbb;
+	background-color: #eee;
+}
+
+.big_button {
+	color: #444;
+}
+
+.big_button:hover, .big_button:active {
+	color: #000;
+	border: 1px solid #777;
+	text-shadow: none;
+}
+
+.big_button {
+	border: 1px solid #bbb;
+}
+
+.big_button, .big_button:hover {
+	font-family: ubuntuRegular;
+	width: auto;
+	height: auto;
+	font-size: 20px;
+	line-height: 18px;
+	vertical-align: middle;
+	text-decoration: none;
+	padding: 10px 14px 10px 14px;
+}
+
+.big_button:active {
+	padding: 12px 14px 8px 14px;
+	box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.6); 
+}
+.big_button:hover {
+	border: 1px solid #777;
+}
