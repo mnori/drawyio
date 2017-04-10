@@ -289,15 +289,30 @@ function renderSnapshotPage(req, res) {
 function sendSnapshotImage(req, res) {
 	var snapID = req.params.id.replace(".png", "");
 	if (!validation.checkSnapshotID(snapID)) { // check code is valid
+		console.
 		send404(res);
 	} else {
-		getSnapshot(snapID, function(snapshot) {
+		loadImage(settings.SNAPSHOTS_DIR+"/"+snapID+".png", function(buffer) {
+			if (buffer == null) { // not found
+				send404(res);
+				return;
+			}
 			res.writeHead(200, {
 				'Content-Type': 'image/png',
-				'Content-Length': snapshot.buf.length
+				'Content-Length': buffer.length
 			});
-			res.end(snapshot.buf);
-		})
+			res.end(buffer);
+		});
+		
+
+		// getImageBuffer();
+		// getSnapshot(snapID, function(snapshot) {
+		// 	res.writeHead(200, {
+		// 		'Content-Type': 'image/png',
+		// 		'Content-Length': snapshot.buf.length
+		// 	});
+		// 	res.end(snapshot.buf);
+		// })
 	}
 }
 
@@ -503,13 +518,13 @@ function fetchRoom(drawID, loadCallback) {
 		if (results.length == 0) {
 			loadCallback(null);
 		} else {
-			loadRoomImage(drawID, loadCallback, results[0]);
+			createRoomFromImage(drawID, loadCallback, results[0]);
 		}
 	});
 }
 
 // Try to load a drawing from disk
-function loadRoomImage(drawID, callback, fields) {
+function createRoomFromImage(drawID, callback, fields) {
 	// must sanitise the drawID
 	var inFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
@@ -517,7 +532,7 @@ function loadRoomImage(drawID, callback, fields) {
 		var drawing = new Room(drawID, layer, fields, true);
 		callback(drawing);				
 	}).catch(function(err) {
-		console.log("Warning - loadRoomImage failed with "+drawID+"!")
+		console.log("Warning - createRoomFromImage failed with "+drawID+"!")
 		callback(null);
 	});
 }
@@ -953,19 +968,38 @@ function getSnapshot(snapID, callback) {
 		if (results.length == 0) {
 			callback(null);
 		} else {
-			loadSnapshotImage(settings.SNAPSHOTS_DIR, snapID, callback, results[0]);
+			loadSnapshotImage(snapID, callback, results[0]);
 		}
 	});
 }
 
 // Try to load a drawing from disk
-function loadSnapshotImage(dir, snapID, callback, fields) {
-	var inFilepath = dir+"/"+snapID+".png"
+function loadSnapshotImage(snapID, callback, fields) {
+	var inFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
 	sharp(inFilepath).png().toBuffer().then(function(buffer) {
 		var snapshot = new Snapshot(snapID, buffer, fields);
 		callback(snapshot);
 	}).catch(function(err) {
 		console.log("Warning - loadSnapshotImage failed with "+snapID+"!")
+		callback(null);
+	});
+}
+
+// Try to load a drawing from disk
+function loadSnapshotImageSimple(snapID, callback, fields) {
+	var inFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
+	sharp(inFilepath).png().toBuffer().then(function(buffer) {
+		callback(buffer);
+	}).catch(function(err) {
+		console.log("Warning - loadSnapshotImageSimple failed with "+snapID+"!")
+		callback(null);
+	});
+}
+
+function loadImage(filepath, callback) {
+	sharp(filepath).png().toBuffer().then(function(buffer) {
+		callback(buffer);
+	}, function(reason) {
 		callback(null);
 	});
 }
