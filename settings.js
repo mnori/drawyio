@@ -53,7 +53,7 @@ module.exports = {
 	SNAPSHOTS_DIR: "/usr/src/app/code/images/snapshots",
 	MIN_DRAWINGS_MEMORY: 16, // this is also the max number of images in the gallery
 
-	DEFUALT_ROOM_NAME: "An unnamed room",
-	DEFUALT_SNAPSHOT_NAME: "An unnamed snapshot"
+	DEFAULT_ROOM_NAME: "An unnamed room",
+	DEFAULT_SNAPSHOT_NAME: "An unnamed snapshot"
 }
 

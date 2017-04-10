@@ -236,9 +236,14 @@ function renderRoomPage(req, res) {
 	} else {
 		getRoom(roomID, function(room) {
 			if (room != null) {
+				console.log(room.name)
+				console.log(settings.DEFAULT_ROOM_NAME)
+				var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
+					room.name : settings.DEFAULT_SNAPSHOT_NAME;
 				res.render("room.html", { 
 					settings: settings,
 					room: room,
+					snapshotName: snapshotName,
 					width: settings.DRAWING_PARAMS.width,
 					height: settings.DRAWING_PARAMS.height
 				});	
