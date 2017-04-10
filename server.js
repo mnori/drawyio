@@ -250,22 +250,20 @@ function renderRoomPage(req, res) {
 
 // Return png image as buffer
 function sendRoomImage(req, res) {
-	var drawID = req.params.id.replace(".png", "");
-	if (!validation.checkRoomID(drawID)) { // check code is valid
+	var roomID = req.params.id.replace(".png", "");
+	if (!validation.checkRoomID(roomID)) { // check code is valid
 		send404(res);
 	} else {
-		getRoom(drawID, function(drawing) {
-			if (drawing == null) {
-				send404(res)	
-			} else {
-				var layer = drawing.getUnmergedLayer(0);
-				var buf = base64ToBuffer(layer.base64);
-				res.writeHead(200, {
-					'Content-Type': 'image/png',
-					'Content-Length': buf.length
-				});
-				res.end(buf);	
+		loadImage(settings.ROOMS_DIR+"/"+roomID+".png", function(buffer) {
+			if (buffer == null) { // not found
+				send404(res);
+				return;
 			}
+			res.writeHead(200, {
+				'Content-Type': 'image/png',
+				'Content-Length': buffer.length
+			});
+			res.end(buffer);
 		});
 	}
 }
@@ -303,16 +301,6 @@ function sendSnapshotImage(req, res) {
 			});
 			res.end(buffer);
 		});
-		
-
-		// getImageBuffer();
-		// getSnapshot(snapID, function(snapshot) {
-		// 	res.writeHead(200, {
-		// 		'Content-Type': 'image/png',
-		// 		'Content-Length': snapshot.buf.length
-		// 	});
-		// 	res.end(snapshot.buf);
-		// })
 	}
 }
 
