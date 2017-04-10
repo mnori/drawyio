@@ -83,7 +83,7 @@ function configureRoutes(app) {
 
 	// Galleries AJAX - can switch between rooms or snapshots
 	app.get("/gallery", function(req, res) { 
-		getGallery({"type": req.query.type}, function(entries) {
+		getGallery(req.query, function(entries) {
 			var galType = (req.query.type == "room") ? "room" : "snapshot";
 			res.render("gallery_"+req.query.type+"s.html", { 
 				settings: settings,
@@ -111,9 +111,15 @@ function getGallerySnapshots(params, callback) {
 	var out = []
 	console.log(params);
 
+	var timestamp = parseInt(params.oldestTime);
+
+	var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
+		"AND created < FROM_UNIXTIME("+timestamp+")";
+
 	db.query([
 		"SELECT * FROM snapshot",
 		"WHERE is_private = '0'",
+		dateFilter,
 		"ORDER BY created DESC",
 		"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
 	].join("\n"), function(results, fields, error) {

@@ -48,15 +48,19 @@ function GalleryUI() {
 		$("#gallery_more").click(function() {
 
 			// Fetch more gallery data using ajax
-			console.log("Gallery more clicked");
-			var checkedID = $("input[type='radio']:checked.room_visibility").attr("id");
+			var checkedID = $("input[type='radio']:checked.galleries_type").attr("id");
 			var type = (checkedID == "galleries_snapshots") ? "snapshot" : "room";
+			var oldest = findOldestUnixtime();
+
+			var data = {
+				type: type,
+				oldestTime: ""+oldest
+			}
+			console.log(data);
+
 			$.ajax({
 				url: "/gallery", 
-				data: {
-					type: type,
-					oldestTime: findOldestUnixtime()
-				}
+				data: data
 			}).done(function(html) {
 				$("#gallery").append(html);
 			});
@@ -65,8 +69,8 @@ function GalleryUI() {
 
 	var findOldestUnixtime = function() {
 		var oldest = null;
-		$(".thumb_ago").each(function(entry) {
-			var thisVal = parseInt($(entry).attr("data-unixtime"));
+		$(".thumb_ago").each(function() {
+			var thisVal = parseInt($(this).data("unixtime"));
 			if (oldest == null || thisVal < oldest) {
 				oldest = thisVal;
 			}
