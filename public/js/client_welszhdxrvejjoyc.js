@@ -62,7 +62,12 @@ function GalleryUI() {
 				url: "/gallery", 
 				data: data
 			}).done(function(html) {
+				if (html.trim() === "") {
+					// reached the end, remove the more button
+					$("#gallery_more").remove();
+				}
 				$("#gallery").append(html);
+
 			});
 		});
 	}

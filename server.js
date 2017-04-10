@@ -99,7 +99,7 @@ function configureRoutes(app) {
 function getGallery(params, callback) {
 	console.log(params);
 	if (params["type"] == "room") {
-		getGalleryRooms(callback);
+		getGalleryRooms(params, callback);
 	} else if (params["type"] == "snapshot") {
 		getGallerySnapshots(params, callback);
 	} else {
@@ -109,10 +109,7 @@ function getGallery(params, callback) {
 
 function getGallerySnapshots(params, callback) {
 	var out = []
-	console.log(params);
-
 	var timestamp = parseInt(params.oldestTime);
-
 	var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
 		"AND created < FROM_UNIXTIME("+timestamp+")";
 
@@ -140,11 +137,16 @@ function getGallerySnapshots(params, callback) {
 	});
 }
 
-function getGalleryRooms(callback) {
+function getGalleryRooms(params, callback) {
 	var out = []
+	var timestamp = parseInt(params.oldestTime);
+	var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
+		"AND created < FROM_UNIXTIME("+timestamp+")";
+
 	db.query([
 		"SELECT * FROM room",
 		"WHERE is_private = '0'",
+		dateFilter,
 		"ORDER BY modified DESC",
 		"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
 	].join("\n"), function(results, fields, error) {
@@ -162,7 +164,8 @@ function getGalleryRooms(callback) {
 			out.push({ 
 				row: row, 
 				nUsers: nUsers,
-				ago: agoStr
+				ago: agoStr,
+				unixtime: new Date(row.created).getTime() / 1000
 			});	
 		});
 
