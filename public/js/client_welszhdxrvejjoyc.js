@@ -91,7 +91,7 @@ function GalleryUI() {
 // MODALS ///////////////////////////////////////////////////////////////////////////////
 
 function RoomModal(roomIDIn) {
-	var isSnapshot = false;
+	var snapshotID = null;
 	var roomID = roomIDIn;
 	function init() {
 		console.log("RoomModal()");
@@ -105,8 +105,8 @@ function RoomModal(roomIDIn) {
 		var snapshotButton = $("#create_snapshot_room");
 		if (snapshotButton.length == 1) {
 			snapshotButton.click(function() {
-				setTitle("Edit this in a new room");
-				show(true);
+				setTitle("Edit snapshot in a new room");
+				show("!snapshotID!");
 			});
 		}
 	}
@@ -186,11 +186,15 @@ function RoomModal(roomIDIn) {
 		// console.log(options);
 	}
 
-	function show(isSnapshotIn) {
-		
-		isSnapshot = isSnapshotIn;
+	function show(snapshotIDIn) {
+		if (typeof(snapshotIDIn) !== "undefined") {
+			snapshotID = snapshotIDIn;
+			console.log("SHIT")
+		} else {
+			snapshotID = null;
+		}
 
-		if (isSnapshot) { // if snapshot, we must pass the name through
+		if (snapshotID) { // if snapshot, we must pass the name through
 			var el = $("#snapshot_title");
 			var txt = el.text();
 
@@ -201,7 +205,8 @@ function RoomModal(roomIDIn) {
 			$("#room_name_input").val(txt);
 			$("#room_name_input").select();
 		} else {
-			isSnapshot = false;
+			$("#room_name_input").val("An unnamed room");
+			$("#room_name_input").select();
 		}
 		$("#room_dialog").dialog("open");
 	}
