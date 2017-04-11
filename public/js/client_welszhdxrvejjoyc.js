@@ -91,7 +91,7 @@ function GalleryUI() {
 // MODALS ///////////////////////////////////////////////////////////////////////////////
 
 function RoomModal(roomIDIn) {
-
+	var isSnapshot = false;
 	var roomID = roomIDIn;
 	function init() {
 		console.log("RoomModal()");
@@ -106,7 +106,7 @@ function RoomModal(roomIDIn) {
 		if (snapshotButton.length == 1) {
 			snapshotButton.click(function() {
 				setTitle("Edit this in a new room");
-				show();
+				show(true);
 			});
 		}
 	}
@@ -186,9 +186,12 @@ function RoomModal(roomIDIn) {
 		// console.log(options);
 	}
 
-	function show(rename) {
-		var el = $("#snapshot_title");
-		if (el.length == 1) {
+	function show(isSnapshotIn) {
+		
+		isSnapshot = isSnapshotIn;
+
+		if (isSnapshot) { // if snapshot, we must pass the name through
+			var el = $("#snapshot_title");
 			var txt = el.text();
 
 			// TODO load from settings file - must pass from server to client
@@ -197,6 +200,8 @@ function RoomModal(roomIDIn) {
 			}
 			$("#room_name_input").val(txt);
 			$("#room_name_input").select();
+		} else {
+			isSnapshot = false;
 		}
 		$("#room_dialog").dialog("open");
 	}
