@@ -3,6 +3,8 @@
 
 // GLOBAL ///////////////////////////////////////////////////////////////////////////////
 
+var roomModal;
+
 // Intialise the splash screen
 function initGlobal() {
 	// $("#create_drawing_btn").click(function() {
@@ -93,8 +95,24 @@ function RoomModal(roomIDIn) {
 	var roomID = roomIDIn;
 	function init() {
 		console.log("RoomModal()");
-		$("#create_drawing_btn").click(function() { show(); });
 		setup();
+		$("#create_drawing_btn").click(function() { 
+			setTitle("Create new room");
+			show(); 
+		});
+
+		// is there a snapshot button?
+		var snapshotButton = $("#create_snapshot_room");
+		if (snapshotButton.length == 1) {
+			snapshotButton.click(function() {
+				setTitle("Create room from snapshot");
+				show();
+			});
+		}
+	}
+
+	function setTitle(value) {
+		$("#room_dialog").prev().find(".ui-dialog-title").text(value);
 	}
 
 	function setup() {
