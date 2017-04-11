@@ -6,16 +6,12 @@
 var roomModal;
 
 // Intialise the splash screen
-function initGlobal() {
-	// $("#create_drawing_btn").click(function() {
-	// 	// "New drawing" button AJAX
-	// 	$.ajax({url: "/create_drawing"}).done(function(drawingID) {
-	// 		// Redirect to the drawing's page
-	// 		window.location.href = "/d/"+drawingID
-	// 	});
-	// });
+function initGlobal(settings) {
+	if (typeof(settings) === "undefined") {
+		settings = {};
+	}
 	NickModal();
-	RoomModal();
+	RoomModal(settings.snapshotID);
 	initGlobalResizeHandler();
 }
 
@@ -106,7 +102,7 @@ function RoomModal(roomIDIn) {
 		if (snapshotButton.length == 1) {
 			snapshotButton.click(function() {
 				setTitle("Edit snapshot in a new room");
-				show("!snapshotID!");
+				show(roomIDIn);
 			});
 		}
 	}
@@ -170,12 +166,17 @@ function RoomModal(roomIDIn) {
 		var visibility = $("input[type='radio']:checked.room_visibility").attr("id");
 		var isPrivate = (visibility == "room_visibility_private") ? true : false;
 
+		var params = {
+			name: roomName,
+			isPrivate: isPrivate
+		}
+		if (snapshotID != null) {
+			params["snapshotID"] = snapshotID;
+		}
+
 		$.ajax({
 			url: "/create_room", 
-			data: {
-				name: roomName,
-				isPrivate: isPrivate
-			}
+			data: params
 		}).done(function(roomID) {
 			// Redirect to the snapshot's page
 			window.location.href = "/r/"+roomID;
@@ -187,9 +188,10 @@ function RoomModal(roomIDIn) {
 	}
 
 	function show(snapshotIDIn) {
+		console.log("snapshotIDIn: ["+snapshotIDIn+"]");
+
 		if (typeof(snapshotIDIn) !== "undefined") {
 			snapshotID = snapshotIDIn;
-			console.log("SHIT")
 		} else {
 			snapshotID = null;
 		}

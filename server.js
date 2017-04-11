@@ -310,6 +310,15 @@ function createRoom(req, res) {
 	var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
 	var isPrivate = req.query.isPrivate === "true" ? "1" : "0";
 
+	// validate the snapshot ID
+	var snapshotID = (typeof(req.query.snapshotID) == "undefined") ? null :
+		req.query.snapshotID;
+
+	if (snapshotID && !validation.checkSnapshotID(snapshotID)) {
+		res.send("error");
+		return;
+	}
+
 	// 1. Find a unique drawing ID
 	makeDrawID(function(drawID) {
 		if (drawID == null) { // exceeded max tries
@@ -346,6 +355,13 @@ function createRoom(req, res) {
 				"created": nowMysql,
 				"modified": nowMysql
 			}
+
+			if (snapshotID) {
+				fields["snapshot_id"] = snapshotID;
+			}
+
+			console.log("FIELDS");
+			console.log(fields);
 
 			// create room in memory
 			var drawing = new Room(drawID, layer, fields);
