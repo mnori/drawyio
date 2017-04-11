@@ -356,7 +356,7 @@ function createRoom(req, res) {
 				"modified": nowMysql
 			}
 
-			if (snapshotID) {
+			if (snapshotID) { // an optional field - originating snapshot
 				fields["snapshot_id"] = snapshotID;
 			}
 
@@ -580,6 +580,7 @@ function Room(idIn, startLayer, fields, fromDB) {
 			this.created = new Date(); 
 			this.modified = new Date();
 		}
+		this.snapshotID = (fields.snapshot_id == null) ? null : fields.snapshot_id;
 		this.isPrivate = (fields.is_private == "1") ? true : false;
 
 		// add the first layer, bypass the addLayer since it updates modified flags
@@ -670,11 +671,13 @@ function Room(idIn, startLayer, fields, fromDB) {
 			if (self.isModified) { // save modified images
 				saveImage(self.id, buffer, function(err) { // save image file to disk
 					// insert or update the room in the database
+					var snapSql = (self.snapshotID == null)
+						? "NULL" : db.esc(self.snapshotID)
 					db.query([
 						"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
 						"VALUES (",
 						"	"+db.esc(self.id)+",", // id
-						"	NULL,", // snapshot_id
+						"	"+snapSql+",", // snapshot_id
 						"	"+db.esc(self.name)+",", // name
 						"	"+(self.isPrivate ? "1" : "0")+",", // is_private
 						"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
