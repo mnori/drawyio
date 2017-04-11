@@ -105,7 +105,7 @@ function RoomModal(roomIDIn) {
 		var snapshotButton = $("#create_snapshot_room");
 		if (snapshotButton.length == 1) {
 			snapshotButton.click(function() {
-				setTitle("Create room from snapshot");
+				setTitle("Edit this in a new room");
 				show();
 			});
 		}
@@ -187,6 +187,17 @@ function RoomModal(roomIDIn) {
 	}
 
 	function show(rename) {
+		var el = $("#snapshot_title");
+		if (el.length == 1) {
+			var txt = el.text();
+
+			// TODO load from settings file - must pass from server to client
+			if (txt == "An unnamed snapshot") {
+				txt = "An unnamed room";
+			}
+			$("#room_name_input").val(txt);
+			$("#room_name_input").select();
+		}
 		$("#room_dialog").dialog("open");
 	}
 
