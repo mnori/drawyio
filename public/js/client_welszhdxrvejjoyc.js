@@ -41,20 +41,19 @@ function GalleryUI(type) {
 			// Fetch gallery data using ajax
 			var value = $(this).attr("id");
 			var type = (value == "galleries_snapshots") ? "snapshot" : "room";
-			var titleBit = type == "snapshot" ? "Snapshots" : "Rooms";
-
+			var title = type == "snapshot" ? "Snapshots" : "Rooms";
+			title = "DrawIO - "+title;
 			// update the browser URL
+			// TODO - apply this thing across the entire site one day
 			window.history.pushState(
-				"new type", "DrawyIO - "+titleBit, "/gallery/"+type+"s");
+				"new type", title, "/gallery/"+type+"s");
+			document.title = title;
 
 			$.ajax({
 				url: "/ajax/gallery/"+type+"s", 
 			}).done(function(html) {
 				$("#gallery").html(html);
 			});
-
-			// Update the URL
-			// window.history.pushState(“object or string”, “Title”, “/new-url”);
 		})
 
 		// Load older entries

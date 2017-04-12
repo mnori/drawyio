@@ -75,12 +75,13 @@ function configureRoutes(app) {
 	app.get("/gallery/:type", function(req, res) {
 		console
 		var galType = (req.params.type == "rooms") ? "room" : "snapshot";
-		console.log(galType);
+		var galTxt = (galType == "room") ? "Rooms" : "Snapshots";
 		getGallery({"type": galType}, function(entries) {
 			res.render("galleries.html", { 
 				settings: settings,
 				entries: entries,
-				type: galType
+				type: galType,
+				titleTxt: galTxt
 			});
 		});
 	});
