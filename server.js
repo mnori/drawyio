@@ -72,19 +72,23 @@ function configureRoutes(app) {
 	}); 
 
 	// Galleries page
-	app.get("/galleries", function(req, res) { 
-		getGallery({"type": "snapshot"}, function(entries) {
+	app.get("/galleries/:type", function(req, res) {
+		var galType = (req.params.type == "room") ? "room" : "snapshot";
+		console.log(galType);
+		getGallery({"type": galType}, function(entries) {
 			res.render("galleries.html", { 
 				settings: settings,
-				entries: entries
+				entries: entries,
+				type: galType
 			});
 		});
 	});
 
 	// Galleries AJAX - can switch between rooms or snapshots
-	app.get("/gallery", function(req, res) { 
+	app.get("/gallery/:type", function(req, res) { 
+		var galType = (req.params.type == "room") ? "room" : "snapshot";
+		req.query.type = galType;
 		getGallery(req.query, function(entries) {
-			var galType = (req.query.type == "room") ? "room" : "snapshot";
 			res.render("gallery_"+req.query.type+"s.html", { 
 				settings: settings,
 				entries: entries
