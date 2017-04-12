@@ -305,6 +305,7 @@ function sendSnapshotImage(req, res) {
 }
 
 // Create a blank canvas image to draw on
+// Alternatively, create a room from a snapshot
 function createRoom(req, res) {
 
 	var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
@@ -327,24 +328,11 @@ function createRoom(req, res) {
 			return;
 		}
 
-		// 2. Set up the drawing
-		// Create empty image
-		var params = settings.DRAWING_PARAMS;
-		var canvas = Buffer.alloc(
-			params.width * params.height * params.channels, 
-			params.rgbaPixel
-		);
-
-		// Specify that it's a PNG
-		var png = sharp(canvas, {raw: {
-			width: params.width, 
-			height: params.height, 
-			channels: params.channels
-		}}).png();
-
-		// Convert to buffer, store the buffer, send unique drawing ID to client
-		// Sends a base64 encoded string
-		png.toBuffer().then(function(buffer) {
+		var bufferToRoom = function(buffer) {
+			if (buffer == null) {
+				console.log("Failed to create drawing from snapshot");
+				return;
+			}
 			var layer = bufferToLayer(drawID, buffer);
 
 			// create a dummy mysql row to initialise the object
@@ -368,7 +356,44 @@ function createRoom(req, res) {
 
 			// respond with drawing ID
 			res.send(drawID);
-		});
+		}
+
+		if (!snapshotID) {
+			getEmptyBuffer(bufferToRoom);
+		} else {
+			getBufferFromSnapshot(snapshotID, bufferToRoom);
+		}
+	});
+}
+
+function getEmptyBuffer(callback) {
+	// 2. Set up the drawing
+	// Create empty image
+	var params = settings.DRAWING_PARAMS;
+	var canvas = Buffer.alloc(
+		params.width * params.height * params.channels, 
+		params.rgbaPixel
+	);
+
+	// Specify that it's a PNG
+	var png = sharp(canvas, {raw: {
+		width: params.width, 
+		height: params.height, 
+		channels: params.channels
+	}}).png();
+
+	// Convert to buffer, store the buffer, send unique drawing ID to client
+	// Sends a base64 encoded string
+	png.toBuffer().then(callback);
+}
+
+// Try to load a drawing from disk
+function getBufferFromSnapshot(snapshotID, callback) {
+	// must sanitise the drawID
+	var inFilepath = settings.SNAPSHOTS_DIR+"/"+snapshotID+".png"
+	sharp(inFilepath).png().toBuffer().then(callback).catch(function(err) {
+		console.log("Warning - getBufferFromSnapshot failed with "+drawID+"!")
+		callback(null);
 	});
 }
 
@@ -548,9 +573,9 @@ function saveImage(drawID, data, callback) {
 }
 
 // Stores the data for a drawing
-function Room(idIn, startLayer, fields, fromDB) {
-	this.init = function(idIn, startLayer, fields, fromDB) {
-		var fromDB = (fromDB) ? true : false;
+function Room(idIn, startLayer, fields, isModified) {
+	this.init = function(idIn, startLayer, fields, isModified) {
+		var isModified = (isModified) ? true : false;
 		this.id = idIn;
 		this.name = fields.name;
 		this.layers = new AssocArray();
@@ -568,7 +593,7 @@ function Room(idIn, startLayer, fields, fromDB) {
 		// Keeps going up, even after baking the image into a new single layer
 		this.nLayers = 0;
 
-		if (fromDB) {
+		if (isModified) {
 			this.emptyImage = false;
 			this.created = new Date(fields.created);
 			this.modified = new Date(fields.modified);
@@ -871,7 +896,7 @@ function Room(idIn, startLayer, fields, fromDB) {
 		var self = this;
 		flattenRecursive(self, baseBuf, 0);
 	}
-	this.init(idIn, startLayer, fields, fromDB);
+	this.init(idIn, startLayer, fields, isModified);
 }
 
 // Define a nice java-like associative array wrapper with cleaner access than plain JS.
