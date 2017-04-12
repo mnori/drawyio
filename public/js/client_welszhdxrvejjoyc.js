@@ -14,7 +14,6 @@ function initGlobal(settings) {
 	RoomModal(settings.snapshotID);
 	initGlobalResizeHandler();
 	errorModal = ErrorModal();
-	showError("Hello world");
 }
 
 function initGlobalResizeHandler() {
@@ -139,6 +138,14 @@ function ErrorModal() {
 	return this;
 }
 
+function processError(response) {
+	if (response["error"]) {
+		showError(response["error"]);
+		return true;
+	}
+	return false;
+}
+
 function showError(errorMessageIn) {
 	errorModal.show(errorMessageIn);
 }
@@ -157,7 +164,7 @@ function RoomModal(roomIDIn) {
 		var snapshotButton = $("#create_snapshot_room");
 		if (snapshotButton.length == 1) {
 			snapshotButton.click(function() {
-				setTitle("Edit snapshot in a new room");
+				setTitle("Create new room from image");
 				show(roomIDIn);
 			});
 		}
@@ -343,9 +350,11 @@ function SnapshotModal(roomIDIn) {
 				name: snapshotName,
 				isPrivate: isPrivate
 			}
-		}).done(function(snapshotID) {
-			// Redirect to the snapshot's page
-			window.location.href = "/s/"+snapshotID;
+		}).done(function(response) {
+			if (!processError(response)) {
+				// Redirect to the snapshot's page
+				window.location.href = "/s/"+response;
+			}
 		});
 
 		// var options = $(".modal_radio").checkboxradio("option");

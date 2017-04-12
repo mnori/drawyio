@@ -406,7 +406,8 @@ function getBufferFromSnapshot(snapshotID, callback) {
 function createSnapshot(req, res) {
 	console.log("createSnapshot() invoked");
 	var roomID = req.query.roomID;
-	if (!validation.checkRoomID(roomID)) {
+	if (!validation.checkRoomID(roomID)) { 
+		console.log("Validation failed");
 		req.send("error");
 		return;
 	}
@@ -414,10 +415,12 @@ function createSnapshot(req, res) {
 	var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
 	var isPrivate = req.query.isPrivate === "true" ? "1" : "0";
 
+	var errorStr = "Cannot create snapshot because the image has not yet been edited.";
+
 	// get the room
 	getRoom(roomID, function(room) {
 		if (room == null) {
-			req.send("error");
+			res.json({"error": errorStr});
 			return;
 		}
 
@@ -446,7 +449,7 @@ function createSnapshot(req, res) {
 							// Error occured
 							// Due to missing room ID
 							// Drawing probably hasn't been saved yet
-							res.send("error");
+							res.json({"error": errorStr});
 
 						} else {
 							res.send(snapID);
