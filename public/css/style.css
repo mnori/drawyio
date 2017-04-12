@@ -641,7 +641,7 @@ input::selection {
 
 #disconnected_indicator {
 	position: absolute;
-	top: 0px;
+	top: 50px;
 	left: 0px;
 	background-color: rgba(0, 0, 0, 0.5);
 	z-index: 2000000019;
