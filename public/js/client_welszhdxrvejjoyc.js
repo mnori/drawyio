@@ -25,10 +25,16 @@ function initGlobalResizeHandler() {
 	})
 }
 
-function GalleryUI() {
-	var init = function() {
+function GalleryUI(type) {
+	var init = function(type) {
 		$(".galleries_type").checkboxradio();
-		$(".galleries_type:first").attr("checked", "checked");
+
+		if (type == "room") {
+			$("#galleries_rooms").attr("checked", "checked");
+		} else {
+			$("#galleries_snapshots").attr("checked", "checked");
+		}
+		
 		$(".galleries_type").checkboxradio("refresh");				
 		$(".galleries_type").change(function() {
 
@@ -36,13 +42,13 @@ function GalleryUI() {
 			var value = $(this).attr("id");
 			var type = (value == "galleries_snapshots") ? "snapshot" : "room";
 			$.ajax({
-				url: "/gallery", 
-				data: {type: type}
+				url: "/ajax/gallery/"+type+"s", 
 			}).done(function(html) {
 				$("#gallery").html(html);
 			});
 		})
 
+		// Load older entries
 		$("#gallery_more").click(function() {
 
 			// Fetch more gallery data using ajax
@@ -51,13 +57,10 @@ function GalleryUI() {
 			var oldest = findOldestUnixtime();
 
 			var data = {
-				type: type,
 				oldestTime: ""+oldest
 			}
-			console.log(data);
-
 			$.ajax({
-				url: "/gallery", 
+				url: "/ajax/gallery/"+type+"s", 
 				data: data
 			}).done(function(html) {
 				if (html.trim() === "") {
@@ -81,7 +84,7 @@ function GalleryUI() {
 		return oldest;
 	}
 
-	init();
+	init(type);
 }
 
 // MODALS ///////////////////////////////////////////////////////////////////////////////

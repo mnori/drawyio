@@ -72,8 +72,9 @@ function configureRoutes(app) {
 	}); 
 
 	// Galleries page
-	app.get("/galleries/:type", function(req, res) {
-		var galType = (req.params.type == "room") ? "room" : "snapshot";
+	app.get("/gallery/:type", function(req, res) {
+		console
+		var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 		console.log(galType);
 		getGallery({"type": galType}, function(entries) {
 			res.render("galleries.html", { 
@@ -85,8 +86,8 @@ function configureRoutes(app) {
 	});
 
 	// Galleries AJAX - can switch between rooms or snapshots
-	app.get("/gallery/:type", function(req, res) { 
-		var galType = (req.params.type == "room") ? "room" : "snapshot";
+	app.get("/ajax/gallery/:type", function(req, res) { 
+		var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 		req.query.type = galType;
 		getGallery(req.query, function(entries) {
 			res.render("gallery_"+req.query.type+"s.html", { 
