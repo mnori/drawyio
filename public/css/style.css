@@ -29,6 +29,15 @@ body {
 	user-select: none;
 }
 
+.info {
+	background-color: #eee;
+	margin-bottom: 12px;
+	font-size: 30px;
+	padding: 40px;
+	color: #666;
+	text-align: center;
+}
+
 .fixed_width {
 	width: 873px;
 }
@@ -115,8 +124,8 @@ a.logo:hover, a.logo:active {
 h1 {
 	font-weight: normal;
 	margin-top: 0px;
-	margin-bottom: 20px;
-	font-size: 30px;
+	margin-bottom: 12px;
+	font-size: 26px;
 }
 
 #drawing_form {
