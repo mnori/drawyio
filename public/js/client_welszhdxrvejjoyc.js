@@ -3,7 +3,7 @@
 
 // GLOBAL ///////////////////////////////////////////////////////////////////////////////
 
-var roomModal;
+var errorModal;
 
 // Intialise the splash screen
 function initGlobal(settings) {
@@ -13,6 +13,8 @@ function initGlobal(settings) {
 	NickModal();
 	RoomModal(settings.snapshotID);
 	initGlobalResizeHandler();
+	errorModal = ErrorModal();
+	showError("Hello world");
 }
 
 function initGlobalResizeHandler() {
@@ -97,11 +99,54 @@ function GalleryUI(type) {
 
 // MODALS ///////////////////////////////////////////////////////////////////////////////
 
+function ErrorModal() {
+	var snapshotID = null;
+	function init() {
+		setup();
+	}
+
+	function setup() {
+		$("#error_dialog").dialog({
+			resizable: false,
+			// height: 582,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				console.log("open() invoked");
+				$(".ui-dialog-titlebar-close").hide();
+				setModalCss();
+		    }
+		});
+		// Set up OK button event handler
+		$("#error_button").click(function() {
+			$("#error_dialog").dialog("close");
+		});
+	}
+
+	this.show = function(errorMessageIn) {
+		console.log("show() invoked");
+		errorMessage = "Unknown error."
+		if (errorMessageIn) {
+			errorMessage = errorMessageIn;
+		}
+		$("#error_message").text(errorMessage)
+		$("#error_dialog").dialog("open");
+	}
+	init();
+	return this;
+}
+
+function showError(errorMessageIn) {
+	errorModal.show(errorMessageIn);
+}
+
 function RoomModal(roomIDIn) {
 	var snapshotID = null;
 	var roomID = roomIDIn;
 	function init() {
-		console.log("RoomModal()");
 		setup();
 		$("#create_drawing_btn").click(function() { 
 			setTitle("Create new room");
@@ -125,7 +170,7 @@ function RoomModal(roomIDIn) {
 	function setup() {
 		$("#room_dialog").dialog({
 			resizable: false,
-			height: 382,
+			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -239,7 +284,7 @@ function SnapshotModal(roomIDIn) {
 	function setup() {
 		$("#snapshot_dialog").dialog({
 			resizable: false,
-			height: 382,
+			// height: 382,
 			width: 400,
 			modal: true,
 			draggable: false,
