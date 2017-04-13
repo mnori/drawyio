@@ -1,6 +1,8 @@
 // The non-minified draw.io front end client
 // (C) 2017 drawy.io
 
+// TODO split this into smaller files
+
 // GLOBAL ///////////////////////////////////////////////////////////////////////////////
 
 var errorModal;
@@ -14,6 +16,7 @@ function initGlobal(settings) {
 	RoomModal(settings.snapshotID);
 	initGlobalResizeHandler();
 	errorModal = ErrorModal();
+	GalleriesDialog();
 }
 
 function initGlobalResizeHandler() {
@@ -98,8 +101,44 @@ function GalleryUI(type) {
 
 // MODALS ///////////////////////////////////////////////////////////////////////////////
 
+function GalleriesDialog() {
+	function init() {
+		setup();
+	}
+
+	function setup() {
+		$("#galleries_dialog").dialog({
+			resizable: false,
+			// height: 582,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				console.log("open() invoked");
+				$(".ui-dialog-titlebar-close").hide();
+				setModalCss();
+		    }
+		});
+		// Set up OK button event handler
+		$("#galleries_cancel").click(function() {
+			$("#galleries_dialog").dialog("close");
+		});
+		$("#galleries_ok").click(function() {
+			window.location.href = "/gallery/rooms";
+		});
+		$("#galleries_btn").click(show);
+	}
+
+	function show() {
+		$("#galleries_dialog").dialog("open");
+	}
+	init();
+	return this;
+}
+
 function ErrorModal() {
-	var snapshotID = null;
 	function init() {
 		setup();
 	}
@@ -284,7 +323,7 @@ function SnapshotModal(roomIDIn) {
 	var roomID = roomIDIn;
 	function init() {
 		console.log("SnapshotModal()");
-		$("#snapshot").click(function() { show(); });
+		$("#snapshot").click(show);
 		setup();
 	}
 
