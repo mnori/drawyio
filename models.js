@@ -24,8 +24,8 @@ function Snapshot(snapID, buffer, fields) {
 }
 
 // Stores the data for a drawing
-function Room(idIn, startLayer, fields, isModified, rooms, io) {
-	this.init = function(idIn, startLayer, fields, isModified, rooms, io) {
+function Room(idIn, startLayer, fields, isModified, app) {
+	this.init = function(idIn, startLayer, fields, isModified, app) {
 		var isModified = (isModified) ? true : false;
 		this.id = idIn;
 		this.name = fields.name;
@@ -33,8 +33,7 @@ function Room(idIn, startLayer, fields, isModified, rooms, io) {
 		this.socketNS = null; // contains all the sockets attached to this drawing
 		this.isFlattening = false;
 		this.flattenTimeout = null;
-		this.rooms = rooms;
-		this.io = io;
+		this.app = app;
 
 		// whether the image has been modified since loading from disk
 		this.isModified = false; 
@@ -66,14 +65,14 @@ function Room(idIn, startLayer, fields, isModified, rooms, io) {
 		this.layers.set(this.nLayers, startLayer);
 
 		this.isModified = false; // intial image is not modified
-		this.rooms.set(this.id, this);
+		this.app.rooms.set(this.id, this);
 		this.configureRoomNS();
 		console.log("["+rooms.getLength()+"] total, drawing created");
 	}
 
 	this.destroy = function() {
 		// remove the drawing from the array storage
-		this.rooms.remove(this.id)
+		this.app.rooms.remove(this.id)
 
 		// we must properly delete our socket namespace, otherwise we end up
 		// with a disastrous memory leak problem
@@ -91,10 +90,10 @@ function Room(idIn, startLayer, fields, isModified, rooms, io) {
 		this.socketNS.removeAllListeners();
 
 		// finally, remove the socket namespace
-		delete io.nsps["/drawing_socket_"+this.id];
+		delete this.app.io.nsps["/drawing_socket_"+this.id];
 
 		// debug
-		console.log("["+this.rooms.getLength()+"] total, drawing destroyed");
+		console.log("["+this.app.rooms.getLength()+"] total, drawing destroyed");
 	}
 
 	// Broadcast all drawing data to all sockets
@@ -107,7 +106,7 @@ function Room(idIn, startLayer, fields, isModified, rooms, io) {
 	this.configureRoomNS = function() {
 
 		// set up the drawing's socket namespace
-		var drawingNS = io.of("/drawing_socket_"+this.id);
+		var drawingNS = this.app.io.of("/drawing_socket_"+this.id);
 		this.addSocketNS(drawingNS);
 
 		// set up the event handlers for each endpoint
@@ -349,7 +348,7 @@ function Room(idIn, startLayer, fields, isModified, rooms, io) {
 		var self = this;
 		flattenRecursive(self, baseBuf, 0);
 	}
-	this.init(idIn, startLayer, fields, isModified, rooms, io);
+	this.init(idIn, startLayer, fields, isModified, app);
 }
 
 init();

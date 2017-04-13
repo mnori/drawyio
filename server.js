@@ -15,7 +15,7 @@ function App() {
 	const expressApp = express();
 	const ta = require('time-ago')(); // set up time-ago human readable dates library
 	const server = require("http").Server(expressApp) // set up socket.io
-	const io = require("socket.io")(server)    //
+	this.io = require("socket.io")(server)
 	const settings = require("./settings") // Our settings
 	const validation = require("./validation") // Validation tools
 	const database = require("./database") // Our db wrexpressApper
@@ -23,21 +23,22 @@ function App() {
 	const utils = require("./utils") // Misc utilities
 
 	// Associative array containing [alphanumeric code] => [drawing object]
-	var rooms;
+	this.rooms = null;
 	var db = null; // filled later
+	var self = this;
 
-	// Set up the expressApp
-	function start() {
+	// Set up the app
+	this.start = function() {
 		setupDebug();
+		process.on('unhandledRejection', function(err, promise) {
+			console.error('Unhandled rejection (promise: ', promise, ', reason: ', err, ').');
+		});
 		db = new database.DB(settings.DB_CONNECT_PARAMS);
 		db.query("USE "+settings.DB_NAME+";");
-		rooms = new utils.AssocArray();
+		this.rooms = new utils.AssocArray();
 		nunjucks.configure("templates", {express: expressApp});
 		configureRoutes(expressApp);
 		cleanup(settings);
-	}
-
-	function listen() {
 		server.listen(settings.PORT);
 		console.log("Running on http://localhost:" + settings.PORT);
 	}
@@ -169,7 +170,7 @@ function App() {
 
 				// Generate the row of data for the template
 				var nUsers = 0;
-				var roomMemory = rooms.get(row.id);
+				var roomMemory = self.rooms.get(row.id);
 				if (roomMemory != null) {
 					nUsers = roomMemory.getNSockets();
 				}
@@ -365,7 +366,7 @@ function App() {
 				console.log(fields);
 
 				// create room in memory
-				var drawing = new models.Room(drawID, layer, fields, false, rooms, io);
+				var drawing = new models.Room(drawID, layer, fields, false, app);
 
 				// respond with drawing ID
 				res.send(drawID);
@@ -544,7 +545,7 @@ function App() {
 	}
 
 	function getRoom(drawID, loadCallback) {
-		var drawing = rooms.get(drawID);	
+		var drawing = self.rooms.get(drawID);	
 		if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
 			return drawing;
 		} else if (typeof(loadCallback) !== "undefined") {
@@ -574,7 +575,7 @@ function App() {
 		var inFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
 		sharp(inFilepath).png().toBuffer().then(function(buffer) {
 			var layer = bufferToLayer(drawID, buffer);
-			var drawing = new models.Room(drawID, layer, fields, true, rooms, io);
+			var drawing = new models.Room(drawID, layer, fields, true, app);
 			callback(drawing);				
 		}).catch(function(err) {
 			console.log("Warning - createRoomFromImage failed with "+drawID+"!")
@@ -617,7 +618,7 @@ function App() {
 	// Checks rooms in memory and deletes old stuff that has reached an expire time
 	function cleanup() {
 		setTimeout(function() {
-			var entries = rooms.getValues();
+			var entries = self.rooms.getValues();
 			// Sort with newest at the top
 			entries.sort(function(a, b) {
 				var diff = b.modified.getTime() - a.modified.getTime();
