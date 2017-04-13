@@ -124,9 +124,9 @@ h1 {
 /*.star_1, .star_2, .star_3 {
 	color: #999;
 }*/
-.star_1 { font-size: 20px; }
-.star_2 { font-size: 16px; }
-.star_3 { font-size: 12px; }
+.star_1 { font-size: 22px; }
+.star_2 { font-size: 18px; }
+.star_3 { font-size: 14px; }
 
 #drawing_form {
 	background-color: #eee;
