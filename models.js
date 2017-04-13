@@ -10,20 +10,7 @@ function init() {
 	};
 }
 
-// Stores a permanent snapshot of a drawing image
-function Snapshot(snapID, buffer, fields) {
-	this.init = function(snapID, buffer, fields) {
-		this.id = snapID;
-		this.buf = buffer;
-		this.roomID = fields["room_id"]
-		this.name = fields["name"]
-		this.isPrivate = fields["is_private"] == 0 ? false : true;
-		this.created = new Date(fields["created"]);
-	}
-	this.init(snapID, buffer, fields);
-}
-
-// Stores the data for a drawing
+// Stores the data for a room
 function Room(idIn, startLayer, fields, isModified, app) {
 	var self = this;
 	this.init = function(idIn, startLayer, fields, isModified, app) {
@@ -347,6 +334,19 @@ function Room(idIn, startLayer, fields, isModified, app) {
 		flattenRecursive(baseBuf, 0);
 	}
 	this.init(idIn, startLayer, fields, isModified, app);
+}
+
+// Stores a permanent snapshot of a drawing image
+function Snapshot(snapID, buffer, fields) {
+	this.init = function(snapID, buffer, fields) {
+		this.id = snapID;
+		this.buf = buffer;
+		this.roomID = fields["room_id"]
+		this.name = fields["name"]
+		this.isPrivate = fields["is_private"] == 0 ? false : true;
+		this.created = new Date(fields["created"]);
+	}
+	this.init(snapID, buffer, fields);
 }
 
 init();

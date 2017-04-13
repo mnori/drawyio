@@ -244,8 +244,6 @@ function App() {
 		} else {
 			getRoom(roomID, function(room) {
 				if (room != null) {
-					console.log(room.name)
-					console.log(settings.DEFAULT_ROOM_NAME)
 					var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
 						room.name : settings.DEFAULT_SNAPSHOT_NAME;
 					res.render("room.html", { 
@@ -283,7 +281,6 @@ function App() {
 	}
 
 	function renderSnapshotPage(req, res) {
-		console.log("renderSnapshotPage() invoked");
 		var snapID = req.params.id.replace(".png", "");
 		if (!validation.checkSnapshotID(snapID)) { // check code is valid
 			send404(res);
@@ -362,9 +359,6 @@ function App() {
 					fields["snapshot_id"] = snapshotID;
 				}
 
-				console.log("FIELDS");
-				console.log(fields);
-
 				// create room in memory
 				var drawing = new models.Room(drawID, layer, fields, false, app);
 
@@ -412,7 +406,6 @@ function App() {
 	}
 
 	function createSnapshot(req, res) {
-		console.log("createSnapshot() invoked");
 		var roomID = req.query.roomID;
 		if (!validation.checkRoomID(roomID)) { 
 			console.log("Validation failed");
@@ -441,32 +434,27 @@ function App() {
 				// copy file into a snapshot file
 				copyFile(sourceFilepath, destFilepath, function() {
 					// now insert the entry into the database
-					try {
-						db.query([
-							"INSERT INTO snapshot (id, room_id, name, is_private, created)",
-							"VALUES (",
-							"	'"+snapID+"',",
-							"	'"+roomID+"',",
-							"	"+db.esc(name)+",",
-							"	'"+isPrivate+"',",
-							"	NOW()",
-							")",
-						].join("\n"), function(results, fields, error) {
-							// send response to client
-							if (error) {
-								// Error occured
-								// Due to missing room ID
-								// Drawing probably hasn't been saved yet
-								res.json({"error": errorStr});
+					db.query([
+						"INSERT INTO snapshot (id, room_id, name, is_private, created)",
+						"VALUES (",
+						"	'"+snapID+"',",
+						"	'"+roomID+"',",
+						"	"+db.esc(name)+",",
+						"	'"+isPrivate+"',",
+						"	NOW()",
+						")",
+					].join("\n"), function(results, fields, error) {
+						// send response to client
+						if (error) {
+							// Error occured
+							// Due to missing room ID
+							// Drawing probably hasn't been saved yet
+							res.json({"error": errorStr});
 
-							} else {
-								res.send(snapID);
-							}
-						})
-					} catch (ex) {
-						console.log("CAUGHT IT!");
-						console.log(ex);
-					}
+						} else {
+							res.send(snapID);
+						}
+					})
 				});
 			});
 		})
@@ -543,7 +531,6 @@ function App() {
 
 	// checks mysql database, then disk
 	function fetchRoom(drawID, loadCallback) {
-		console.log("fetchRoom() invoked");
 		db.query("SELECT * FROM room WHERE id="+db.esc(drawID), function(results, fields) {
 			if (results.length == 0) {
 				loadCallback(null);
@@ -633,7 +620,6 @@ function App() {
 	}
 
 	function getSnapshot(snapID, callback) {
-		console.log("getSnapshot()");
 		db.query("SELECT * FROM snapshot WHERE id="+db.esc(snapID), function(results, fields) {
 			if (results.length == 0) {
 				callback(null);
