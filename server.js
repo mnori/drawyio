@@ -21,6 +21,7 @@ function App() {
 	const database = require("./database") // Our db wrexpressApper
 	const models = require("./models") // Data classes
 	const utils = require("./utils") // Misc utilities
+	var cookieParser = require('cookie-parser')
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;
@@ -36,6 +37,10 @@ function App() {
 		self.db = db = new database.DB(settings.DB_CONNECT_PARAMS);
 		db.query("USE "+settings.DB_NAME+";");
 		this.rooms = new utils.AssocArray();
+
+		// setup the cookie system
+		configureSessionCookie();
+
 		nunjucks.configure("templates", {express: expressApp});
 		configureRoutes(expressApp);
 		cleanup(settings);
@@ -43,7 +48,29 @@ function App() {
 		console.log("Running on http://localhost:" + settings.PORT);
 	}
 
-	// Set up all the basic http endpoints
+	// Set up a cookie for session data
+	// Solution adapted from
+	// https://stackoverflow.com/questions/16209145/how-to-set-cookie-in-node-js-using-express-framework
+	function configureSessionCookie() {
+		expressApp.use(cookieParser());
+
+		// set a cookie
+		expressApp.use(function (req, res, next) {
+			// check if client sent cookie
+			var cookie = req.cookies.sessionID;
+			if (cookie === undefined) {
+				// var randomNumber=Math.random().toString();
+				// randomNumber=randomNumber.substring(2,randomNumber.length);
+				// res.cookie('cookieName',randomNumber, { maxAge: 900000, httpOnly: true });
+				console.log('Cookie does NOT exist');
+			} else {
+				console.log('Cookie exists', cookie);
+			} 
+			next(); // pass to next middleware
+		});
+	}
+
+	// Set up all URL endpoints
 	function configureRoutes(expressApp) {
 
 		// Tell node to serve static files from the "public" subdirectory
@@ -134,6 +161,10 @@ function App() {
 			"ORDER BY created DESC",
 			"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
 		].join("\n"), function(results, fields, error) {
+			if (!results) {
+				callback(out);
+				return;
+			}
 
 			// Arrange into template format
 			results.forEach(row => {
@@ -164,6 +195,11 @@ function App() {
 			"ORDER BY modified DESC",
 			"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
 		].join("\n"), function(results, fields, error) {
+
+			if (!results) {
+				callback(out);
+				return;
+			}
 
 			// Arrange into template format
 			results.forEach(row => {

@@ -22,6 +22,10 @@ var migrations = [
 			// provide both options?
 			// but will the db really get that big?
 
+			// TODO - in the future we should create a session_ip table with a list
+			// of all IP addresses associated with the session, this will help with 
+			// the bans
+
 			// create session table
 			db.querySync([
 				"CREATE TABLE session (",

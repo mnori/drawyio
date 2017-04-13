@@ -7,7 +7,7 @@
 
 var errorModal;
 
-// Intialise the splash screen
+// Set up the global JS that runs on all pages
 function initGlobal(settings) {
 	if (typeof(settings) === "undefined") {
 		settings = {};

@@ -16,6 +16,7 @@
     "http": "*",
     "time-ago": "*",
     "mysql": "*",
-    "synchronize": "*"
+    "synchronize": "*",
+    "cookie-parser": "*"
   }
 }
