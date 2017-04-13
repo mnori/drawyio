@@ -328,6 +328,7 @@ input {
 }
 
 .thumb_title, .thumb_title:link, .thumb_title:visited, .thumb_title:hover, .thumb_title:active  {
+	font-family: ubuntuBold;
 	width: 400px;
 	padding: 12px;
 	color: #ddd;

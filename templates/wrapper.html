@@ -52,7 +52,7 @@
                 <i class="fa fa-user-circle button_icon" aria-hidden="true"></i><span id="nick_indicator">Anonymous</span>
             </a>
             <a id="create_drawing_btn" class="button" href="javascript:void(0)">
-                <i class="fa fa-window-maximize button_icon" aria-hidden="true"></i>Create room
+                <i class="fa fa-users button_icon" aria-hidden="true"></i>Create room
             </a>
             <a id="galleries_btn" class="button" href="javascript:void(0)">
                 <i class="fa fa-th-large button_icon" aria-hidden="true"></i>Galleries
@@ -87,7 +87,7 @@
     <!-- Nickname dialog -->
     <div id="nick_dialog" class="modal_dialog" title="Welcome" style="display: none;">
         <p id="nick_message" class="modal_message">Enter a nickname to get started.</p>
-        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="20" />
+        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
         <a id="nick_button" class="button modal_button" href="javascript:void(0)">
             <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
         </a>

@@ -10,6 +10,7 @@ module.exports = {
 	ID_LEN: 16, // The length of the ID string for drawings
 	SNAPSHOT_ID_LEN: 16,
 	LAYER_CODE_LEN: 32, // Length of layer codes
+	SESSION_ID_LEN: 64, // Length of session IDs
 	MAX_LAYERS: 5, // Max number of layers to store before flattening the image
 
 	// After n ms since last edit, flatten the image
@@ -34,6 +35,7 @@ module.exports = {
 
 	ROOM_NAME_LEN: 50,
 	SNAPSHOT_NAME_LEN: 50,
+	USER_NAME_LEN: 20,
 
 	// Parameters for creating blank drawings
 	DRAWING_PARAMS: { 
