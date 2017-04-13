@@ -22,16 +22,27 @@ var migrations = [
 			// provide both options?
 			// but will the db really get that big?
 
-			// create user table, this is also the session table
+			// create session table
+			db.querySync([
+				"CREATE TABLE session (",
+				"	id CHAR("+settings.SESSION_ID_LEN+") NOT NULL,",
+				"	name VARCHAR("+settings.USER_NAME_LEN+") NOT NULL,",
+				"	last_ip VARCHAR(255) NOT NULL,",
+				"	last_active DATETIME NOT NULL,",
+				"	PRIMARY KEY (id)",
+				")"
+			].join("\n"));
+
+			// create table for registered users
 			db.querySync([
 				"CREATE TABLE user (",
 				"	id BIGINT NOT NULL AUTO_INCREMENT,",
-				"	session_id CHAR("+settings.SESSION_ID_LEN+")",
-				"	name VARCHAR("+settings.USER_NAME_LEN+")",
-				"	last_ip VARCHAR(256) NOT NULL",
-				"	last_active DATETIME NOT NULL",
-				"	password VARCHAR(256) NOT NULL" // stored as encrypted
-				"	PRIMARY KEY (id)",
+				"	name VARCHAR("+settings.USER_NAME_LEN+") NOT NULL,",
+				"	session_id VARCHAR("+settings.SESSION_ID_LEN+") NOT NULL,",
+				"	password VARCHAR("+settings.PASSWORD_HASH_LEN+") NOT NULL,",
+				"	salt VARCHAR("+settings.PASSWORD_HASH_LEN+") NOT NULL,",
+				"	PRIMARY KEY (id),",
+				"	FOREIGN KEY (session_id) REFERENCES session(id)",
 				")"
 			].join("\n"));
 
