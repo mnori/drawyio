@@ -39,8 +39,7 @@ function App() {
 		this.rooms = new utils.AssocArray();
 
 		// setup the cookie system
-		configureSessionCookie();
-
+		expressApp.use(cookieParser());
 		nunjucks.configure("templates", {express: expressApp});
 		configureRoutes(expressApp);
 		cleanup(settings);
@@ -48,26 +47,18 @@ function App() {
 		console.log("Running on http://localhost:" + settings.PORT);
 	}
 
-	// Set up a cookie for session data
-	// Solution adapted from
-	// https://stackoverflow.com/questions/16209145/how-to-set-cookie-in-node-js-using-express-framework
-	function configureSessionCookie() {
-		expressApp.use(cookieParser());
-
-		// set a cookie
-		expressApp.use(function (req, res, next) {
-			// check if client sent cookie
-			var cookie = req.cookies.sessionID;
-			if (cookie === undefined) {
-				// var randomNumber=Math.random().toString();
-				// randomNumber=randomNumber.substring(2,randomNumber.length);
-				// res.cookie('cookieName',randomNumber, { maxAge: 900000, httpOnly: true });
-				console.log('Cookie does NOT exist');
-			} else {
-				console.log('Cookie exists', cookie);
-			} 
-			next(); // pass to next middleware
-		});
+	function handleCookie(req, callback) {
+		// check if client sent cookie
+		var cookie = req.cookies.sessionID;
+		if (cookie === undefined) {
+			// var randomNumber=Math.random().toString();
+			// randomNumber=randomNumber.substring(2,randomNumber.length);
+			// res.cookie('cookieName',randomNumber, { maxAge: 900000, httpOnly: true });
+			console.log('Cookie does NOT exist');
+		} else {
+			console.log('Cookie exists', cookie);
+		} 
+		callback();
 	}
 
 	// Set up all URL endpoints
@@ -86,7 +77,7 @@ function App() {
 		expressApp.get("/r/:id", function(req, res) {
 			req.params.id.includes(".png") ? 
 				sendRoomImage(req, res) : 
-				renderRoomPage(req, res);
+				renderRoomPage(req, res);	
 		});
 
 		// Render snapshot page or image
@@ -98,10 +89,12 @@ function App() {
 
 		// The index page (will be replaced with something else soon)
 		expressApp.get("/", function(req, res) { 
-			getGallery({"type": "room"}, function(entries) {
-				res.render("index.html", { 
-					settings: settings,
-					entries: entries
+			handleCookie(req, function() {
+				getGallery({"type": "room"}, function(entries) {
+					res.render("index.html", { 
+						settings: settings,
+						entries: entries
+					});
 				});
 			});
 		}); 
@@ -111,12 +104,14 @@ function App() {
 			console
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
-			getGallery({"type": galType}, function(entries) {
-				res.render("galleries.html", { 
-					settings: settings,
-					entries: entries,
-					type: galType,
-					titleTxt: titleTxt
+			handleCookie(req, function() {
+				getGallery({"type": galType}, function(entries) {
+					res.render("galleries.html", { 
+						settings: settings,
+						entries: entries,
+						type: galType,
+						titleTxt: titleTxt
+					});
 				});
 			});
 		});
@@ -278,20 +273,22 @@ function App() {
 		if (!validation.checkRoomID(roomID)) { // check code is valid
 			send404(res);
 		} else {
-			getRoom(roomID, function(room) {
-				if (room != null) {
-					var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
-						room.name : settings.DEFAULT_SNAPSHOT_NAME;
-					res.render("room.html", { 
-						settings: settings,
-						room: room,
-						snapshotName: snapshotName,
-						width: settings.DRAWING_PARAMS.width,
-						height: settings.DRAWING_PARAMS.height
-					});	
-				} else {
-					send404(res);
-				}
+			handleCookie(req, function() {
+				getRoom(roomID, function(room) {
+					if (room != null) {
+						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
+							room.name : settings.DEFAULT_SNAPSHOT_NAME;
+						res.render("room.html", { 
+							settings: settings,
+							room: room,
+							snapshotName: snapshotName,
+							width: settings.DRAWING_PARAMS.width,
+							height: settings.DRAWING_PARAMS.height
+						});	
+					} else {
+						send404(res);
+					}
+				});
 			});
 		}
 	}
@@ -321,12 +318,14 @@ function App() {
 		if (!validation.checkSnapshotID(snapID)) { // check code is valid
 			send404(res);
 		} else {
-			getSnapshot(snapID, function(snapshot) {
-				if (snapshot != null) {
-					res.render("snapshot.html", { snapshot: snapshot, settings: settings });	
-				} else {
-					send404(res);
-				}
+			handleCookie(req, function() {
+				getSnapshot(snapID, function(snapshot) {
+					if (snapshot != null) {
+						res.render("snapshot.html", { snapshot: snapshot, settings: settings });	
+					} else {
+						send404(res);
+					}
+				});
 			});
 		}
 	}
