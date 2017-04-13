@@ -1,7 +1,8 @@
 // Misc utilities
 
-// Define a nice java-like associative array wrapper with cleaner access than plain JS.
 module.exports = {
+
+	// Define a nice java-like associative array wrapper with cleaner access than plain JS.
 	AssocArray: function() {
 		this.values = {};
 		this.get = function(key) {
@@ -11,9 +12,6 @@ module.exports = {
 			return null;
 		}
 		this.set = function(key, value) {
-			// if (this.get(key)) {
-			// 	console.log("Replacing existing layer!");
-			// }
 			this.values[key] = value;
 		}
 		this.getLength = function() {
@@ -35,5 +33,20 @@ module.exports = {
 		this.remove = function(key) {
 			delete this.values[key]
 		}
+	},
+
+	// Convert a base64 encoded PNG string into a Buffer object
+	base64ToBuffer: function(base64) {
+		var str = base64.replace("data:image/png;base64,", "");
+		return Buffer.from(str, 'base64')
+	},
+	// Create a random string, to be used as an ID code
+	randomString: function(length) {
+		var text = "";
+		var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+		for (var i = 0; i < length; i++) { 
+			text += charset.charAt(Math.floor(Math.random() * charset.length));
+		}
+		return text;
 	}
 };

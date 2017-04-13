@@ -1,7 +1,7 @@
 const utils = require("./utils") // Misc utilities
 const validation = require("./validation") // Validation tools
 
-// Data objects go here.
+// Data objects and their methods go here.
 
 function init() {
 	module.exports = {
@@ -25,6 +25,7 @@ function Snapshot(snapID, buffer, fields) {
 
 // Stores the data for a drawing
 function Room(idIn, startLayer, fields, isModified, app) {
+	var self = this;
 	this.init = function(idIn, startLayer, fields, isModified, app) {
 		var isModified = (isModified) ? true : false;
 		this.id = idIn;
@@ -65,14 +66,14 @@ function Room(idIn, startLayer, fields, isModified, app) {
 		this.layers.set(this.nLayers, startLayer);
 
 		this.isModified = false; // intial image is not modified
-		this.app.rooms.set(this.id, this);
+		self.app.rooms.set(this.id, this);
 		this.configureRoomNS();
-		console.log("["+rooms.getLength()+"] total, drawing created");
+		console.log("["+self.app.rooms.getLength()+"] total, drawing created");
 	}
 
 	this.destroy = function() {
 		// remove the drawing from the array storage
-		this.app.rooms.remove(this.id)
+		self.app.rooms.remove(this.id)
 
 		// we must properly delete our socket namespace, otherwise we end up
 		// with a disastrous memory leak problem
@@ -90,15 +91,14 @@ function Room(idIn, startLayer, fields, isModified, app) {
 		this.socketNS.removeAllListeners();
 
 		// finally, remove the socket namespace
-		delete this.app.io.nsps["/drawing_socket_"+this.id];
+		delete self.app.io.nsps["/drawing_socket_"+this.id];
 
 		// debug
-		console.log("["+this.app.rooms.getLength()+"] total, drawing destroyed");
+		console.log("["+self.app.rooms.getLength()+"] total, drawing destroyed");
 	}
 
 	// Broadcast all drawing data to all sockets
 	this.broadcast = function() {
-		var self = this;
 		this.socketNS.emit("update_drawing", self.getJson());
 	}
 
@@ -106,7 +106,7 @@ function Room(idIn, startLayer, fields, isModified, app) {
 	this.configureRoomNS = function() {
 
 		// set up the drawing's socket namespace
-		var drawingNS = this.app.io.of("/drawing_socket_"+this.id);
+		var drawingNS = self.app.io.of("/drawing_socket_"+this.id);
 		this.addSocketNS(drawingNS);
 
 		// set up the event handlers for each endpoint
@@ -122,16 +122,16 @@ function Room(idIn, startLayer, fields, isModified, app) {
 				) {
 					socket.emit("update_drawing", "error");
 				} else {
-					sendRoom(data, socket);	
+					self.app.sendRoom(data, socket);	
 				}
 			});
 
 			// Update drawing with mouse cursor info
 			// The server doesn't touch the tool - it just gets relayed to clients
-			socket.on("receive_tool", function(data) { receiveTool(data, socket); });
+			socket.on("receive_tool", function(data) { self.app.receiveTool(data, socket); });
 
 			// Receive new png draw data as base64 encoded string and add to the Room
-			socket.on("add_layer", function(data) { receiveLayer(data, socket); });
+			socket.on("add_layer", function(data) { self.app.receiveLayer(data, socket); });
 
 			// disconnect a socket
 			socket.on("disconnect", function() {
@@ -142,11 +142,11 @@ function Room(idIn, startLayer, fields, isModified, app) {
 	}
 
 	this.save = function() {
-		var self = this;
-		var baseBuf = base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
-		sharp(baseBuf).png().toBuffer().then(function(buffer) {
+		var db = self.app.db;
+		var baseBuf = utils.base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
+		self.app.sharp(baseBuf).png().toBuffer().then(function(buffer) {
 			if (self.isModified) { // save modified images
-				saveImage(self.id, buffer, function(err) { // save image file to disk
+				self.app.saveImage(self.id, buffer, function(err) { // save image file to disk
 					// insert or update the room in the database
 					var snapSql = (self.snapshotID == null)
 						? "NULL" : db.esc(self.snapshotID)
@@ -245,16 +245,15 @@ function Room(idIn, startLayer, fields, isModified, app) {
 			clearTimeout(this.flattenTimeout)
 			this.flattenTimeout = null;
 		}
-		if (this.getNStoredLayers() > settings.MAX_LAYERS) {
+		if (this.getNStoredLayers() > self.app.settings.MAX_LAYERS) {
 			// Max layers reached - always flatten at this point
 			this.flatten();
 		} else {
 			// Not reached max layers,  so set a rolling timout
-			var self = this;
 			this.flattenTimeout = setTimeout(function() {
 				// console.log("Flatten timeout triggered");
 				self.flatten();
-			}, settings.FLATTEN_TIMEOUT);
+			}, self.app.settings.FLATTEN_TIMEOUT);
 		}
 	}
 
@@ -275,7 +274,7 @@ function Room(idIn, startLayer, fields, isModified, app) {
 		// String codes of the component layers of the flatten
 		var componentCodes = []
 
-		function flattenRecursive(self, baseBuf, ind) {
+		function flattenRecursive(baseBuf, ind) {
 			var overlay = self.getUnmergedLayer(ind + 1); // overlay base 64 
 
 			// NOTE - sometimes an extra layer gets added during the end step.
@@ -288,20 +287,20 @@ function Room(idIn, startLayer, fields, isModified, app) {
 
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
-				var overlayBuf = base64ToBuffer(overlay.base64);
+				var overlayBuf = utils.base64ToBuffer(overlay.base64);
 				var overlayParams = {top: overlay.offsets.top,  left: overlay.offsets.left};
-				sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
+				self.app.sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
 					function(buffer) {
-						flattenRecursive(self, buffer, ++ind);
+						flattenRecursive(buffer, ++ind);
 					}
 				);
 
 			} else { // reached the end - no more layers to merge
 				// now we must convert the image to base 64 encoded string again
-				sharp(baseBuf).png().toBuffer().then(function(buffer) {
+				self.app.sharp(baseBuf).png().toBuffer().then(function(buffer) {
 
 					// save the image to disk
-					saveImage(self.id, buffer, function(err) {
+					self.app.saveImage(self.id, buffer, function(err) {
 
 						// set flattened image into the drawing and broadcast the results
 						var base64 = "data:image/png;base64,"+(buffer.toString('base64'));
@@ -320,7 +319,7 @@ function Room(idIn, startLayer, fields, isModified, app) {
 							id: flattenedLayerID,
 							base64: base64, 
 							offsets: {top: 0, right: 0, bottom: 0, left: 0},
-							code: randomString(settings.LAYER_CODE_LEN),
+							code: utils.randomString(self.app.settings.LAYER_CODE_LEN),
 							components: componentCodes
 						});
 
@@ -343,10 +342,9 @@ function Room(idIn, startLayer, fields, isModified, app) {
 		}
 
 		var baseLayer = this.getUnmergedLayer(0);
-		var baseBuf = base64ToBuffer(baseLayer.base64); // base image
+		var baseBuf = utils.base64ToBuffer(baseLayer.base64); // base image
 		componentCodes.push(baseLayer.code);
-		var self = this;
-		flattenRecursive(self, baseBuf, 0);
+		flattenRecursive(baseBuf, 0);
 	}
 	this.init(idIn, startLayer, fields, isModified, app);
 }

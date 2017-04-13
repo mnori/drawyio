@@ -10,13 +10,13 @@ function App() {
 	const util = require("util");
 	const express = require("express"); // A node.js framework
 	const nunjucks = require("nunjucks"); // Template system
-	const sharp = require("sharp"); // Image processing library
+	var sharp = this.sharp = require("sharp"); // Image processing library
 	const nano = require('nanoseconds'); // For measuring performance
 	const expressApp = express();
 	const ta = require('time-ago')(); // set up time-ago human readable dates library
 	const server = require("http").Server(expressApp) // set up socket.io
 	this.io = require("socket.io")(server)
-	const settings = require("./settings") // Our settings
+	var settings = this.settings = require("./settings") // Our settings
 	const validation = require("./validation") // Validation tools
 	const database = require("./database") // Our db wrexpressApper
 	const models = require("./models") // Data classes
@@ -24,7 +24,7 @@ function App() {
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;
-	var db = null; // filled later
+	var db = null;
 	var self = this;
 
 	// Set up the app
@@ -33,7 +33,7 @@ function App() {
 		process.on('unhandledRejection', function(err, promise) {
 			console.error('Unhandled rejection (promise: ', promise, ', reason: ', err, ').');
 		});
-		db = new database.DB(settings.DB_CONNECT_PARAMS);
+		self.db = db = new database.DB(settings.DB_CONNECT_PARAMS);
 		db.query("USE "+settings.DB_NAME+";");
 		this.rooms = new utils.AssocArray();
 		nunjucks.configure("templates", {express: expressApp});
@@ -188,7 +188,7 @@ function App() {
 		});
 	}
 
-	function receiveTool(data, socket) {
+	this.receiveTool = function(data, socket) {
 		if (
 			typeof(socket.drawID) == undefined || 
 			!validation.checkRoomID(socket.drawID)
@@ -203,7 +203,7 @@ function App() {
 	}
 
 	// Send drawing data to client
-	function sendRoom(data, socket) {
+	this.sendRoom = function(data, socket) {
 		var drawID = data.drawID;
 		getRoom(drawID, function(drawing) {
 			var output = drawing.getJson();
@@ -213,7 +213,7 @@ function App() {
 	}
 
 	// Adds a layer from raw data coming from the socket
-	function receiveLayer(data, socket) {
+	this.receiveLayer = function(data, socket) {
 		var layer = data;
 		var drawID = layer.drawID;
 		if (
@@ -478,7 +478,7 @@ function App() {
 			drawID: drawID,
 			base64: base64, 
 			offsets: {top: 0, right: 0, bottom: 0, left: 0},
-			code: randomString(settings.LAYER_CODE_LEN)
+			code: utils.randomString(settings.LAYER_CODE_LEN)
 		};
 		return layer;
 	}
@@ -499,7 +499,7 @@ function App() {
 		var newID;
 
 		function recurse() {
-			newID = randomString(length);
+			newID = utils.randomString(length);
 			getter(newID, function(entity) {
 				if (entity === null) {
 					callback(newID)
@@ -516,16 +516,6 @@ function App() {
 		recurse();
 	}
 
-	// Create a random string, to be used as an ID code
-	function randomString(length) {
-		var text = "";
-		var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
-		for (var i = 0; i < length; i++) { 
-			text += charset.charAt(Math.floor(Math.random() * charset.length));
-		}
-		return text;
-	}
-
 	// Override console.log so it gets output to a nice file, easier to check
 	// The log files get emptied every restart
 	function setupDebug() {
@@ -536,12 +526,6 @@ function App() {
 			log_file.write(util.format(d) + "\n");
 			log_stdout.write(util.format(d) + "\n");
 		};
-	}
-
-	// Convert a base64 encoded PNG string into a Buffer object
-	function base64ToBuffer(base64) {
-		var str = base64.replace("data:image/png;base64,", "");
-		return Buffer.from(str, 'base64')
 	}
 
 	function getRoom(drawID, loadCallback) {
@@ -584,7 +568,7 @@ function App() {
 	}
 
 	// Save a drawing to disk
-	function saveImage(drawID, data, callback) {
+	this.saveImage = function(drawID, data, callback) {
 		var outFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
 		fs.writeFile(outFilepath, data, callback);
 	}
