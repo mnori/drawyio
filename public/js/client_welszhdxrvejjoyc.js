@@ -646,6 +646,18 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		socket.on("receive_mouse_coords", receiveTool);
 		socket.on("disconnect", onDisconnect);
 
+		// disable mouse select on drawing page
+		$("body").attr("style", 
+			"<style> "+
+			"	-webkit-touch-callout: none;"+
+			"	-webkit-user-select: none;"+
+			"	-khtml-user-select: none;"+
+			"	-moz-user-select: none;"+
+			"	-ms-user-select: none;"+
+			"	user-select: none;"+
+			"</style>"
+		);
+		
 		initColourPicker();
 		getDrawing();
 	}

@@ -27,7 +27,7 @@ function App() {
 	var db = null;
 	var self = this;
 
-	// Set up the app
+	// Set up everything
 	this.start = function() {
 		setupDebug();
 		process.on('unhandledRejection', function(err, promise) {

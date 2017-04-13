@@ -1,4 +1,4 @@
-// Misc utilities
+// Misc utilities that are shared between js files
 
 module.exports = {
 
@@ -40,6 +40,7 @@ module.exports = {
 		var str = base64.replace("data:image/png;base64,", "");
 		return Buffer.from(str, 'base64')
 	},
+	
 	// Create a random string, to be used as an ID code
 	randomString: function(length) {
 		var text = "";
