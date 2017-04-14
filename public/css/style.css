@@ -139,7 +139,7 @@ h1 {
 
 .drawing_pointer {
 	position: absolute;
-	z-index: 2000000009;
+	z-index: 1000000009;
 }
 
 #drawing_layers {
@@ -152,7 +152,7 @@ h1 {
 
 /* canvas that the local user is drawing onto. Remote users draw onto seperate canvases */
 #drawing_canvas, #drawing_canvas_preview, .drawing_canvas_cpy {
-	z-index: 2000000010;
+	z-index: 1000000010;
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -166,7 +166,7 @@ h1 {
 
 /* remote user canvas */
 .drawing_canvas {
-	z-index: 2000000009;
+	z-index: 1000000009;
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -415,7 +415,7 @@ input {
 	height: 45px;
 	cursor: pointer;
 	border-radius: 0px;
-	z-index: 2000000011;
+	z-index: 1000000011;
 	float: left;
 	margin-bottom: 5px;
 }
@@ -440,7 +440,7 @@ input {
 	border-radius: 3px;
 	box-shadow: 0px 0px 6px 3px rgba(255,255,255,1);
 	background-color: #000;
-	z-index: 2000000008;
+	z-index: 1000000008;
 }
 
 .pointer_label {
@@ -460,7 +460,7 @@ input {
     background-color: rgba(0, 0, 0, 0.7);
 	white-space: nowrap;
 	font-family: ubuntuBold;
-	z-index: 2000000008;
+	z-index: 1000000008;
 }
 
 
@@ -491,7 +491,7 @@ input {
 	border: 1px solid #aaa;
 	background-color: #fff;
 	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
-	z-index: 2000000008;
+	z-index: 1000000008;
 }
 
 .sp-color, .sp-hue, .sp-alpha-inner { 
@@ -644,7 +644,7 @@ input::selection {
 	top: 50px;
 	left: 0px;
 	background-color: rgba(0, 0, 0, 0.5);
-	z-index: 2000000019;
+	z-index: 1000000019;
 	text-align: center;
 	vertical-align: middle;
 }
@@ -747,6 +747,8 @@ input::selection {
 
 .modal_button {
 	border: 1px solid #bbb;
+	margin-top: 12px;
+	margin-left: 12px;
 }
 
 .modal_button, .modal_button:hover {
@@ -758,8 +760,6 @@ input::selection {
 	vertical-align: middle;
 	text-decoration: none;
 	padding: 6px 10px 6px 10px;
-	margin-top: 12px;
-	margin-left: 12px;
 }
 
 .modal_button:active {
@@ -879,4 +879,10 @@ input::selection {
 }
 .big_button:hover {
 	border: 1px solid #777;
+}
+
+.recaptcha_container {
+	margin-top: 12px;
+	float: left;
+	z-index: 1000000100;
 }

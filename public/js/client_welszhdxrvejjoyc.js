@@ -524,10 +524,10 @@ function setModalCss() {
 	$(".ui-widget-overlay").css({
 		"background-color": "#000",
 		"opacity": 0.5,
-		"z-index": 2000000020
+		"z-index": 1000000020
 	});
 	$(".ui-dialog").css({
-		"z-index": 2000000021
+		"z-index": 1000000021
 	})
 }
 
@@ -1531,7 +1531,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 		panel.css({
 			"top": (offset.top)+"px",
 			"left": (offset.left - panel.width())+"px",
-			"z-index": 2000000012
+			"z-index": 1000000012
 		});
 	}
 
@@ -1607,7 +1607,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			"top": offset.top+"px",
 			"left": left+"px",
 			"width": width,
-			"z-index": 2000000012
+			"z-index": 1000000012
 		});
 	}
 
@@ -2068,7 +2068,7 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 		menu.css({
 			"top": (offset.top - menu.height() + 45)+"px",
 			"left": (offset.left - menu.width())+"px",
-			"z-index": 2000000012
+			"z-index": 1000000012
 		});
 		$("#"+id+"-button").addClass("button_pressed");
 	}
