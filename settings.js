@@ -8,7 +8,8 @@ module.exports = {
 	CLIENT_FILE: (isLive) ? "client.js" : "client_welszhdxrvejjoyc.js",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
-	SESSION_ID_LEN: 128, // Length of session IDs
+	SESSION_ID_LEN: 64, // Length of session IDs
+	SESSION_COOKIE_LIFETIME: 60 * 60 * 24 * 365, // in seconds
 	SNAPSHOT_ID_LEN: 16,
 	PASSWORD_HASH_LEN: 128,
 	LAYER_CODE_LEN: 32, // Length of layer codes

@@ -4,6 +4,15 @@ const settings = require("./settings")
 const verbose = false;
 
 module.exports = {
+	// Check session ID cookie
+	checkSessionID: function(sessionID) {
+		if (this.checkCode(sessionID, settings.SESSION_ID_LEN)) {
+			return true;
+		}
+		if (verbose) console.log("Invalid sessionID ["+sessionID+"]");
+		return false;
+	},
+
 	// Check drawing identifier
 	checkRoomID: function(roomID) {
 		if (this.checkCode(roomID, settings.ID_LEN)) {
@@ -32,10 +41,14 @@ module.exports = {
 
 	// Check an alphanumeric code, generic
 	checkCode: function(codeIn, codeLength) {
+		if (codeIn.length != codeLength) { // lengths must match
+			return false;
+		}
 		var regexStr = "[a-z0-9]{"+codeLength+"}"
 		var re = RegExp(regexStr);
 		var matches = re.exec(codeIn);
 		if (matches != null && matches.length == 1) {
+			console.log("codeLength: ["+codeLength+"]")
 			return true;
 		}
 		return false;

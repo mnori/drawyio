@@ -47,18 +47,40 @@ function App() {
 		console.log("Running on http://localhost:" + settings.PORT);
 	}
 
-	function handleCookie(req, callback) {
+	// Adds session cookie to request
+	function handleCookie(req, res, callback) {
 		// check if client sent cookie
 		var cookie = req.cookies.sessionID;
-		if (cookie === undefined) {
-			// var randomNumber=Math.random().toString();
-			// randomNumber=randomNumber.substring(2,randomNumber.length);
-			// res.cookie('cookieName',randomNumber, { maxAge: 900000, httpOnly: true });
-			console.log('Cookie does NOT exist');
-		} else {
-			console.log('Cookie exists', cookie);
-		} 
-		callback();
+		if (cookie === undefined) { 
+			// no cookie so create one
+			createNewSessionCookie(req, res, callback);
+
+		} else if (!validation.checkSessionID(cookie)) { 
+			// invalid cookie string, create new cookie
+			createNewSessionCookie(req, res, callback);
+		} else { 
+			// check for session in database no session? create new cookie
+
+		}
+	}
+
+	function createNewSessionCookie(req, res, callback) {
+		var sessID = utils.randomString(settings.SESSION_ID_LEN)
+		var ipAddress = req.connection.remoteAddress;
+
+		// add cookie to response
+		res.cookie('sessionID', sessID, { httpOnly: true });
+
+		// insert session data into the DB
+		db.query([
+			"INSERT INTO session (id, name, ip_address, last_active)",
+			"VALUES (",
+			"	"+db.esc(sessID)+",",
+			"	'Anonymous',",
+			"	"+db.esc(ipAddress)+",",
+			"	NOW()",
+			")"
+		].join("\n"), callback);
 	}
 
 	// Set up all URL endpoints
@@ -89,7 +111,7 @@ function App() {
 
 		// The index page (will be replaced with something else soon)
 		expressApp.get("/", function(req, res) { 
-			handleCookie(req, function() {
+			handleCookie(req, res, function() {
 				getGallery({"type": "room"}, function(entries) {
 					res.render("index.html", { 
 						settings: settings,
@@ -101,10 +123,9 @@ function App() {
 
 		// Galleries page
 		expressApp.get("/gallery/:type", function(req, res) {
-			console
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
-			handleCookie(req, function() {
+			handleCookie(req, res, function() {
 				getGallery({"type": galType}, function(entries) {
 					res.render("galleries.html", { 
 						settings: settings,
@@ -273,7 +294,7 @@ function App() {
 		if (!validation.checkRoomID(roomID)) { // check code is valid
 			send404(res);
 		} else {
-			handleCookie(req, function() {
+			handleCookie(req, res, function() {
 				getRoom(roomID, function(room) {
 					if (room != null) {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
@@ -318,7 +339,7 @@ function App() {
 		if (!validation.checkSnapshotID(snapID)) { // check code is valid
 			send404(res);
 		} else {
-			handleCookie(req, function() {
+			handleCookie(req, res, function() {
 				getSnapshot(snapID, function(snapshot) {
 					if (snapshot != null) {
 						res.render("snapshot.html", { snapshot: snapshot, settings: settings });	

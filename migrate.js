@@ -31,7 +31,7 @@ var migrations = [
 				"CREATE TABLE session (",
 				"	id CHAR("+settings.SESSION_ID_LEN+") NOT NULL,",
 				"	name VARCHAR("+settings.USER_NAME_LEN+") NOT NULL,",
-				"	last_ip VARCHAR(255) NOT NULL,",
+				"	ip_address VARCHAR(255) NOT NULL,",
 				"	last_active DATETIME NOT NULL,",
 				"	PRIMARY KEY (id)",
 				")"
