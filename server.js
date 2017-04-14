@@ -59,9 +59,26 @@ function App() {
 		} else { 
 			// check for session in database. no session? create new cookie
 			// create new session as well
-			console.log("Check the database here")
-			callback(cookie);
+			loadSession(req, res, cookie, callback);
 		}
+	}
+
+	function loadSession(req, res, sessionID, callback) {
+		db.query(
+			"SELECT * FROM session WHERE id = "+db.esc(sessionID), 
+			function(results, fields, error) {
+				if (results.length == 0) { // not in database
+					createSession(req, res, callback); // create new session
+					return;
+				} else {
+					// session is in DB
+					var session = new models.Session(results[0], req, app);
+
+					// save to update the last_active and ip address
+					session.save(callback);
+				}
+			}
+		);
 	}
 
 	// Create a session cookie in the database
@@ -76,10 +93,8 @@ function App() {
 		// insert session data into the DB
 		var session = new models.Session({
 			"id": sessionID,
-			"name": "Anonymous", // This will be overwritten when user changes name
-			"ip_address": req.connection.remoteAddress,
-			"last_active": getNowMysql()
-		}, app);
+			"name": "Anonymous" // This will be overwritten when user changes name
+		}, req, app);
 		session.save(callback);
 	}
 
@@ -403,7 +418,7 @@ function App() {
 				var layer = bufferToLayer(drawID, buffer);
 
 				// create a dummy mysql row to initialise the object
-				var nowMysql = getNowMysql();
+				var nowMysql = utils.getNowMysql();
 				var fields = {
 					"name": name,
 					"is_private": isPrivate,
@@ -735,10 +750,6 @@ function App() {
 				cbCalled = true;
 			}
 		}
-	}
-
-	function getNowMysql() {
-		return (new Date ((new Date((new Date(new Date())).toISOString() )).getTime() - ((new Date()).getTimezoneOffset()*60000))).toISOString().slice(0, 19).replace('T', ' ');
 	}
 
 	function getAgo(timestamp) {

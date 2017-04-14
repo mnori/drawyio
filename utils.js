@@ -49,5 +49,9 @@ module.exports = {
 			text += charset.charAt(Math.floor(Math.random() * charset.length));
 		}
 		return text;
+	}, 
+
+	getNowMysql: function() {
+		return (new Date ((new Date((new Date(new Date())).toISOString() )).getTime() - ((new Date()).getTimezoneOffset()*60000))).toISOString().slice(0, 19).replace('T', ' ');
 	}
 };

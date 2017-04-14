@@ -11,13 +11,13 @@ function init() {
 	};
 }
 
-function Session(fields, app) {
+function Session(fields, req, app) {
 	var self = this;
-	this.init = function(fields, app) {
-		this.id = fields["id"];
-		this.name = fields["name"];
-		this.ipAddress = fields["ip_address"];
-		this.lastActive = fields["last_active"];
+	this.init = function(fields, req, app) {
+		this.id = fields.id;
+		this.name = fields.name;
+		this.ipAddress = req.connection.remoteAddress;
+		this.lastActive = new Date();
 		this.app = app;
 	}
 
@@ -26,18 +26,18 @@ function Session(fields, app) {
 		db.query([
 			"INSERT INTO session (id, name, ip_address, last_active)",
 			"VALUES (",
-			"	"+db.esc(this.id)+",",
+			"	"+db.esc(self.id)+",",
 			"	'Anonymous',",
-			"	"+db.esc(this.ipAddress)+",",
-			"	NOW()",
+			"	"+db.esc(self.ipAddress)+",",
+			"	FROM_UNIXTIME("+getUnixtime(self.lastActive)+")",
 			") ON DUPLICATE KEY UPDATE",
-			"	ip_address = "+db.esc(this.ipAddress)+",",
-			"	modified = NOW()"
+			"	ip_address = "+db.esc(self.ipAddress)+",",
+			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
 		].join("\n"), function() {
-			callback(this);
+			callback(self);
 		});
 	}
-	this.init(fields, app);
+	this.init(fields, req, app);
 }
 
 // Stores the data for a room
@@ -251,7 +251,7 @@ function Room(idIn, startLayer, fields, isModified, app) {
 	};
 
 	this.getUnixtime = function(val) {
-		return parseInt(val.getTime() / 1000)
+		return getUnixtime(val);
 	}
 
 	// Handles timeout logic for flattening. Called from outside and also inside
@@ -377,6 +377,10 @@ function Snapshot(snapID, buffer, fields) {
 		this.created = new Date(fields["created"]);
 	}
 	this.init(snapID, buffer, fields);
+}
+
+function getUnixtime(val) {
+	return parseInt(val.getTime() / 1000)
 }
 
 init();
