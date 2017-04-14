@@ -64,7 +64,7 @@
         <p id="nick_message" class="modal_message">Enter a nickname to get started.</p>
         <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
         <a id="nick_button" class="button modal_button" href="javascript:void(0)">
-            <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
+            <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Continue
         </a>
         <a id="nick_cancel" class="button modal_button" href="javascript:void(0)">
             <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
@@ -73,13 +73,16 @@
 
     <!-- Register dialog -->
     <div id="register_dialog" class="modal_dialog" title="Register your nickname" style="display: none;">
-        <p class="modal_message">This will create an account for you. No email confirmation required.</p>
+        <p class="modal_message">Register an account on drawy.io. No email confirmation required.</p>
+
+        <a id="register_back" class="button modal_button modal_button_left" href="javascript:void(0)">
+            <i class="fa fa-arrow-left button_icon" aria-hidden="true"></i>Back
+        </a>
         <a id="register_ok" class="button modal_button" href="javascript:void(0)">
             <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
         </a>
-
-        <a id="register_cancel" class="button modal_button" href="javascript:void(0)">
-            <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+        <a id="register_skip" class="button modal_button" href="javascript:void(0)">
+            <i class="fa fa-step-forward button_icon" aria-hidden="true"></i>Skip
         </a>
     </div>
 

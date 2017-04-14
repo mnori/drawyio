@@ -770,10 +770,17 @@ input::selection {
 	border: 1px solid #777;
 }
 
+.modal_button_left {
+	float: left;
+	margin-left: 0px;
+	margin-right: 12px;
+}
+
 .modal_info {
 	font-size: 16px;
 	line-height: 18px;
 }
+
 
 .ui-checkboxradio-radio-label, .ui-checkboxradio-radio-label:active {
 	color: #333;
