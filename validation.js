@@ -48,7 +48,6 @@ module.exports = {
 		var re = RegExp(regexStr);
 		var matches = re.exec(codeIn);
 		if (matches != null && matches.length == 1) {
-			console.log("codeLength: ["+codeLength+"]")
 			return true;
 		}
 		return false;

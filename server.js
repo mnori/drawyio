@@ -37,8 +37,6 @@ function App() {
 		self.db = db = new database.DB(settings.DB_CONNECT_PARAMS);
 		db.query("USE "+settings.DB_NAME+";");
 		this.rooms = new utils.AssocArray();
-
-		// setup the cookie system
 		expressApp.use(cookieParser());
 		nunjucks.configure("templates", {express: expressApp});
 		configureRoutes(expressApp);
@@ -48,39 +46,42 @@ function App() {
 	}
 
 	// Adds session cookie to request
-	function handleCookie(req, res, callback) {
+	function getSession(req, res, callback) {
 		// check if client sent cookie
 		var cookie = req.cookies.sessionID;
 		if (cookie === undefined) { 
 			// no cookie so create one
-			createNewSessionCookie(req, res, callback);
+			createSession(req, res, callback);
 
 		} else if (!validation.checkSessionID(cookie)) { 
 			// invalid cookie string, create new cookie
-			createNewSessionCookie(req, res, callback);
+			createSession(req, res, callback);
 		} else { 
-			// check for session in database no session? create new cookie
-
+			// check for session in database. no session? create new cookie
+			callback(cookie);
 		}
 	}
 
-	function createNewSessionCookie(req, res, callback) {
-		var sessID = utils.randomString(settings.SESSION_ID_LEN)
+	// Create a session cookie in the database
+	function createSession(req, res, callback) {
+		var sessionID = utils.randomString(settings.SESSION_ID_LEN)
 		var ipAddress = req.connection.remoteAddress;
 
 		// add cookie to response
-		res.cookie('sessionID', sessID, { httpOnly: true });
+		res.cookie('sessionID', sessionID, { httpOnly: true });
 
 		// insert session data into the DB
 		db.query([
 			"INSERT INTO session (id, name, ip_address, last_active)",
 			"VALUES (",
-			"	"+db.esc(sessID)+",",
+			"	"+db.esc(sessionID)+",",
 			"	'Anonymous',",
 			"	"+db.esc(ipAddress)+",",
 			"	NOW()",
 			")"
-		].join("\n"), callback);
+		].join("\n"), function() {
+			callback(sessionID);
+		});
 	}
 
 	// Set up all URL endpoints
@@ -111,7 +112,7 @@ function App() {
 
 		// The index page (will be replaced with something else soon)
 		expressApp.get("/", function(req, res) { 
-			handleCookie(req, res, function() {
+			getSession(req, res, function(session) {
 				getGallery({"type": "room"}, function(entries) {
 					res.render("index.html", { 
 						settings: settings,
@@ -125,7 +126,7 @@ function App() {
 		expressApp.get("/gallery/:type", function(req, res) {
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
-			handleCookie(req, res, function() {
+			getSession(req, res, function(session) {
 				getGallery({"type": galType}, function(entries) {
 					res.render("galleries.html", { 
 						settings: settings,
@@ -294,7 +295,7 @@ function App() {
 		if (!validation.checkRoomID(roomID)) { // check code is valid
 			send404(res);
 		} else {
-			handleCookie(req, res, function() {
+			getSession(req, res, function(session) {
 				getRoom(roomID, function(room) {
 					if (room != null) {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
@@ -339,7 +340,7 @@ function App() {
 		if (!validation.checkSnapshotID(snapID)) { // check code is valid
 			send404(res);
 		} else {
-			handleCookie(req, res, function() {
+			getSession(req, res, function(session) {
 				getSnapshot(snapID, function(snapshot) {
 					if (snapshot != null) {
 						res.render("snapshot.html", { snapshot: snapshot, settings: settings });	
