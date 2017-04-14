@@ -5,9 +5,39 @@ const validation = require("./validation") // Validation tools
 
 function init() {
 	module.exports = {
-		Snapshot: Snapshot,
-		Room: Room
+		Session: Session,
+		Room: Room,
+		Snapshot: Snapshot
 	};
+}
+
+function Session(fields, app) {
+	var self = this;
+	this.init = function(fields, app) {
+		this.id = fields["id"];
+		this.name = fields["name"];
+		this.ipAddress = fields["ip_address"];
+		this.lastActive = fields["last_active"];
+		this.app = app;
+	}
+
+	this.save = function(callback) {
+		var db = self.app.db;
+		db.query([
+			"INSERT INTO session (id, name, ip_address, last_active)",
+			"VALUES (",
+			"	"+db.esc(this.id)+",",
+			"	'Anonymous',",
+			"	"+db.esc(this.ipAddress)+",",
+			"	NOW()",
+			") ON DUPLICATE KEY UPDATE",
+			"	ip_address = "+db.esc(this.ipAddress)+",",
+			"	modified = NOW()"
+		].join("\n"), function() {
+			callback(this);
+		});
+	}
+	this.init(fields, app);
 }
 
 // Stores the data for a room
@@ -148,7 +178,7 @@ function Room(idIn, startLayer, fields, isModified, app) {
 						"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
 						")",
 						"ON DUPLICATE KEY UPDATE",
-						"	modified=FROM_UNIXTIME("+self.getModifiedS()+")"
+						"	modified = FROM_UNIXTIME("+self.getModifiedS()+")"
 					].join("\n"));
 				});	
 			} 

@@ -58,30 +58,29 @@ function App() {
 			createSession(req, res, callback);
 		} else { 
 			// check for session in database. no session? create new cookie
+			// create new session as well
+			console.log("Check the database here")
 			callback(cookie);
 		}
 	}
 
 	// Create a session cookie in the database
 	function createSession(req, res, callback) {
-		var sessionID = utils.randomString(settings.SESSION_ID_LEN)
-		var ipAddress = req.connection.remoteAddress;
+
+		// generate new session ID
+		var sessionID = utils.randomString(settings.SESSION_ID_LEN);
 
 		// add cookie to response
 		res.cookie('sessionID', sessionID, { httpOnly: true });
 
 		// insert session data into the DB
-		db.query([
-			"INSERT INTO session (id, name, ip_address, last_active)",
-			"VALUES (",
-			"	"+db.esc(sessionID)+",",
-			"	'Anonymous',",
-			"	"+db.esc(ipAddress)+",",
-			"	NOW()",
-			")"
-		].join("\n"), function() {
-			callback(sessionID);
-		});
+		var session = new models.Session({
+			"id": sessionID,
+			"name": "Anonymous", // This will be overwritten when user changes name
+			"ip_address": req.connection.remoteAddress,
+			"last_active": getNowMysql()
+		}, app);
+		session.save(callback);
 	}
 
 	// Set up all URL endpoints
