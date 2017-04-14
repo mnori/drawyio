@@ -17,6 +17,7 @@ function initGlobal(settings) {
 	initGlobalResizeHandler();
 	errorModal = ErrorModal();
 	GalleriesDialog();
+	RegisterDialog();
 }
 
 function initGlobalResizeHandler() {
@@ -100,6 +101,50 @@ function GalleryUI(type) {
 }
 
 // MODALS ///////////////////////////////////////////////////////////////////////////////
+
+function RegisterDialog() {
+	function init() {
+		setup();
+	}
+
+	function setup() {
+		$("#register_dialog").dialog({
+			resizable: false,
+			// height: 582,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				console.log("RegisterDialog() invoked");
+				// $(".ui-dialog-titlebar-close").hide();
+				setModalCss();
+		    }
+		});
+
+		$("#nick_button").click(function() {
+			$("#nick_dialog").dialog("close");
+			show();
+		});
+
+
+		// // Set up OK button event handler
+		// $("#register_cancel").click(function() {
+		// 	$("#register_dialog").dialog("close");
+		// });
+		// $("#register_ok").click(function() {
+		// 	window.location.href = "/gallery/rooms";
+		// });
+		// $("#register_btn").click(show);
+	}
+
+	function show() {
+		$("#register_dialog").dialog("open");
+	}
+	init();
+	return this;
+}
 
 function GalleriesDialog() {
 	function init() {
@@ -447,12 +492,13 @@ function NickModal() {
 		$("#nick_input").click(function() { $(this).select(); })
 
 		// Set up OK button event handler
-		$("#nick_button").click(function() {
-			var nick = $("#nick_input").val();
-			setCookie("nick", nick, 30); // Set nickname cookie for 30 days
-			$("#nick_indicator").text(nick);
-			$("#nick_dialog").dialog("close");
-		})
+		// Old nick setter stuff
+		// $("#nick_button").click(function() {
+		// 	var nick = $("#nick_input").val();
+		// 	setCookie("nick", nick, 30); // Set nickname cookie for 30 days
+		// 	$("#nick_indicator").text(nick);
+		// 	$("#nick_dialog").dialog("close");
+		// })
 
 		$("#nick_cancel").click(function() {
 			$("#nick_dialog").dialog("close");
@@ -467,7 +513,7 @@ function NickModal() {
 		$("#nick_dialog").dialog("open");
 		if (rename) {
 			$("#nick_message").html("Please enter a new nickname.");
-			$(".ui-dialog-title").html("Alert");
+			$("#nick_dialog").prev().find(".ui-dialog-title").text("Alert");
 		}
 	}
 

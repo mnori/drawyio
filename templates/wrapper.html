@@ -59,6 +59,30 @@
         </nav>
     </div>
 
+    <!-- Nickname dialog -->
+    <div id="nick_dialog" class="modal_dialog" title="Welcome" style="display: none;">
+        <p id="nick_message" class="modal_message">Enter a nickname to get started.</p>
+        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
+        <a id="nick_button" class="button modal_button" href="javascript:void(0)">
+            <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
+        </a>
+        <a id="nick_cancel" class="button modal_button" href="javascript:void(0)">
+            <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+        </a>
+    </div>
+
+    <!-- Register dialog -->
+    <div id="register_dialog" class="modal_dialog" title="Register your nickname" style="display: none;">
+        <p class="modal_message">This will create an account for you. No email confirmation required.</p>
+        <a id="register_ok" class="button modal_button" href="javascript:void(0)">
+            <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
+        </a>
+
+        <a id="register_cancel" class="button modal_button" href="javascript:void(0)">
+            <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+        </a>
+    </div>
+
     <!-- Error dialog -->
     <div id="error_dialog" class="modal_dialog" title="Oops" style="display: none;">
         <p id="error_message" class="modal_message">Unknown error.</p>
@@ -73,7 +97,7 @@
             The public galleries often contain offensive content that is <b>not safe for work (NSFW)</b>.
         </p>
         <p class="modal_message">
-            Better moderation will be added in future versions.
+            Improved moderation will be added in future versions.
         </p>
         <p class="modal_message">
             Proceed?
@@ -83,18 +107,6 @@
         </a>
         <a id="galleries_cancel" class="button modal_button" href="javascript:void(0)">
             <i class="fa fa-times button_icon" aria-hidden="true"></i>Get me out of here!
-        </a>
-    </div>
-
-    <!-- Nickname dialog -->
-    <div id="nick_dialog" class="modal_dialog" title="Welcome" style="display: none;">
-        <p id="nick_message" class="modal_message">Enter a nickname to get started.</p>
-        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
-        <a id="nick_button" class="button modal_button" href="javascript:void(0)">
-            <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
-        </a>
-        <a id="nick_cancel" class="button modal_button" href="javascript:void(0)">
-            <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
         </a>
     </div>
 
