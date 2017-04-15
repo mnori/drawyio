@@ -58,6 +58,9 @@ module.exports = {
 	MIN_DRAWINGS_MEMORY: 16, // this is also the max number of images in the gallery
 
 	DEFAULT_ROOM_NAME: "An unnamed room",
-	DEFAULT_SNAPSHOT_NAME: "An unnamed snapshot"
+	DEFAULT_SNAPSHOT_NAME: "An unnamed snapshot",
+
+	RECAPTCHA_SITE_KEY: "6LetFx0UAAAAANa1w3iqcPSQhie8NcMofdkqSUMg",
+	RECAPTCHA_SECRET_KEY: "6LetFx0UAAAAAD-h_22R8g_b_1Ubqaxem9lqdZNv"
 }
 

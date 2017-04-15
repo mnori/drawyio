@@ -35,6 +35,7 @@ function App() {
 		process.on('unhandledRejection', function(err, promise) {
 			console.error('Unhandled rejection (promise: ', promise, ', reason: ', err, ').');
 		});
+		recaptcha.init(settings.RECAPTCHA_SITE_KEY, settings.RECAPTCHA_SECRET_KEY);
 		self.db = db = new database.DB(settings.DB_CONNECT_PARAMS);
 		db.query("USE "+settings.DB_NAME+";");
 		this.rooms = new utils.AssocArray();
@@ -173,7 +174,25 @@ function App() {
 
 	function register(req, res) {
 		console.log("register() invoked");
-		console.log(req.query);
+		var errors = [];
+		if (!req.query["g-recaptcha-response"]) { // user has not done the recaptcha
+			console.log("No response");
+			errors.push("Please respond to \"I'm not a robot\".");
+			res.send({"error": errors});
+			return
+		}
+		recaptcha.verify(req, function(error) {
+
+			if (error) { // some other problem with the user's response
+				errors.push("Invalid \"I'm not a robot\" response. Please try again.");
+				res.send({"error": errors});
+
+			} else { // all checks passed
+				console.log("CAPTCHA check passed!");
+				var userID = 1; // dummy user ID. definitely change this!!!!!!
+				res.send({"userID": userID});	
+			}
+		});
 	}
 
 	function getGallery(params, callback) {

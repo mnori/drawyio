@@ -141,7 +141,7 @@ function RegisterDialog() {
 			$.ajax({
 				url: "/ajax/register", 
 				data: {
-					"recaptcha_response": grecaptcha.getResponse()
+					"g-recaptcha-response": grecaptcha.getResponse()
 				}
 			}).done(function(response) {
 				console.log("Register response:");
