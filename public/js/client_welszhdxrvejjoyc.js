@@ -138,6 +138,7 @@ function RegisterDialog() {
 		});
 
 		$("#register_ok").click(function() {
+			// Register the user
 			$.ajax({
 				url: "/ajax/register", 
 				data: {
@@ -146,15 +147,22 @@ function RegisterDialog() {
 					"g-recaptcha-response": grecaptcha.getResponse()
 				}
 			}).done(function(response) {
-				if (!processError(response)) {
+				$("#register_dialog").dialog("close");
+				var closeError = function() { // Close button OK click event handler
+					registerDialog.show();
+				}
+				if (!processError(response, closeError)) { // success
 					console.log("Register response:");
 					console.log(response);
+				} else { // something went wrong, so must reset the captcha
+					console.log("Invoking reset...");
+					grecaptcha.reset();
 				}
 			});
 		});
 	}
 
-	this.show = function(rename) {
+	this.show = function() {
 		$("#register_dialog").dialog("open");
 	}
 
@@ -225,8 +233,10 @@ function ErrorDialog() {
 		// Set up OK button event handler
 		ok.off(); // remove any event handlers
 		ok.click(function() {
-			console.log("Click invoked");
 			$("#error_dialog").dialog("close");
+			if (okCallback) {
+				okCallback(); // do custom thing after user closes error dialog
+			}
 		});
 
 		errorMessage = "Unknown error."
@@ -253,6 +263,7 @@ function processError(response, okCallback) {
 			buf += "<p class=\"modal_message\">"+errors[i]+"</p>"
 		}
 		errorDialog.show(buf, okCallback);
+		return true;
 	}
 	return false;
 }
