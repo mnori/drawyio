@@ -1,4 +1,4 @@
-	// node.js server for drawy.io
+// node.js server for drawy.io
 // (C) 2017 drawy.io
 
 "use strict";
@@ -21,7 +21,7 @@ function App() {
 	this.recaptcha = require('express-recaptcha');
 
 	var settings = this.settings = require("./settings") // Our settings
-	const validation = require("./validation") // Validation tools
+	this.validation = require("./validation") // Validation tools
 	const database = require("./database") // Our db wrexpressApper
 	const models = require("./models") // Data classes
 	const register = require("./register") // Registration flow
@@ -58,7 +58,7 @@ function App() {
 			// no cookie so create one
 			createSession(req, res, callback);
 
-		} else if (!validation.checkSessionID(cookie)) { 
+		} else if (!self.validation.checkSessionID(cookie)) { 
 			// invalid cookie string, create new cookie
 			createSession(req, res, callback);
 		} else { 
@@ -267,7 +267,7 @@ function App() {
 	this.receiveTool = function(data, socket) {
 		if (
 			typeof(socket.drawID) == undefined || 
-			!validation.checkRoomID(socket.drawID)
+			!self.validation.checkRoomID(socket.drawID)
 		) {
 			return;
 		}
@@ -293,8 +293,8 @@ function App() {
 		var layer = data;
 		var drawID = layer.drawID;
 		if (
-			!validation.checkRoomID(drawID) ||
-			!validation.checkLayerCode(layer.code)
+			!self.validation.checkRoomID(drawID) ||
+			!self.validation.checkLayerCode(layer.code)
 		) { // invalid draw ID or layer code supplied
 			return; // nothing to do, there is no client side confirmation -yet
 		}
@@ -315,7 +315,7 @@ function App() {
 
 	function renderRoomPage(req, res) {
 		var roomID = req.params.id
-		if (!validation.checkRoomID(roomID)) { // check code is valid
+		if (!self.validation.checkRoomID(roomID)) { // check code is valid
 			send404(res);
 		} else {
 			getSession(req, res, function(session) {
@@ -341,7 +341,7 @@ function App() {
 	// Return png image as buffer
 	function sendRoomImage(req, res) {
 		var roomID = req.params.id.replace(".png", "");
-		if (!validation.checkRoomID(roomID)) { // check code is valid
+		if (!self.validation.checkRoomID(roomID)) { // check code is valid
 			send404(res);
 		} else {
 			loadImage(settings.ROOMS_DIR+"/"+roomID+".png", function(buffer) {
@@ -360,7 +360,7 @@ function App() {
 
 	function renderSnapshotPage(req, res) {
 		var snapID = req.params.id.replace(".png", "");
-		if (!validation.checkSnapshotID(snapID)) { // check code is valid
+		if (!self.validation.checkSnapshotID(snapID)) { // check code is valid
 			send404(res);
 		} else {
 			getSession(req, res, function(session) {
@@ -377,7 +377,7 @@ function App() {
 
 	function sendSnapshotImage(req, res) {
 		var snapID = req.params.id.replace(".png", "");
-		if (!validation.checkSnapshotID(snapID)) { // check code is valid
+		if (!self.validation.checkSnapshotID(snapID)) { // check code is valid
 			console.
 			send404(res);
 		} else {
@@ -406,7 +406,7 @@ function App() {
 		var snapshotID = (typeof(req.query.snapshotID) == "undefined") ? null :
 			req.query.snapshotID;
 
-		if (snapshotID && !validation.checkSnapshotID(snapshotID)) {
+		if (snapshotID && !self.validation.checkSnapshotID(snapshotID)) {
 			res.send("error");
 			return;
 		}
@@ -487,7 +487,7 @@ function App() {
 
 	function createSnapshot(req, res) {
 		var roomID = req.query.roomID;
-		if (!validation.checkRoomID(roomID)) { 
+		if (!self.validation.checkRoomID(roomID)) { 
 			console.log("Validation failed");
 			req.send("error");
 			return;

@@ -2,6 +2,8 @@
 
 function register(req, res, app) {
 	console.log("register() invoked");
+	console.log(app.validation);
+
 	var errors = [];
 	if (!req.query["g-recaptcha-response"]) { // user has not done the recaptcha
 		console.log("No captcha response");
