@@ -218,27 +218,32 @@ function ErrorDialog() {
 				setModalCss();
 		    }
 		});
-		// Set up OK button event handler
-		$("#error_button").click(function() {
-			$("#error_dialog").dialog("close");
-		});
 	}
 
-	this.show = function(errorMessageIn) {
+	this.show = function(errorMessageIn, okCallback) {
+		var ok = $("#error_button");
+		// Set up OK button event handler
+		ok.off(); // remove any event handlers
+		ok.click(function() {
+			console.log("Click invoked");
+			$("#error_dialog").dialog("close");
+		});
+
 		errorMessage = "Unknown error."
 		if (errorMessageIn) {
 			errorMessage = errorMessageIn;
 		}
 		$("#error_message").html(errorMessage)
 		$("#error_dialog").dialog("open");
+
 	}
 	init();
 	return this;
 }
 
-function processError(response) {
+function processError(response, okCallback) {
 	if (response["error"]) {
-		showError(response["error"]);
+		errorDialog.show(response["error"], okCallback);
 		return true;
 	}	
 	if (response["errors"]) {
@@ -247,13 +252,9 @@ function processError(response) {
 		for (var i = 0; i < errors.length; i++) {
 			buf += "<p class=\"modal_message\">"+errors[i]+"</p>"
 		}
-		showError(buf);
+		errorDialog.show(buf, okCallback);
 	}
 	return false;
-}
-
-function showError(errorMessageIn) {
-	errorDialog.show(errorMessageIn);
 }
 
 function RoomDialog(roomIDIn) {
