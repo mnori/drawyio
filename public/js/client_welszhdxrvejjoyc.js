@@ -123,8 +123,7 @@ function RegisterDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				console.log("RegisterDialog() invoked");
-				// $(".ui-dialog-titlebar-close").hide();
+				$(".ui-dialog-titlebar-close").hide();
 				setModalCss();
 		    }
 		});
@@ -136,7 +135,6 @@ function RegisterDialog() {
 	}
 
 	this.show = function(rename) {
-		console.log("register dialog show invoked!!!!!");
 		$("#register_dialog").dialog("open");
 	}
 
@@ -160,7 +158,6 @@ function GalleriesDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				console.log("open() invoked");
 				$(".ui-dialog-titlebar-close").hide();
 				setModalCss();
 		    }
@@ -197,7 +194,6 @@ function ErrorDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				console.log("open() invoked");
 				$(".ui-dialog-titlebar-close").hide();
 				setModalCss();
 		    }
@@ -209,7 +205,6 @@ function ErrorDialog() {
 	}
 
 	this.show = function(errorMessageIn) {
-		console.log("ErrorDialog.show() invoked");
 		errorMessage = "Unknown error."
 		if (errorMessageIn) {
 			errorMessage = errorMessageIn;
@@ -222,7 +217,6 @@ function ErrorDialog() {
 }
 
 function processError(response) {
-	console.log("processError");
 	if (response["error"]) {
 		showError(response["error"]);
 		return true;
@@ -306,10 +300,7 @@ function RoomDialog(roomIDIn) {
 		});
 	}
 	function process() {
-		console.log("process() invoked");
-
 		var roomName = $("#room_name_input").val();
-		console.log("roomName: "+roomName);
 
 		var visibility = $("input[type='radio']:checked.room_visibility").attr("id");
 		var isPrivate = (visibility == "room_visibility_private") ? true : false;
@@ -329,15 +320,9 @@ function RoomDialog(roomIDIn) {
 			// Redirect to the snapshot's page
 			window.location.href = "/r/"+roomID;
 		});
-
-		// var options = $(".modal_radio").checkboxradio("option");
-		// console.log("options:");
-		// console.log(options);
 	}
 
 	this.show = function(snapshotIDIn) {
-		console.log("snapshotIDIn: ["+snapshotIDIn+"]");
-
 		if (typeof(snapshotIDIn) !== "undefined") {
 			snapshotID = snapshotIDIn;
 		} else {
@@ -368,7 +353,6 @@ function SnapshotModal(roomIDIn) {
 	var self = this;
 	var roomID = roomIDIn;
 	function init() {
-		console.log("SnapshotModal()");
 		$("#snapshot").click(self.show);
 		setup();
 	}
@@ -420,11 +404,7 @@ function SnapshotModal(roomIDIn) {
 		});
 	}
 	function process() {
-		console.log("process() invoked");
-
 		var snapshotName = $("#snapshot_name_input").val();
-		console.log("snapshotName: "+snapshotName);
-
 		var visibility = $("input[type='radio']:checked.snapshot_visibility").attr("id");
 		var isPrivate = (visibility == "snapshot_visibility_private") ? true : false;
 
@@ -441,10 +421,6 @@ function SnapshotModal(roomIDIn) {
 				window.location.href = "/s/"+response;
 			}
 		});
-
-		// var options = $(".modal_radio").checkboxradio("option");
-		// console.log("options:");
-		// console.log(options);
 	}
 
 	this.show = function(rename) {
@@ -496,16 +472,11 @@ function NickDialog() {
 		// Set up OK button event handler
 		// Old nick setter stuff
 		$("#nick_button").click(function() {
-			console.log("nick_button clicked");
 			var nick = $("#nick_input").val();
-			console.log("1");
 			$("#nick_indicator").text(nick);
-			console.log("2");
 			$("#nick_dialog").dialog("close");
-			console.log("3");
 			console.log(registerDialog);
-			registerDialog.show(); // <-----
-			console.log("4");
+			registerDialog.show();
 		})
 
 		$("#nick_cancel").click(function() {

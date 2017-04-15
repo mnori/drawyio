@@ -165,8 +165,15 @@ function App() {
 			});
 		});
 
+		expressApp.get("/ajax/register", register);
+
 		// Default action if nothing else matched - 404
 		expressApp.use(function(req, res, next) { send404(res); })
+	}
+
+	function register(req, res) {
+		console.log("register() invoked");
+		console.log(req.query);
 	}
 
 	function getGallery(params, callback) {
@@ -226,7 +233,7 @@ function App() {
 			callback(out);
 			return;
 		}
-		
+
 		var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
 			"AND created < FROM_UNIXTIME("+timestamp+")";
 
