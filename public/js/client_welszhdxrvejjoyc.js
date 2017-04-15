@@ -146,8 +146,10 @@ function RegisterDialog() {
 					"g-recaptcha-response": grecaptcha.getResponse()
 				}
 			}).done(function(response) {
-				console.log("Register response:");
-				console.log(response);
+				if (!processError(response)) {
+					console.log("Register response:");
+					console.log(response);
+				}
 			});
 		});
 	}
@@ -227,7 +229,7 @@ function ErrorDialog() {
 		if (errorMessageIn) {
 			errorMessage = errorMessageIn;
 		}
-		$("#error_message").text(errorMessage)
+		$("#error_message").html(errorMessage)
 		$("#error_dialog").dialog("open");
 	}
 	init();
@@ -238,6 +240,14 @@ function processError(response) {
 	if (response["error"]) {
 		showError(response["error"]);
 		return true;
+	}	
+	if (response["errors"]) {
+		var errors = response["errors"];
+		var buf = ""
+		for (var i = 0; i < errors.length; i++) {
+			buf += "<p class=\"modal_message\">"+errors[i]+"</p>"
+		}
+		showError(buf);
 	}
 	return false;
 }

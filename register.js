@@ -39,7 +39,7 @@ function register(req, res, app) {
 
 function checkErrorsAndContinue(req, res, errors) {
 	if (errors.length > 0) { // single place where errors are send to client
-		res.send({"error": errors});
+		res.send({"errors": errors});
 	} else {
 		console.log("CAPTCHA check passed!");
 
