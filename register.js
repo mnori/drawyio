@@ -2,26 +2,52 @@
 
 function register(req, res, app) {
 	console.log("register() invoked");
-	console.log(app.validation);
+	console.log(req.query);
 
 	var errors = [];
+
+	// Check password submission
+	var pw1 = req.query.pw1;
+	var pw2 = req.query.pw2;
+	if (!app.validation.checkPassword(pw1) || !app.validation.checkPassword(pw2)) {
+		errors.push("Password must be at least "+
+			app.settings.PASSWORD_MIN_LEN+" characters long.")
+	}
+	if (pw1 != pw2) {
+		errors.push("Passwords must match.");
+	}
+
+	// Check CAPTCHA response exists
 	if (!req.query["g-recaptcha-response"]) { // user has not done the recaptcha
 		console.log("No captcha response");
 		errors.push("Please respond to \"I'm not a robot\".");
-		res.send({"error": errors});
-		return
 	}
-	app.recaptcha.verify(req, function(error) {
+
+	// Don't check the CAPTCHA until all the other stuff passes
+	if (errors.length > 0) {
+		checkErrorsAndContinue(req, res, errors);
+		return;	
+	}
+	
+	app.recaptcha.verify(req, function(error) { // Ask google if CAPTCHA is valid
 		if (error) { // some other problem with the user's response
 			errors.push("Invalid \"I'm not a robot\" response. Please try again.");
-			res.send({"error": errors});
-
-		} else { // all checks passed
-			console.log("CAPTCHA check passed!");
-			var userID = 1; // dummy user ID. definitely change this!!!!!!
-			res.send({"userID": userID});	
 		}
+		checkErrorsAndContinue(req, res, errors);
 	});
+}
+
+function checkErrorsAndContinue(req, res, errors) {
+	if (errors.length > 0) { // single place where errors are send to client
+		res.send({"error": errors});
+	} else {
+		console.log("CAPTCHA check passed!");
+
+		// now we need to create the user object
+
+		var userID = 1; // dummy user ID. definitely change this!!!!!!
+		res.send({"userID": userID});	
+	}
 }
 
 module.exports = {

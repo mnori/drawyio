@@ -141,6 +141,8 @@ function RegisterDialog() {
 			$.ajax({
 				url: "/ajax/register", 
 				data: {
+					"pw1": $("#register_pw1").val(),
+					"pw2": $("#register_pw2").val(),
 					"g-recaptcha-response": grecaptcha.getResponse()
 				}
 			}).done(function(response) {

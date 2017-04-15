@@ -4,7 +4,7 @@ const settings = require("./settings")
 const verbose = false;
 
 module.exports = {
-	// Check session ID cookie
+
 	checkSessionID: function(sessionID) {
 		if (this.checkCode(sessionID, settings.SESSION_ID_LEN)) {
 			return true;
@@ -13,7 +13,6 @@ module.exports = {
 		return false;
 	},
 
-	// Check drawing identifier
 	checkRoomID: function(roomID) {
 		if (this.checkCode(roomID, settings.ID_LEN)) {
 			return true;
@@ -30,13 +29,20 @@ module.exports = {
 		return false;	
 	},
 
-	// Check layer code
 	checkLayerCode: function(layerCode) {
 		if (this.checkCode(layerCode, settings.LAYER_CODE_LEN)) {
 			return true;
 		}
 		if (verbose) console.log("Invalid layerCode ["+layerCode+"]");
 		return false;
+	},
+
+	// Check user password against rules
+	checkPassword: function(password) {
+		if (password.length < 8) {
+			return false;
+		}
+		return true;
 	},
 
 	// Check an alphanumeric code, generic

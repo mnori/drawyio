@@ -12,6 +12,7 @@ module.exports = {
 	SESSION_COOKIE_LIFETIME: 60 * 60 * 24 * 365, // in seconds
 	SNAPSHOT_ID_LEN: 16,
 	PASSWORD_HASH_LEN: 128,
+	PASSWORD_MIN_LEN: 8,
 	LAYER_CODE_LEN: 32, // Length of layer codes
 	MAX_LAYERS: 5, // Max number of layers to store before flattening the image
 
