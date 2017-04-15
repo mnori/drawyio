@@ -468,7 +468,6 @@ function NickDialog() {
 		// Create modal using jqueryui
 		$("#nick_dialog").dialog({
 			resizable: false,
-			height: 218,
 			width: 400,
 			modal: true,
 			draggable: false,
