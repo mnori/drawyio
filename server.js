@@ -1,4 +1,4 @@
-// node.js server for drawy.io
+	// node.js server for drawy.io
 // (C) 2017 drawy.io
 
 "use strict";
@@ -183,6 +183,11 @@ function App() {
 	function getGallerySnapshots(params, callback) {
 		var out = []
 		var timestamp = parseInt(params.oldestTime);
+		if (!timestamp) { // check for bad timestamp e.g. NaN
+			callback(out);
+			return;
+		}
+
 		var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
 			"AND created < FROM_UNIXTIME("+timestamp+")";
 
@@ -217,6 +222,11 @@ function App() {
 	function getGalleryRooms(params, callback) {
 		var out = []
 		var timestamp = parseInt(params.oldestTime);
+		if (!timestamp) { // check for bad timestamp e.g. NaN
+			callback(out);
+			return;
+		}
+		
 		var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
 			"AND created < FROM_UNIXTIME("+timestamp+")";
 
