@@ -2,7 +2,6 @@ const utils = require("./utils") // Misc utilities
 const validation = require("./validation") // Validation tools
 
 // Data objects and their methods go here.
-
 function init() {
 	module.exports = {
 		Session: Session,

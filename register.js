@@ -42,12 +42,14 @@ function checkErrorsAndContinue(req, res, errors) {
 		res.send({"errors": errors});
 	} else {
 		console.log("CAPTCHA check passed!");
-
-		// now we need to create the user object
-
-		var userID = 1; // dummy user ID. definitely change this!!!!!!
-		res.send({"userID": userID});	
+		createUser(req, res);
 	}
+}
+
+function createUser(req, res) {
+	// now we need to create the user object
+	var userID = 1; // dummy user ID. definitely change this!!!!!!
+	res.send({"userID": userID});	
 }
 
 module.exports = {

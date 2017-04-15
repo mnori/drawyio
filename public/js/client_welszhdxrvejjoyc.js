@@ -154,10 +154,8 @@ function RegisterDialog() {
 				if (!processError(response, closeError)) { // success
 					console.log("Register response:");
 					console.log(response);
-				} else { // something went wrong, so must reset the captcha
-					console.log("Invoking reset...");
-					grecaptcha.reset();
 				}
+				grecaptcha.reset(); // reset the captcha
 			});
 		});
 	}
