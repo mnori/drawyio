@@ -22,6 +22,7 @@ function App() {
 	const models = require("./models") // Data classes
 	const utils = require("./utils") // Misc utilities
 	var cookieParser = require('cookie-parser')
+	var recaptcha = require('express-recaptcha');
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;

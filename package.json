@@ -17,6 +17,7 @@
     "time-ago": "*",
     "mysql": "*",
     "synchronize": "*",
-    "cookie-parser": "*"
+    "cookie-parser": "*",
+    "express-recaptcha": "*"
   }
 }

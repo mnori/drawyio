@@ -5,19 +5,25 @@
 
 // GLOBAL ///////////////////////////////////////////////////////////////////////////////
 
-var errorModal;
+// TODO tidy this up
+var errorDialog;
+var roomDialog;
+var registerDialog;
+var nickDialog;
+var errorDialog;
 
 // Set up the global JS that runs on all pages
 function initGlobal(settings) {
 	if (typeof(settings) === "undefined") {
 		settings = {};
 	}
-	NickModal();
-	RoomModal(settings.snapshotID);
+	nickDialog = new NickDialog();
+	registerDialog = new RegisterDialog();
+	roomDialog = new RoomDialog(settings.snapshotID);
+	errorDialog = new ErrorDialog();
+	galleriesDialog = new GalleriesDialog();
+
 	initGlobalResizeHandler();
-	errorModal = ErrorModal();
-	GalleriesDialog();
-	RegisterDialog();
 }
 
 function initGlobalResizeHandler() {
@@ -25,7 +31,7 @@ function initGlobalResizeHandler() {
 		// jquery dialog window resize positioning fix
 	 	// see https://stackoverflow.com/questions/3060146/how-to-auto-center-jquery-ui-dialog-when-resizing-browser
 		$(".ui-dialog-content:visible").each(function () {
-			$( this ).dialog("option","position",$(this).dialog("option","position"));
+			$(this).dialog("option", "position", $(this).dialog("option", "position"));
 		});
 	})
 }
@@ -100,7 +106,7 @@ function GalleryUI(type) {
 	init(type);
 }
 
-// MODALS ///////////////////////////////////////////////////////////////////////////////
+// DIALOGS ///////////////////////////////////////////////////////////////////////////////
 
 function RegisterDialog() {
 	function init() {
@@ -123,30 +129,23 @@ function RegisterDialog() {
 		    }
 		});
 
-		$("#nick_button").click(function() {
-			$("#nick_dialog").dialog("close");
-			show();
+		$("#register_back").click(function() {
+			$("#register_dialog").dialog("close");
+			nickDialog.show();
 		});
-
-
-		// // Set up OK button event handler
-		// $("#register_cancel").click(function() {
-		// 	$("#register_dialog").dialog("close");
-		// });
-		// $("#register_ok").click(function() {
-		// 	window.location.href = "/gallery/rooms";
-		// });
-		// $("#register_btn").click(show);
 	}
 
-	function show() {
+	this.show = function(rename) {
+		console.log("register dialog show invoked!!!!!");
 		$("#register_dialog").dialog("open");
 	}
+
 	init();
 	return this;
 }
 
 function GalleriesDialog() {
+	var self = this;
 	function init() {
 		setup();
 	}
@@ -173,17 +172,17 @@ function GalleriesDialog() {
 		$("#galleries_ok").click(function() {
 			window.location.href = "/gallery/rooms";
 		});
-		$("#galleries_btn").click(show);
+		$("#galleries_btn").click(self.show);
 	}
 
-	function show() {
+	this.show = function() {
 		$("#galleries_dialog").dialog("open");
 	}
 	init();
 	return this;
 }
 
-function ErrorModal() {
+function ErrorDialog() {
 	function init() {
 		setup();
 	}
@@ -210,7 +209,7 @@ function ErrorModal() {
 	}
 
 	this.show = function(errorMessageIn) {
-		console.log("show() invoked");
+		console.log("ErrorDialog.show() invoked");
 		errorMessage = "Unknown error."
 		if (errorMessageIn) {
 			errorMessage = errorMessageIn;
@@ -223,6 +222,7 @@ function ErrorModal() {
 }
 
 function processError(response) {
+	console.log("processError");
 	if (response["error"]) {
 		showError(response["error"]);
 		return true;
@@ -231,17 +231,18 @@ function processError(response) {
 }
 
 function showError(errorMessageIn) {
-	errorModal.show(errorMessageIn);
+	errorDialog.show(errorMessageIn);
 }
 
-function RoomModal(roomIDIn) {
+function RoomDialog(roomIDIn) {
 	var snapshotID = null;
 	var roomID = roomIDIn;
+	var self = this;
 	function init() {
 		setup();
 		$("#create_drawing_btn").click(function() { 
 			setTitle("Create new room");
-			show(); 
+			self.show(); 
 		});
 
 		// is there a snapshot button?
@@ -249,7 +250,7 @@ function RoomModal(roomIDIn) {
 		if (snapshotButton.length == 1) {
 			snapshotButton.click(function() {
 				setTitle("Create new room from image");
-				show(roomIDIn);
+				self.show(roomIDIn);
 			});
 		}
 	}
@@ -334,7 +335,7 @@ function RoomModal(roomIDIn) {
 		// console.log(options);
 	}
 
-	function show(snapshotIDIn) {
+	this.show = function(snapshotIDIn) {
 		console.log("snapshotIDIn: ["+snapshotIDIn+"]");
 
 		if (typeof(snapshotIDIn) !== "undefined") {
@@ -364,11 +365,11 @@ function RoomModal(roomIDIn) {
 }
 
 function SnapshotModal(roomIDIn) {
-
+	var self = this;
 	var roomID = roomIDIn;
 	function init() {
 		console.log("SnapshotModal()");
-		$("#snapshot").click(show);
+		$("#snapshot").click(self.show);
 		setup();
 	}
 
@@ -446,27 +447,28 @@ function SnapshotModal(roomIDIn) {
 		// console.log(options);
 	}
 
-	function show(rename) {
+	this.show = function(rename) {
 		$("#snapshot_dialog").dialog("open");
 	}
 
 	init();
 }
 
-function NickModal() {
+function NickDialog() {
 	// Set up a modal asking about setting the nickname
+	var self = this;
 	function init() {
 		setup();
 		var existingNick = getCookie("nick");
 		if (existingNick == null) { // no nick defined
-			show();
+			self.show();
 		} else { // nick already exists
 			$("#nick_dialog").hide();
 			$("#nick_indicator").text(existingNick); // using .text() escapes html
 		}
 
 		// activate the nickname button
-		$("#change_nick_btn").click(function() { show(true); });
+		$("#change_nick_btn").click(function() { self.show(true); });
 	}
 
 	// Set up modal dialogue for changing the nickname
@@ -493,19 +495,25 @@ function NickModal() {
 
 		// Set up OK button event handler
 		// Old nick setter stuff
-		// $("#nick_button").click(function() {
-		// 	var nick = $("#nick_input").val();
-		// 	setCookie("nick", nick, 30); // Set nickname cookie for 30 days
-		// 	$("#nick_indicator").text(nick);
-		// 	$("#nick_dialog").dialog("close");
-		// })
+		$("#nick_button").click(function() {
+			console.log("nick_button clicked");
+			var nick = $("#nick_input").val();
+			console.log("1");
+			$("#nick_indicator").text(nick);
+			console.log("2");
+			$("#nick_dialog").dialog("close");
+			console.log("3");
+			console.log(registerDialog);
+			registerDialog.show(); // <-----
+			console.log("4");
+		})
 
 		$("#nick_cancel").click(function() {
 			$("#nick_dialog").dialog("close");
 		});
 	}
 
-	function show(rename) {
+	this.show = function(rename) {
 		var existingNick = getCookie("nick");
 		if (existingNick != null) {
 			$("#nick_input").val(existingNick);
@@ -516,8 +524,8 @@ function NickModal() {
 			$("#nick_dialog").prev().find(".ui-dialog-title").text("Alert");
 		}
 	}
-
 	init();
+	return this;
 }
 
 function setModalCss() {
