@@ -132,6 +132,20 @@ function RegisterDialog() {
 			$("#register_dialog").dialog("close");
 			nickDialog.show();
 		});
+
+		$("#register_skip").click(function() {
+			$("#register_dialog").dialog("close");
+		});
+
+		$("#register_ok").click(function() {
+			$.ajax({
+				url: "/ajax/register", 
+				data: {"hello": "world"}
+			}).done(function(response) {
+				console.log("Register response:");
+				console.log(response);
+			});
+		});
 	}
 
 	this.show = function(rename) {
@@ -475,7 +489,6 @@ function NickDialog() {
 			var nick = $("#nick_input").val();
 			$("#nick_indicator").text(nick);
 			$("#nick_dialog").dialog("close");
-			console.log(registerDialog);
 			registerDialog.show();
 		})
 

@@ -165,16 +165,16 @@ function App() {
 			});
 		});
 
-		expressApp.get("/ajax/register", register);
+		// expressApp.get("/ajax/register", register);
 
 		// Default action if nothing else matched - 404
 		expressApp.use(function(req, res, next) { send404(res); })
 	}
 
-	function register(req, res) {
-		console.log("register() invoked");
-		console.log(req.query);
-	}
+	// function register(req, res) {
+	// 	console.log("register() invoked");
+	// 	console.log(req.query);
+	// }
 
 	function getGallery(params, callback) {
 		console.log(params);
@@ -190,12 +190,7 @@ function App() {
 	function getGallerySnapshots(params, callback) {
 		var out = []
 		var timestamp = parseInt(params.oldestTime);
-		if (!timestamp) { // check for bad timestamp e.g. NaN
-			callback(out);
-			return;
-		}
-
-		var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
+		var dateFilter = (!params.oldestTime) ? "" :
 			"AND created < FROM_UNIXTIME("+timestamp+")";
 
 		db.query([
@@ -229,12 +224,7 @@ function App() {
 	function getGalleryRooms(params, callback) {
 		var out = []
 		var timestamp = parseInt(params.oldestTime);
-		if (!timestamp) { // check for bad timestamp e.g. NaN
-			callback(out);
-			return;
-		}
-
-		var dateFilter = (typeof(params.oldestTime) == "undefined") ? "" :
+		var dateFilter = (!params.oldestTime) ? "" :
 			"AND created < FROM_UNIXTIME("+timestamp+")";
 
 		db.query([
