@@ -111,6 +111,8 @@ function App() {
 		// Create a new drawing in memory, and return its unique ID to the client
 		expressApp.get("/create_snapshot", createSnapshot);
 
+		expressApp.get("/ajax/register", register);
+
 		// Render a drawing's page or its image
 		expressApp.get("/r/:id", function(req, res) {
 			req.params.id.includes(".png") ? 
@@ -165,16 +167,14 @@ function App() {
 			});
 		});
 
-		// expressApp.get("/ajax/register", register);
-
 		// Default action if nothing else matched - 404
 		expressApp.use(function(req, res, next) { send404(res); })
 	}
 
-	// function register(req, res) {
-	// 	console.log("register() invoked");
-	// 	console.log(req.query);
-	// }
+	function register(req, res) {
+		console.log("register() invoked");
+		console.log(req.query);
+	}
 
 	function getGallery(params, callback) {
 		console.log(params);

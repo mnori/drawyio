@@ -140,7 +140,9 @@ function RegisterDialog() {
 		$("#register_ok").click(function() {
 			$.ajax({
 				url: "/ajax/register", 
-				data: {"hello": "world"}
+				data: {
+					"recaptcha_response": grecaptcha.getResponse()
+				}
 			}).done(function(response) {
 				console.log("Register response:");
 				console.log(response);
