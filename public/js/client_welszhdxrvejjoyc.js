@@ -114,7 +114,7 @@ function NickDialog() {
 	function init() {
 		setup();
 		var existingNick = conf["username"];
-		if (existingNick == null) { // no nick defined
+		if (!existingNick) { // no nick defined
 			self.show();
 		} else { // nick already exists
 			$("#nick_dialog").hide();

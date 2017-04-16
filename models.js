@@ -40,7 +40,7 @@ function User(app, id) {
 		}
 		db.query("SELECT * FROM user WHERE "+whereStr, 
 			function(results, fields, error) {
-				if (results.length == 0) {
+				if (!results || results.length == 0) {
 					callback(false);
 				} else {
 					var row = results[0];
