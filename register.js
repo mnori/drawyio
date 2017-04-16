@@ -35,28 +35,55 @@ function register(req, res, app) {
 		if (error) { // some other problem with the user's response
 			errors.push("Invalid \"I'm not a robot\" response. Please try again.");
 		}
-		checkErrorsAndContinue(req, res, errors);
+		checkErrorsAndContinue(req, res, errors, app);
 	});
 }
 
-function checkErrorsAndContinue(req, res, errors) {
+function checkErrorsAndContinue(req, res, errors, app) {
 	if (errors.length > 0) { // single place where errors are send to client
 		res.send({"errors": errors});
 	} else {
 		console.log("CAPTCHA check passed!");
-		createUser(req, res);
+		createUser(req, res, app);
 	}
 }
 
-function createUser(req, res) {
-	// now we need to create the user object
+function createUser(req, res, app) {
 
 	// create a salted password
 	var password = req.query.pw1;
-	// var salt = 
+	bcrypt.genSalt(app.settings.PASSWORD_SALT_ROUNDS, function(err, salt) {
+		bcrypt.hash(password, salt, function(err, hash) {
+			if (err) {
+				res.send({"error": "Could not create password."});
+				return;
+			}
 
-	var userID = 1; // dummy user ID. definitely change this!!!!!!
-	res.send({"userID": userID});	
+			// get session data to help fill out the user data
+			app.getSession(req, res, function(session) {
+
+				// fill out user data
+				var user = new app.models.User(app);
+				user.name = session.name;
+				user.sessionID = session.id;
+				user.password = hash;
+				user.joined = new Date();
+
+				// save user into database
+				user.save(function(err) {
+					console.log("Reached end of save()");
+					if (err) {
+						console.log("ERROR", err);	
+						res.send("Could not save user to database")
+						return;
+					}
+					var userID = 1; // dummy user ID. definitely change this!!!!!!
+					res.send({"userID": userID});	
+				});
+			});
+		});
+
+	});
 }
 
 module.exports = {

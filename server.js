@@ -23,7 +23,7 @@ function App() {
 	var settings = this.settings = require("./settings") // Our settings
 	this.validation = require("./validation") // Validation tools
 	const database = require("./database") // Our db wrexpressApper
-	const models = require("./models") // Data classes
+	var models = this.models = require("./models") // Data classes
 	const register = require("./register") // Registration flow
 	const utils = require("./utils") // Misc utilities
 
@@ -51,7 +51,8 @@ function App() {
 	}
 
 	// Adds session cookie to request
-	function getSession(req, res, callback) {
+	// Response must be passed in to set the cookie
+	this.getSession = function(req, res, callback) {
 		// check if client sent cookie
 		var cookie = req.cookies.sessionID;
 		if (cookie === undefined) { 
@@ -135,7 +136,7 @@ function App() {
 
 		// The index page (will be replaced with something else soon)
 		expressApp.get("/", function(req, res) { 
-			getSession(req, res, function(session) {
+			self.getSession(req, res, function(session) {
 				getGallery({"type": "room"}, function(entries) {
 					res.render("index.html", { 
 						settings: settings,
@@ -149,7 +150,7 @@ function App() {
 		expressApp.get("/gallery/:type", function(req, res) {
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
-			getSession(req, res, function(session) {
+			self.getSession(req, res, function(session) {
 				getGallery({"type": galType}, function(entries) {
 					res.render("galleries.html", { 
 						settings: settings,
@@ -318,7 +319,7 @@ function App() {
 		if (!self.validation.checkRoomID(roomID)) { // check code is valid
 			send404(res);
 		} else {
-			getSession(req, res, function(session) {
+			self.getSession(req, res, function(session) {
 				getRoom(roomID, function(room) {
 					if (room != null) {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
@@ -363,7 +364,7 @@ function App() {
 		if (!self.validation.checkSnapshotID(snapID)) { // check code is valid
 			send404(res);
 		} else {
-			getSession(req, res, function(session) {
+			self.getSession(req, res, function(session) {
 				getSnapshot(snapID, function(snapshot) {
 					if (snapshot != null) {
 						res.render("snapshot.html", { snapshot: snapshot, settings: settings });	

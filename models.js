@@ -5,9 +5,47 @@ const validation = require("./validation") // Validation tools
 function init() {
 	module.exports = {
 		Session: Session,
+		User: User,
 		Room: Room,
 		Snapshot: Snapshot
 	};
+}
+
+function User(app, id) {
+	this.id = id ? id : null;
+	this.name = null;
+	this.sessionID = null;
+	this.password = null;
+	this.joined = null;
+	this.app = app;
+
+	var self = this;
+
+	this.init = function() {
+		console.log("User init() invoked");
+	}
+
+	this.save = function(callback) {
+		var db = self.app.db;
+		db.query([
+			"INSERT INTO user (id, name, session_id, password, joined)",
+			"VALUES (",
+			"	"+db.esc(self.id)+",",
+			"	"+db.esc(self.name)+",",
+			"	"+db.esc(self.sessionID)+",",
+			"	"+db.esc(self.password)+",",
+			"	FROM_UNIXTIME("+getUnixtime(self.joined)+")",
+			") ON DUPLICATE KEY UPDATE",
+			"	session_id = "+db.esc(self.sessionID) 
+		].join("\n"), function(results, fields, error) {
+			if (error) {
+				callback(error)
+			} else {
+				callback()
+			}
+		});
+	}
+	this.init();
 }
 
 function Session(fields, req, app) {
