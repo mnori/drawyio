@@ -115,6 +115,7 @@ function NickDialog() {
 		setup();
 		var existingNick = conf["username"];
 		if (!existingNick) { // no nick defined
+			$("#nick_indicator").text("Anonymous");
 			self.show();
 		} else { // nick already exists
 			$("#nick_dialog").hide();
@@ -171,10 +172,8 @@ function NickDialog() {
 	}
 
 	this.show = function(rename) {
-		var existingNick = conf["username"];
-		if (existingNick != null) {
-			$("#nick_input").val(existingNick);
-		}
+		var existingNick = conf["username"] ? conf["username"] : "Anonymous";
+		$("#nick_input").val(existingNick);
 		$("#nick_dialog").dialog("open");
 		if (rename) {
 			$("#nick_message").html("Please enter a new nickname.");
