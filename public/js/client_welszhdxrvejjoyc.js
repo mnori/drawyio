@@ -11,6 +11,7 @@ var roomDialog;
 var registerDialog;
 var nickDialog;
 var errorDialog;
+var loginDialog;
 var conf;
 
 // Set up the global JS that runs on all pages
@@ -22,6 +23,7 @@ function initGlobal(conf) {
 	roomDialog = new RoomDialog(conf.snapshotID);
 	errorDialog = new ErrorDialog();
 	galleriesDialog = new GalleriesDialog();
+	loginDialog = new LoginDialog();
 
 	initGlobalResizeHandler();
 }
@@ -169,6 +171,11 @@ function NickDialog() {
 		$("#nick_cancel").click(function() {
 			$("#nick_dialog").dialog("close");
 		});
+
+		$("#nick_login").click(function() {
+			$("#nick_dialog").dialog("close");
+			$("#login_dialog").dialog("open");
+		})
 	}
 
 	this.show = function(rename) {
@@ -179,6 +186,42 @@ function NickDialog() {
 			$("#nick_message").html("Please enter a new nickname.");
 			$("#nick_dialog").prev().find(".ui-dialog-title").text("Alert");
 		}
+	}
+	init();
+	return this;
+}
+
+function LoginDialog() {
+	// Set up a modal asking about setting the nickname
+	var self = this;
+	function init() {
+		setup();
+	}
+
+	// Set up modal dialogue for changing the nickname
+	function setup() {
+		// Create modal using jqueryui
+		$("#login_dialog").dialog({
+			resizable: false,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				setModalCss();
+				$(".ui-dialog-titlebar-close").hide();
+				$("#login_dialog").show();
+		    }
+		});
+
+		$("#login_submit").click(function() {
+			$("#login_dialog").dialog("close");
+		})
+	}
+
+	this.show = function(rename) {
+		$("#login_dialog").dialog("open");
 	}
 	init();
 	return this;
