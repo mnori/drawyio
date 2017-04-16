@@ -14,6 +14,7 @@ module.exports = {
 	SNAPSHOT_ID_LEN: 16,
 	PASSWORD_HASH_LEN: 128,
 	PASSWORD_MIN_LEN: 8,
+	PASSWORD_MAX_LEN: 80,
 	PASSWORD_SALT_ROUNDS: 10,
 	LAYER_CODE_LEN: 32, // Length of layer codes
 	MAX_LAYERS: 5, // Max number of layers to store before flattening the image
