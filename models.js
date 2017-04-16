@@ -46,6 +46,11 @@ function User(app, id) {
 			if (error) {
 				callback(error)
 			} else {
+				console.log(results)
+				console.log(results.insertId);
+				if (results.insertId) {
+					self.id = results.insertId;
+				}
 				callback()
 			}
 		});

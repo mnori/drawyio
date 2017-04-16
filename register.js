@@ -71,7 +71,6 @@ function createUser(req, res, app) {
 
 				// save user into database
 				user.save(function(err) {
-					console.log("Reached end of save()");
 					if (err) {
 						// This is a rare case since we already check the username on the
 						// nickname dialog, just before the register dialog
@@ -80,9 +79,7 @@ function createUser(req, res, app) {
 					}
 
 					// now update the session with the user ID
-
-					var userID = 1; // dummy user ID. definitely change this!!!!!!
-					res.send({"userID": userID});	
+					res.send({"userID": user.id});	
 				});
 			});
 		});
