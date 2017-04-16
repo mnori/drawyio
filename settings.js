@@ -3,6 +3,7 @@ var isLive = false;
 // Settings file for drawy.io node.js backend
 // Define global constants
 module.exports = {
+	DEFAULT_NICK: "Anonymous",
 	IS_LIVE: isLive,
 	VERSION_TXT: "v0.2.0",
 	CLIENT_FILE: (isLive) ? "client.js" : "client_welszhdxrvejjoyc.js",

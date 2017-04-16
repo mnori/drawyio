@@ -699,6 +699,11 @@ input::selection {
 
 /*** MODALS ***/
 
+.modal_button_container {
+	float: left;
+	width: 100%;
+}
+
 .modal_radio {
 	width: 8px;
 	height: 8px;
@@ -724,11 +729,17 @@ input::selection {
 	font-size: 19px;
 	margin-top: 12px;
 	margin-bottom: 12px;
+	float: left;
+	width: 100%;
 }
 
-.modal_message:not(:first-child) {
-	margin-top: 20px;	
+.modal_message_before_button {
+	margin-bottom: 0px;
 }
+
+/*.modal_message:not(:first-child) {
+	margin-top: 20px;	
+}*/
 
 .modal_button, .modal_button:hover, .modal_button:active {
 	border: 1px solid #bbb;

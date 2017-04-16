@@ -115,11 +115,10 @@ function App() {
 		var user = new models.User(app);
 		user.name = nick;
 		user.load(function(nameTaken) {
-			if (nameTaken) {
+			if (nameTaken && user.name != "Anonymous") {
 				res.send({"error": "Sorry, that name is taken."})
 			} else {
 				self.getSession(req, res, function(session) {
-					console.log("Got session");
 					session.name = nick;
 					session.save(function(session, error) {
 						if (error) {

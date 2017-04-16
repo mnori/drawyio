@@ -148,7 +148,7 @@ function NickDialog() {
 		$("#nick_input").click(function() { $(this).select(); })
 
 		// Set up OK button event handler
-		$("#nick_button").click(function() {
+		$("#nick_ok").click(function() {
 			var nick = $("#nick_input").val();
 			$.ajax({
 				url: "/ajax/set_session_name", 
@@ -463,7 +463,7 @@ function RoomDialog(roomIDIn) {
 	init();
 }
 
-function SnapshotModal(roomIDIn) {
+function SnapshotDialog(roomIDIn) {
 	var self = this;
 	var roomID = roomIDIn;
 	function init() {
@@ -1112,7 +1112,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	}
 
 	function setupControls() {
-		SnapshotModal(drawID);
+		SnapshotDialog(drawID);
 
 		bindToolButton("eyedropper");
 		bindToolButton("paint");

@@ -36,6 +36,27 @@
 
 </head>
 <body>
+
+    <!-- Nickname dialog, with link to login dialog -->
+    <div id="nick_dialog" class="modal_dialog" title="Welcome" style="display: none;">
+        <p id="nick_message" class="modal_message">Enter a nickname to get started.</p>
+        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
+        <p class="modal_message modal_message_before_button">Or already registered?</p>
+        <div class="modal_button_container">
+            <a id="nick_login" class="button modal_button modal_button_left" href="javascript:void(0)">
+                <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Log in
+            </a>
+        </div>
+        <div class="modal_button_container">
+            <a id="nick_ok" class="button modal_button" href="javascript:void(0)">
+                <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Continue
+            </a>
+            <a id="nick_cancel" class="button modal_button" href="javascript:void(0)">
+                <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+            </a>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <div id="navbar_wrapper">
         <nav id="navbar" role="navigation" class="fixed_width">
@@ -61,18 +82,6 @@
                 <i class="fa fa-th-large button_icon" aria-hidden="true"></i>Galleries
             </a>
         </nav>
-    </div>
-
-    <!-- Nickname dialog -->
-    <div id="nick_dialog" class="modal_dialog" title="Welcome" style="display: none;">
-        <p id="nick_message" class="modal_message">Enter a nickname to get started.</p>
-        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
-        <a id="nick_button" class="button modal_button" href="javascript:void(0)">
-            <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Continue
-        </a>
-        <a id="nick_cancel" class="button modal_button" href="javascript:void(0)">
-            <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
-        </a>
     </div>
 
     <!-- Register dialog -->
