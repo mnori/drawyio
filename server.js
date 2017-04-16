@@ -106,6 +106,10 @@ function App() {
 
 	function setSessionName(req, res, callback) {
 		var nick = req.query.name;
+		if (!nick) {
+			res.send({"error": "Nickname cannot be empty."})
+			return;
+		}
 
 		// is there a User with the same name?
 		var user = new models.User(app);
