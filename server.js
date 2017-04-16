@@ -166,8 +166,9 @@ function App() {
 			self.getSession(req, res, function(session) {
 				getGallery({"type": "room"}, function(entries) {
 					res.render("index.html", { 
+						entries: entries,
 						settings: settings,
-						entries: entries
+						session: session
 					});
 				});
 			});
@@ -180,10 +181,11 @@ function App() {
 			self.getSession(req, res, function(session) {
 				getGallery({"type": galType}, function(entries) {
 					res.render("galleries.html", { 
-						settings: settings,
 						entries: entries,
 						type: galType,
-						titleTxt: titleTxt
+						titleTxt: titleTxt,
+						settings: settings,
+						session: session
 					});
 				});
 			});
@@ -352,11 +354,12 @@ function App() {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
 							room.name : settings.DEFAULT_SNAPSHOT_NAME;
 						res.render("room.html", { 
-							settings: settings,
 							room: room,
 							snapshotName: snapshotName,
 							width: settings.DRAWING_PARAMS.width,
-							height: settings.DRAWING_PARAMS.height
+							height: settings.DRAWING_PARAMS.height,
+							settings: settings,
+							session: session
 						});	
 					} else {
 						send404(res);
@@ -394,7 +397,11 @@ function App() {
 			self.getSession(req, res, function(session) {
 				getSnapshot(snapID, function(snapshot) {
 					if (snapshot != null) {
-						res.render("snapshot.html", { snapshot: snapshot, settings: settings });	
+						res.render("snapshot.html", { 
+							snapshot: snapshot, 
+							settings: settings,
+							session: session 
+						});	
 					} else {
 						send404(res);
 					}

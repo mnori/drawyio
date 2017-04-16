@@ -165,6 +165,11 @@
     <!-- Our own front end code -->
     <script src="/js/{{ settings.CLIENT_FILE }}"></script>
 
+    <script>
+        var conf = {
+            "username": "{{ session.name }}"
+        }
+    </script>
     {% block js %}{% endblock %}
 
     <script>

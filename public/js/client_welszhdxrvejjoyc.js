@@ -11,15 +11,15 @@ var roomDialog;
 var registerDialog;
 var nickDialog;
 var errorDialog;
+var conf;
 
 // Set up the global JS that runs on all pages
-function initGlobal(settings) {
-	if (typeof(settings) === "undefined") {
-		settings = {};
-	}
+function initGlobal(conf) {
+	conf = conf;
+
 	nickDialog = new NickDialog();
 	registerDialog = new RegisterDialog();
-	roomDialog = new RoomDialog(settings.snapshotID);
+	roomDialog = new RoomDialog(conf.snapshotID);
 	errorDialog = new ErrorDialog();
 	galleriesDialog = new GalleriesDialog();
 
@@ -113,7 +113,7 @@ function NickDialog() {
 	var self = this;
 	function init() {
 		setup();
-		var existingNick = getCookie("nick");
+		var existingNick = conf["username"];
 		if (existingNick == null) { // no nick defined
 			self.show();
 		} else { // nick already exists
@@ -171,7 +171,7 @@ function NickDialog() {
 	}
 
 	this.show = function(rename) {
-		var existingNick = getCookie("nick");
+		var existingNick = conf["username"];
 		if (existingNick != null) {
 			$("#nick_input").val(existingNick);
 		}
@@ -1638,7 +1638,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 	// emit a tool action
 	function emitTool(toolIn) { 
-		var nickname = getCookie("nick");
+		var nickname = conf["username"];
 		if (nickname == null) {
 			nickname = "Anonymous"
 		}
