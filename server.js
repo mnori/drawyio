@@ -104,6 +104,16 @@ function App() {
 		session.save(callback);
 	}
 
+	function setSessionName(req, res, callback) {
+		self.getSession(req, res, function(session) {
+			console.log("Got session");
+			session.name = req.query.name;
+			session.save(function() {
+				res.send("ok");
+			});
+		});
+	}
+
 	// Set up all URL endpoints
 	function configureRoutes(expressApp) {
 
@@ -120,9 +130,7 @@ function App() {
 			register.register(req, res, app);
 		});
 
-		expressApp.get("/ajax/set_session_name", function(req, res) {
-			setSessionName(req, res);
-		});
+		expressApp.get("/ajax/set_session_name", setSessionName);
 
 		// Render a drawing's page or its image
 		expressApp.get("/r/:id", function(req, res) {
@@ -180,11 +188,6 @@ function App() {
 
 		// Default action if nothing else matched - 404
 		expressApp.use(function(req, res, next) { send404(res); })
-	}
-
-	function setSessionName(req, res) {
-		console.log("setSessionName()");
-		res.send("ok");
 	}
 
 	function getGallery(params, callback) {

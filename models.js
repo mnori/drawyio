@@ -74,10 +74,11 @@ function Session(fields, req, app) {
 			"INSERT INTO session (id, name, ip_address, last_active)",
 			"VALUES (",
 			"	"+db.esc(self.id)+",",
-			"	'Anonymous',",
+			"	"+db.esc(self.name)+",",
 			"	"+db.esc(self.ipAddress)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.lastActive)+")",
 			") ON DUPLICATE KEY UPDATE",
+			"	name = "+db.esc(self.name)+",",
 			"	ip_address = "+db.esc(self.ipAddress)+",",
 			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
 		].join("\n"), function() {
