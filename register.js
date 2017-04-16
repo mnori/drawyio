@@ -73,10 +73,14 @@ function createUser(req, res, app) {
 				user.save(function(err) {
 					console.log("Reached end of save()");
 					if (err) {
-						console.log("ERROR", err);	
-						res.send("Could not save user to database")
+						// This is a rare case since we already check the username on the
+						// nickname dialog, just before the register dialog
+						res.send({"error": "The username you have chosen is not available."});
 						return;
 					}
+
+					// now update the session with the user ID
+
 					var userID = 1; // dummy user ID. definitely change this!!!!!!
 					res.send({"userID": userID});	
 				});

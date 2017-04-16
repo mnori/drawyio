@@ -27,6 +27,11 @@ function User(app, id) {
 
 	this.save = function(callback) {
 		var db = self.app.db;
+
+		// if the ID exists, the row is already in the DB, so update
+		// Otherwise, we're creating a brand new user
+		var updateSql = (self.id) ? 
+			("ON DUPLICATE KEY UPDATE session_id = "+db.esc(self.sessionID)) : "";
 		db.query([
 			"INSERT INTO user (id, name, session_id, password, joined)",
 			"VALUES (",
@@ -35,8 +40,8 @@ function User(app, id) {
 			"	"+db.esc(self.sessionID)+",",
 			"	"+db.esc(self.password)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.joined)+")",
-			") ON DUPLICATE KEY UPDATE",
-			"	session_id = "+db.esc(self.sessionID) 
+			")",
+			updateSql
 		].join("\n"), function(results, fields, error) {
 			if (error) {
 				callback(error)
