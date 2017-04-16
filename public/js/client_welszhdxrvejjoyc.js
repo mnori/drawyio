@@ -153,11 +153,15 @@ function NickDialog() {
 				url: "/ajax/set_session_name", 
 				data: {"name": nick}
 			}).done(function(response) {
-				console.log("response:");
-				console.log(response);
-				$("#nick_indicator").text(nick);
+				// !! can be error if username is taken
+				var handleClose = function() { // Close button OK click event handler
+					nickDialog.show();
+				}
 				$("#nick_dialog").dialog("close");
-				registerDialog.show();
+				if (!processError(response, handleClose)) { // success
+					$("#nick_indicator").text(nick);
+					registerDialog.show();
+				}
 			});
 		})
 
@@ -221,10 +225,10 @@ function RegisterDialog() {
 				}
 			}).done(function(response) {
 				$("#register_dialog").dialog("close");
-				var closeError = function() { // Close button OK click event handler
+				var handleClose = function() { // Close button OK click event handler
 					registerDialog.show();
 				}
-				if (!processError(response, closeError)) { // success
+				if (!processError(response, handleClose)) { // success
 					console.log("Register response:");
 					console.log(response);
 				}

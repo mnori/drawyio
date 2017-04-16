@@ -11,6 +11,8 @@ function init() {
 	};
 }
 
+// TODO make all of the model classes follow this pattern
+// Pay attention to easy loading method
 function User(app, id) {
 	this.id = id ? id : null;
 	this.name = null;
@@ -23,6 +25,34 @@ function User(app, id) {
 
 	this.init = function() {
 		console.log("User init() invoked");
+	}
+
+	this.load = function(callback) {
+		var db = self.app.db;
+
+		var whereStr;
+		if (this.id) {
+			whereStr = "id = "+db.esc(this.id);
+		} else if (this.name) {
+			whereStr = "name = "+db.esc(this.name);
+		} else if (this.sessionID) {
+			whereStr = "session_id = "+db.esc(this.sessionID);
+		}
+		db.query("SELECT * FROM user WHERE "+whereStr, 
+			function(results, fields, error) {
+				if (results.length == 0) {
+					callback(false);
+				} else {
+					var row = results[0];
+					self.id = row["id"];
+					self.name = row["name"];
+					self.sessionID = row["session_id"];
+					self.password = row["password"]
+					self.joined = new Date(row["joined"]);
+					callback(true);
+				}
+			}
+		);
 	}
 
 	this.save = function(callback) {
@@ -70,19 +100,24 @@ function Session(fields, req, app) {
 
 	this.save = function(callback) {
 		var db = self.app.db;
+		var nameStr = self.name ? db.esc(self.name) : "'Anonymous'";
 		db.query([
 			"INSERT INTO session (id, name, ip_address, last_active)",
 			"VALUES (",
 			"	"+db.esc(self.id)+",",
-			"	"+db.esc(self.name)+",",
+			"	"+nameStr+",",
 			"	"+db.esc(self.ipAddress)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.lastActive)+")",
 			") ON DUPLICATE KEY UPDATE",
 			"	name = "+db.esc(self.name)+",",
 			"	ip_address = "+db.esc(self.ipAddress)+",",
 			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
-		].join("\n"), function() {
-			callback(self);
+		].join("\n"), function(results, fields, error) {
+			if (error) {
+				callback(self, error);
+			} else {
+				callback(self);
+			}
 		});
 	}
 	this.init(fields, req, app);

@@ -99,18 +99,33 @@ function App() {
 		// insert session data into the DB
 		var session = new models.Session({
 			"id": sessionID,
-			"name": "Anonymous" // This will be overwritten when user changes name
+			"name": null // This will be overwritten when user changes name
 		}, req, app);
 		session.save(callback);
 	}
 
 	function setSessionName(req, res, callback) {
-		self.getSession(req, res, function(session) {
-			console.log("Got session");
-			session.name = req.query.name;
-			session.save(function() {
-				res.send("ok");
-			});
+		var nick = req.query.name;
+
+		// is there a User with the same name?
+		var user = new models.User(app);
+		user.name = nick;
+		user.load(function(nameTaken) {
+			if (nameTaken) {
+				res.send({"error": "Sorry, that name is taken."})
+			} else {
+				self.getSession(req, res, function(session) {
+					console.log("Got session");
+					session.name = nick;
+					session.save(function(session, error) {
+						if (error) {
+							res.send({"error": "Could not save name to DB."})
+						} else {
+							res.send("ok");	
+						}
+					});
+				});
+			}
 		});
 	}
 
