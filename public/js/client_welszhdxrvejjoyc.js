@@ -108,6 +108,79 @@ function GalleryUI(type) {
 
 // DIALOGS ///////////////////////////////////////////////////////////////////////////////
 
+function NickDialog() {
+	// Set up a modal asking about setting the nickname
+	var self = this;
+	function init() {
+		setup();
+		var existingNick = getCookie("nick");
+		if (existingNick == null) { // no nick defined
+			self.show();
+		} else { // nick already exists
+			$("#nick_dialog").hide();
+			$("#nick_indicator").text(existingNick); // using .text() escapes html
+		}
+
+		// activate the nickname button
+		$("#change_nick_btn").click(function() { self.show(true); });
+	}
+
+	// Set up modal dialogue for changing the nickname
+	function setup() {
+		// Create modal using jqueryui
+		$("#nick_dialog").dialog({
+			resizable: false,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+		        setModalCss();
+				$("#nick_input").select();
+				$(".ui-dialog-titlebar-close").hide();
+				$("#nick_dialog").show();
+		    }
+		});
+
+		// Make text input highlight when clicked
+		$("#nick_input").click(function() { $(this).select(); })
+
+		// Set up OK button event handler
+		$("#nick_button").click(function() {
+			var nick = $("#nick_input").val();
+			$.ajax({
+				url: "/ajax/set_session_name", 
+				data: {"name": nick}
+			}).done(function(response) {
+				console.log("response:");
+				console.log(response);
+				$("#nick_indicator").text(nick);
+				$("#nick_dialog").dialog("close");
+				registerDialog.show();
+			});
+		})
+
+		$("#nick_cancel").click(function() {
+			$("#nick_dialog").dialog("close");
+		});
+	}
+
+	this.show = function(rename) {
+		var existingNick = getCookie("nick");
+		if (existingNick != null) {
+			$("#nick_input").val(existingNick);
+		}
+		$("#nick_dialog").dialog("open");
+		if (rename) {
+			$("#nick_message").html("Please enter a new nickname.");
+			$("#nick_dialog").prev().find(".ui-dialog-title").text("Alert");
+		}
+	}
+	init();
+	return this;
+}
+
 function RegisterDialog() {
 	function init() {
 		setup();
@@ -352,7 +425,7 @@ function RoomDialog(roomIDIn) {
 		}
 
 		$.ajax({
-			url: "/create_room", 
+			url: "/ajax/create_room", 
 			data: params
 		}).done(function(roomID) {
 			// Redirect to the snapshot's page
@@ -447,7 +520,7 @@ function SnapshotModal(roomIDIn) {
 		var isPrivate = (visibility == "snapshot_visibility_private") ? true : false;
 
 		$.ajax({
-			url: "/create_snapshot", 
+			url: "/ajax/create_snapshot", 
 			data: {
 				roomID: roomID,
 				name: snapshotName,
@@ -466,73 +539,6 @@ function SnapshotModal(roomIDIn) {
 	}
 
 	init();
-}
-
-function NickDialog() {
-	// Set up a modal asking about setting the nickname
-	var self = this;
-	function init() {
-		setup();
-		var existingNick = getCookie("nick");
-		if (existingNick == null) { // no nick defined
-			self.show();
-		} else { // nick already exists
-			$("#nick_dialog").hide();
-			$("#nick_indicator").text(existingNick); // using .text() escapes html
-		}
-
-		// activate the nickname button
-		$("#change_nick_btn").click(function() { self.show(true); });
-	}
-
-	// Set up modal dialogue for changing the nickname
-	function setup() {
-		// Create modal using jqueryui
-		$("#nick_dialog").dialog({
-			resizable: false,
-			width: 400,
-			modal: true,
-			draggable: false,
-			autoOpen: false,
-			closeOnEscape: false,
-			open: function(event, ui) {
-		        setModalCss();
-				$("#nick_input").select();
-				$(".ui-dialog-titlebar-close").hide();
-				$("#nick_dialog").show();
-		    }
-		});
-
-		// Make text input highlight when clicked
-		$("#nick_input").click(function() { $(this).select(); })
-
-		// Set up OK button event handler
-		// Old nick setter stuff
-		$("#nick_button").click(function() {
-			var nick = $("#nick_input").val();
-			$("#nick_indicator").text(nick);
-			$("#nick_dialog").dialog("close");
-			registerDialog.show();
-		})
-
-		$("#nick_cancel").click(function() {
-			$("#nick_dialog").dialog("close");
-		});
-	}
-
-	this.show = function(rename) {
-		var existingNick = getCookie("nick");
-		if (existingNick != null) {
-			$("#nick_input").val(existingNick);
-		}
-		$("#nick_dialog").dialog("open");
-		if (rename) {
-			$("#nick_message").html("Please enter a new nickname.");
-			$("#nick_dialog").prev().find(".ui-dialog-title").text("Alert");
-		}
-	}
-	init();
-	return this;
 }
 
 function setModalCss() {

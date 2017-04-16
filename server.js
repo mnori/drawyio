@@ -111,13 +111,17 @@ function App() {
 		expressApp.use(express.static("public"));
 
 		// Create a new drawing in memory, and return its unique ID to the client
-		expressApp.get("/create_room", createRoom);
+		expressApp.get("/ajax/create_room", createRoom);
 
 		// Create a new drawing in memory, and return its unique ID to the client
-		expressApp.get("/create_snapshot", createSnapshot);
+		expressApp.get("/ajax/create_snapshot", createSnapshot);
 
 		expressApp.get("/ajax/register", function(req, res) {
 			register.register(req, res, app);
+		});
+
+		expressApp.get("/ajax/set_session_name", function(req, res) {
+			setSessionName(req, res);
 		});
 
 		// Render a drawing's page or its image
@@ -176,6 +180,11 @@ function App() {
 
 		// Default action if nothing else matched - 404
 		expressApp.use(function(req, res, next) { send404(res); })
+	}
+
+	function setSessionName(req, res) {
+		console.log("setSessionName()");
+		res.send("ok");
 	}
 
 	function getGallery(params, callback) {
