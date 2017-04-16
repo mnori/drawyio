@@ -26,6 +26,7 @@ function App() {
 	var models = this.models = require("./models") // Data classes
 	const register = require("./register") // Registration flow
 	const utils = require("./utils") // Misc utilities
+	const login = require("./login") // Misc utilities
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;
@@ -146,6 +147,10 @@ function App() {
 
 		expressApp.get("/ajax/register", function(req, res) {
 			register.register(req, res, app);
+		});
+
+		expressApp.get("/ajax/login", function(req, res) {
+			login.login(req, res, app);
 		});
 
 		expressApp.get("/ajax/set_session_name", setSessionName);

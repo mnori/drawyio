@@ -216,7 +216,16 @@ function LoginDialog() {
 		});
 
 		$("#login_submit").click(function() {
-			$("#login_dialog").dialog("close");
+			$.ajax({
+				url: "/ajax/login", 
+				data: {
+					"username": $("#login_username").val(),
+					"password": $("#login_password").val(),
+				}
+			}).done(function(response) {
+				console.log(response);
+				$("#login_dialog").dialog("close");
+			});
 		})
 	}
 
