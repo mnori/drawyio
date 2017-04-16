@@ -1,3 +1,5 @@
+var bcrypt = require('bcrypt');
+
 // Code to register users goes here
 
 function register(req, res, app) {
@@ -48,6 +50,11 @@ function checkErrorsAndContinue(req, res, errors) {
 
 function createUser(req, res) {
 	// now we need to create the user object
+
+	// create a salted password
+	var password = req.query.pw1;
+	// var salt = 
+
 	var userID = 1; // dummy user ID. definitely change this!!!!!!
 	res.send({"userID": userID});	
 }

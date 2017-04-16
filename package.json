@@ -18,6 +18,7 @@
     "mysql": "*",
     "synchronize": "*",
     "cookie-parser": "*",
-    "express-recaptcha": "*"
+    "express-recaptcha": "*",
+    "bcrypt": "*"
   }
 }

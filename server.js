@@ -72,7 +72,7 @@ function App() {
 		db.query(
 			"SELECT * FROM session WHERE id = "+db.esc(sessionID), 
 			function(results, fields, error) {
-				if (results.length == 0) { // not in database
+				if (!results || results.length == 0) { // not in database
 					createSession(req, res, callback); // create new session
 					return;
 				} else {
