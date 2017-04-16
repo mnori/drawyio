@@ -215,6 +215,10 @@ function LoginDialog() {
 		    }
 		});
 
+		$("#login_cancel").click(function() {
+			$("#login_dialog").dialog("close");
+		});
+
 		$("#login_submit").click(function() {
 			$.ajax({
 				url: "/ajax/login", 
