@@ -227,8 +227,17 @@ function LoginDialog() {
 					"password": $("#login_password").val(),
 				}
 			}).done(function(response) {
+				console.log("done");
+				console.log("response:");
 				console.log(response);
-				$("#login_dialog").dialog("close");
+				var handleClose = function() {
+					$("#login_dialog").dialog("close");
+					loginDialog.show();
+				}
+				if (!processError(response, handleClose)) { // success
+					console.log(response);
+					$("#login_dialog").dialog("close");
+				}
 			});
 		})
 	}

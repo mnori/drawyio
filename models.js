@@ -37,6 +37,8 @@ function User(app, id) {
 			whereStr = "name = "+db.esc(this.name);
 		} else if (this.sessionID) {
 			whereStr = "session_id = "+db.esc(this.sessionID);
+		} else {
+			console.log("Load with nothing!!!");
 		}
 		db.query("SELECT * FROM user WHERE "+whereStr, 
 			function(results, fields, error) {
