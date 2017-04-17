@@ -4,6 +4,8 @@ var bcrypt = require('bcrypt');
 function login(req, res, app) {
 	var bcrypt = require('bcrypt');
 
+	var errorMsg = "The username and/or password were incorrect."
+
 	console.log("Query:")
 	console.log(req.query);
 	var username = req.query.username;
@@ -13,19 +15,17 @@ function login(req, res, app) {
 	user.name = username;
 	user.load(function(ok) {
 		if (!ok) {
-			res.send({"error": "The username and/or password were incorrect [2]."});
+			// username is wrong
+			res.send({"error": errorMsg});
 			return;
 		}
-		bcrypt.compare(password, user.password, function(err) {
-			if (err) {
-				console.log(err);
-				res.send({"error": "The username and/or password were incorrect."});
-			} else {
-				// password was correct
-				// link the user to the sse
+		bcrypt.compare(password, user.password, function(err, bres) {
+			if (bres) { // password OK
 				console.log("username: ["+username+"]")
 				console.log("password: ["+password+"]")	
 				res.send("ok");
+			} else { // password not OK
+				res.send({"error": errorMsg});
 			}
 		});
 	});
