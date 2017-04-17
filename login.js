@@ -20,12 +20,12 @@ function login(req, res, app) {
 			return;
 		}
 		bcrypt.compare(password, user.password, function(err, bres) {
-			if (bres) { // password OK
+			if (!bres) { // password not OK
+				res.send({"error": errorMsg});
+			} else { // password OK
 				console.log("username: ["+username+"]")
 				console.log("password: ["+password+"]")	
 				res.send("ok");
-			} else { // password not OK
-				res.send({"error": errorMsg});
 			}
 		});
 	});
