@@ -11,12 +11,18 @@ function login(req, res, app) {
 
 	var user = new app.models.User(app);
 	user.name = username;
-	user.load(function() {
+	user.load(function(ok) {
+		if (!ok) {
+			res.send({"error": "The username and/or password were incorrect [2]."});
+			return;
+		}
 		bcrypt.compare(password, user.password, function(err) {
 			if (err) {
 				console.log(err);
 				res.send({"error": "The username and/or password were incorrect."});
 			} else {
+				// password was correct
+				// link the user to the sse
 				console.log("username: ["+username+"]")
 				console.log("password: ["+password+"]")	
 				res.send("ok");
