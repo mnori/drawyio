@@ -12,7 +12,7 @@ function login(req, res, app) {
 	var user = new app.models.User(app);
 	user.name = username;
 	user.load(function() {
-		bcyrpt.compare(password, user.password, function(err, res) {
+		bcrypt.compare(password, user.password, function(err) {
 			if (err) {
 				console.log(err);
 				res.send({"error": "The username and/or password were incorrect."});
