@@ -56,13 +56,10 @@ function App() {
 	this.getSession = function(req, res, callback) {
 		// check if client sent cookie
 		var cookie = req.cookies.sessionID;
-		if (cookie === undefined) { 
-			// no cookie so create one
+		if (cookie === undefined || !self.validation.checkSessionID(cookie)) { 
+			// no/invalid cookie so create one
 			createSession(req, res, callback);
 
-		} else if (!self.validation.checkSessionID(cookie)) { 
-			// invalid cookie string, create new cookie
-			createSession(req, res, callback);
 		} else { 
 			// check for session in database. no session? create new cookie
 			// create new session as well
@@ -71,9 +68,18 @@ function App() {
 	}
 
 	function loadSession(req, res, sessionID, callback) {
+		var sql = [
+			"SELECT session.*, user.* FROM session",
+			"LEFT JOIN user ON",
+			"	session.id = user.session_id",
+			"WHERE",
+			"	session.id = "+db.esc(sessionID)
+		].join("\n");
+
 		db.query(
-			"SELECT * FROM session WHERE id = "+db.esc(sessionID), 
+			sql, 
 			function(results, fields, error) {
+				console.log(results);
 				if (!results || results.length == 0) { // not in database
 					createSession(req, res, callback); // create new session
 					return;

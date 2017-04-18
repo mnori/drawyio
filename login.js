@@ -26,8 +26,7 @@ function login(req, res, app) {
 				res.send({"error": errorMsg});
 			} else { // password OK
 
-
-				// Get session ID
+				// Get session ID from cookie
 				var sessionID = req.cookies.sessionID;
 				if (sessionID === undefined) { 
 					res.send({"error": "Invalid session."})
