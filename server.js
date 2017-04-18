@@ -76,10 +76,14 @@ function App() {
 			"	session.id = "+db.esc(sessionID)
 		].join("\n");
 
+		// problem is that the field names overwrite each other
+		// could rename each one explicitly of course...
+
 		db.query(
 			sql, 
 			function(results, fields, error) {
 				console.log(results);
+				console.log(fields);
 				if (!results || results.length == 0) { // not in database
 					createSession(req, res, callback); // create new session
 					return;
