@@ -227,9 +227,6 @@ function LoginDialog() {
 					"password": $("#login_password").val(),
 				}
 			}).done(function(response) {
-				console.log("done");
-				console.log("response:");
-				console.log(response);
 				$("#login_dialog").dialog("close");
 				var handleClose = function() {
 					loginDialog.show();

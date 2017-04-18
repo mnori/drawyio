@@ -11,6 +11,55 @@ function init() {
 	};
 }
 
+function Session(fields, req, app) {
+	var self = this;
+
+	// TODO change this to use setting variables outside the class
+	this.init = function(fields, req, app) {
+		this.id = fields.id;
+		this.name = fields.name;
+		this.ipAddress = req.connection.remoteAddress;
+		this.lastActive = new Date();
+		this.app = app;
+		this.user = null;
+	}
+
+	// For returning session data to the client.
+	// obvs this should not include password or other sensitive fields
+	this.getClientData = function(callback) {
+		return {
+			"id": this.id,
+			"name": this.name,
+			"type": "guest" // TODO get this from the User object if it exists
+		}
+	}
+
+	this.save = function(callback) {
+		var db = self.app.db;
+		var nameStr = self.name ? db.esc(self.name) : "'Anonymous'";
+		db.query([
+			"INSERT INTO session (id, name, ip_address, last_active)",
+			"VALUES (",
+			"	"+db.esc(self.id)+",",
+			"	"+nameStr+",",
+			"	"+db.esc(self.ipAddress)+",",
+			"	FROM_UNIXTIME("+getUnixtime(self.lastActive)+")",
+			") ON DUPLICATE KEY UPDATE",
+			"	name = "+db.esc(self.name)+",",
+			"	ip_address = "+db.esc(self.ipAddress)+",",
+			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
+		].join("\n"), function(results, fields, error) {
+			if (error) {
+				callback(self, error);
+			} else {
+				callback(self);
+			}
+		});
+	}
+
+	this.init(fields, req, app);
+}
+
 // TODO make all of the model classes follow this pattern
 // Pay attention to easy loading method
 function User(app, id) {
@@ -72,7 +121,8 @@ function User(app, id) {
 			"	"+db.esc(self.sessionID)+",",
 			"	"+db.esc(self.password)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.joined)+")",
-			")",
+			") ON DUPLICATE KEY UPDATE",
+			"	"+db.esc(self.sessionID)+"",
 			updateSql
 		].join("\n"), function(results, fields, error) {
 			if (error) {
@@ -88,41 +138,6 @@ function User(app, id) {
 		});
 	}
 	this.init();
-}
-
-function Session(fields, req, app) {
-	var self = this;
-	this.init = function(fields, req, app) {
-		this.id = fields.id;
-		this.name = fields.name;
-		this.ipAddress = req.connection.remoteAddress;
-		this.lastActive = new Date();
-		this.app = app;
-	}
-
-	this.save = function(callback) {
-		var db = self.app.db;
-		var nameStr = self.name ? db.esc(self.name) : "'Anonymous'";
-		db.query([
-			"INSERT INTO session (id, name, ip_address, last_active)",
-			"VALUES (",
-			"	"+db.esc(self.id)+",",
-			"	"+nameStr+",",
-			"	"+db.esc(self.ipAddress)+",",
-			"	FROM_UNIXTIME("+getUnixtime(self.lastActive)+")",
-			") ON DUPLICATE KEY UPDATE",
-			"	name = "+db.esc(self.name)+",",
-			"	ip_address = "+db.esc(self.ipAddress)+",",
-			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
-		].join("\n"), function(results, fields, error) {
-			if (error) {
-				callback(self, error);
-			} else {
-				callback(self);
-			}
-		});
-	}
-	this.init(fields, req, app);
 }
 
 // Stores the data for a room
