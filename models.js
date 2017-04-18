@@ -121,8 +121,7 @@ function User(app, id) {
 			"	"+db.esc(self.sessionID)+",",
 			"	"+db.esc(self.password)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.joined)+")",
-			") ON DUPLICATE KEY UPDATE",
-			"	"+db.esc(self.sessionID)+"",
+			")",
 			updateSql
 		].join("\n"), function(results, fields, error) {
 			if (error) {

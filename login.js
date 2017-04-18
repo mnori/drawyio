@@ -26,19 +26,20 @@ function login(req, res, app) {
 				res.send({"error": errorMsg});
 			} else { // password OK
 
-				// 1. get the session using the request (req) object
-				app.getSession(req, res, function(session) {
-					
-					// 2. set the session_id in the User object
-					user.sessionID = session.id;
-					user.save(function() {
-						
-						// 3. send some of the session / user data to the client
-						console.log("Got session");
-						console.log(session);
-						console.log("username: ["+username+"]")
-						console.log("password: ["+password+"]")	
-						res.send(session.getClientData());
+
+				// Get session ID
+				var sessionID = req.cookies.sessionID;
+				if (sessionID === undefined) { 
+					res.send({"error": "Invalid session."})
+					return;
+				}
+				// Save the session_id in the User object
+				user.sessionID = sessionID;
+				user.save(function() {
+
+					// Load session and send data to the client
+					app.getSession(req, res, function(session) {
+						res.send(session.getClientData());	
 					});
 				});
 			}
