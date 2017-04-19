@@ -1,6 +1,6 @@
 var bcrypt = require('bcrypt');
 
-// Login flow
+// Login backend flow
 function login(req, res, app) {
 	var bcrypt = require('bcrypt');
 
@@ -24,6 +24,7 @@ function login(req, res, app) {
 		bcrypt.compare(password, user.password, function(err, bres) {
 			if (!bres) { // password not OK
 				res.send({"error": errorMsg});
+
 			} else { // password OK
 
 				// Get session ID from cookie

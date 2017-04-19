@@ -94,13 +94,14 @@ function App() {
 			function(results, fields, error) {
 				var row = results[0];
 				if (!results || results.length == 0) { // not in database
-					createSession(req, res, callback); // create new session
+					createSession(row, req, res, callback); // create new session
 					return;
 				} else {
 					// session is in DB
 					var session = new models.Session(req, app);
 					session.id = row["session_id"];
 					session.name = row["session_name"];
+					addUserToSession(row, session);
 
 					// save to update the last_active and ip address
 					session.save(callback);
@@ -109,8 +110,19 @@ function App() {
 		);
 	}
 
+	function addUserToSession(row, session) {
+		console.log("addUserToSession()");
+		if (row["user_id"] == null) {
+			return;
+		}
+		var user = new models.User(app);
+		user.populate(row);
+		session.user = user;
+		console.log(session.user);
+	}
+
 	// Create a session cookie in the database
-	function createSession(req, res, callback) {
+	function createSession(row, req, res, callback) {
 
 		// generate new session ID
 		var sessionID = utils.randomString(settings.SESSION_ID_LEN);
@@ -121,7 +133,8 @@ function App() {
 		// insert session data into the DB
 		var session = new models.Session(req, app);
 		session.id = sessionID;
-		session.name = null
+		session.name = "Anonymous";
+		addUserToSession(row, session);
 		session.save(callback);
 	}
 
