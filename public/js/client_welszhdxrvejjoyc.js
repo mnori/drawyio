@@ -172,7 +172,7 @@ function NickDialog() {
 				}
 				$("#nick_dialog").dialog("close");
 				if (!processError(response, handleClose)) { // success
-					$("#nick_indicator").text(nick);
+					setNameIndicator(response);
 					registerDialog.show();
 				}
 			});

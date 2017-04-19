@@ -159,7 +159,7 @@ function App() {
 						if (error) {
 							res.send({"error": "Could not save name to DB."})
 						} else {
-							res.send("ok");	
+							res.send(session.getClientData());	
 						}
 					});
 				});
