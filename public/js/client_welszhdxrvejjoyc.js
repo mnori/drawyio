@@ -15,10 +15,11 @@ var loginDialog;
 var conf;
 
 // Set up the global JS that runs on all pages
+// conf is data passed from the backend via wrapper tpl
 function initGlobal(conf) {
 	conf = conf;
 
-	console.log(conf);
+	console.log(conf["sessionData"]);
 
 	nickDialog = new NickDialog();
 	registerDialog = new RegisterDialog();
@@ -117,14 +118,19 @@ function NickDialog() {
 	var self = this;
 	function init() {
 		setup();
-		var existingNick = conf["username"];
-		if (!existingNick) { // no nick defined
-			$("#nick_indicator").text("Anonymous");
-			self.show();
-		} else { // nick already exists
-			$("#nick_dialog").hide();
-			$("#nick_indicator").text(existingNick); // using .text() escapes html
+		var existingNick = conf["sessionData"]["name"];
+		$("#nick_indicator").text(existingNick); // using .text() 	escapes html
+
+		// the style changes based on the user type
+		// TODO put this in a function
+		if (conf["sessionData"]["type"] == "user") {
+			$("#nick_indicator").removeClass("nick_indicator_guest");
+			$("#nick_indicator").addClass("nick_indicator_user");
+		} else {
+			$("#nick_indicator").removeClass("nick_indicator_user");
+			$("#nick_indicator").addClass("nick_indicator_guest");
 		}
+		
 
 		// activate the nickname button
 		$("#change_nick_btn").click(function() { self.show(true); });
@@ -181,7 +187,8 @@ function NickDialog() {
 	}
 
 	this.show = function(rename) {
-		var existingNick = conf["username"] ? conf["username"] : "Anonymous";
+		var existingNick = conf["sessionData"]["name"] 
+			? conf["sessionData"]["name"] : "Anonymous";
 		$("#nick_input").val(existingNick);
 		$("#nick_dialog").dialog("open");
 		if (rename) {

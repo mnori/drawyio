@@ -58,7 +58,8 @@ function App() {
 		var cookie = req.cookies.sessionID;
 		if (cookie === undefined || !self.validation.checkSessionID(cookie)) { 
 			// no/invalid cookie so create one
-			createSession(req, res, callback);
+			// {} means there is no user object
+			createSession({}, req, res, callback);
 
 		} else { 
 			// check for session in database. no session? create new cookie

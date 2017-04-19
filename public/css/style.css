@@ -901,3 +901,11 @@ input::selection {
 	float: left;
 	z-index: 1000000100;
 }
+
+.nick_indicator_guest {
+	font-family: ubuntuLightItalic;
+}
+
+.nick_indicator_user {
+	font-family: ubuntuRegular;
+}
