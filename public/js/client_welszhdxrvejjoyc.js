@@ -41,6 +41,17 @@ function initGlobalResizeHandler() {
 	})
 }
 
+function setNameIndicator(sessionData) {
+	$("#nick_indicator").text(sessionData["name"]); // using .text() 	escapes html
+	if (sessionData["type"] == "user") {
+		$("#nick_indicator").removeClass("nick_indicator_guest");
+		$("#nick_indicator").addClass("nick_indicator_user");
+	} else {
+		$("#nick_indicator").removeClass("nick_indicator_user");
+		$("#nick_indicator").addClass("nick_indicator_guest");
+	}
+}
+
 function GalleryUI(type) {
 	var init = function(type) {
 		$(".galleries_type").checkboxradio();
@@ -118,19 +129,10 @@ function NickDialog() {
 	var self = this;
 	function init() {
 		setup();
-		var existingNick = conf["sessionData"]["name"];
-		$("#nick_indicator").text(existingNick); // using .text() 	escapes html
 
 		// the style changes based on the user type
 		// TODO put this in a function
-		if (conf["sessionData"]["type"] == "user") {
-			$("#nick_indicator").removeClass("nick_indicator_guest");
-			$("#nick_indicator").addClass("nick_indicator_user");
-		} else {
-			$("#nick_indicator").removeClass("nick_indicator_user");
-			$("#nick_indicator").addClass("nick_indicator_guest");
-		}
-		
+		setNameIndicator(conf["sessionData"]);
 
 		// activate the nickname button
 		$("#change_nick_btn").click(function() { self.show(true); });
