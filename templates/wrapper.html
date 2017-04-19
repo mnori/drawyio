@@ -193,7 +193,7 @@
 
     <script>
         var conf = {
-            "username": "{{ session.name }}"
+            "sessionData": {{ sessionData|safe }}
         }
     </script>
     {% block js %}{% endblock %}

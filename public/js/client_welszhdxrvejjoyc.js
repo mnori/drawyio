@@ -18,6 +18,8 @@ var conf;
 function initGlobal(conf) {
 	conf = conf;
 
+	console.log(conf);
+
 	nickDialog = new NickDialog();
 	registerDialog = new RegisterDialog();
 	roomDialog = new RoomDialog(conf.snapshotID);

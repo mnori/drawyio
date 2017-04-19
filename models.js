@@ -26,12 +26,16 @@ function Session(req, app) {
 
 	// For returning session data to the client.
 	// obvs this should not include password or other sensitive fields
-	this.getClientData = function(callback) {
+	this.getClientData = function() {
 		return {
 			"id": this.id,
-			"name": this.name,
-			"type": "guest" // TODO get this from the User object if it exists
+			"name": (this.user) ? this.user.name : this.name,
+			"type": (this.user) ? "user" : "guest"
 		}
+	}
+
+	this.getClientDataJson = function() {
+		return JSON.stringify(this.getClientData());
 	}
 
 	this.save = function(callback) {

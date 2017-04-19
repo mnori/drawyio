@@ -209,7 +209,7 @@ function App() {
 					res.render("index.html", { 
 						entries: entries,
 						settings: settings,
-						session: session
+						sessionData: session.getClientDataJson()
 					});
 				});
 			});
@@ -226,7 +226,7 @@ function App() {
 						type: galType,
 						titleTxt: titleTxt,
 						settings: settings,
-						session: session
+						sessionData: session.getClientDataJson()
 					});
 				});
 			});
@@ -400,7 +400,7 @@ function App() {
 							width: settings.DRAWING_PARAMS.width,
 							height: settings.DRAWING_PARAMS.height,
 							settings: settings,
-							session: session
+							session: session.getClientDataJson()
 						});	
 					} else {
 						send404(res);
@@ -441,7 +441,7 @@ function App() {
 						res.render("snapshot.html", { 
 							snapshot: snapshot, 
 							settings: settings,
-							session: session 
+							session: session.getClientDataJson()
 						});	
 					} else {
 						send404(res);
