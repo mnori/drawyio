@@ -246,7 +246,7 @@ function LoginDialog() {
 					loginDialog.show();
 				}
 				if (!processError(response, handleClose)) { // success
-					console.log(response);
+					receiveSessionData(response);
 					$("#login_dialog").dialog("close");
 				}
 			});
