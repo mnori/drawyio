@@ -41,7 +41,8 @@ function initGlobalResizeHandler() {
 	})
 }
 
-function setNameIndicator(sessionData) {
+function receiveSessionData(sessionData) {
+	conf["sessionData"] = sessionData;
 	$("#nick_indicator").text(sessionData["name"]); // using .text() 	escapes html
 	if (sessionData["type"] == "user") {
 		$("#nick_indicator").removeClass("nick_indicator_guest");
@@ -132,7 +133,7 @@ function NickDialog() {
 
 		// the style changes based on the user type
 		// TODO put this in a function
-		setNameIndicator(conf["sessionData"]);
+		receiveSessionData(conf["sessionData"]);
 
 		// activate the nickname button
 		$("#change_nick_btn").click(function() { self.show(true); });
@@ -172,7 +173,7 @@ function NickDialog() {
 				}
 				$("#nick_dialog").dialog("close");
 				if (!processError(response, handleClose)) { // success
-					setNameIndicator(response);
+					receiveSessionData(response);
 					registerDialog.show();
 				}
 			});
@@ -303,8 +304,7 @@ function RegisterDialog() {
 					registerDialog.show();
 				}
 				if (!processError(response, handleClose)) { // success
-					console.log("Register response:");
-					console.log(response);
+					receiveSessionData(JSON.parse(response));
 				}
 				grecaptcha.reset(); // reset the captcha
 			});

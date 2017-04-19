@@ -77,9 +77,11 @@ function createUser(req, res, app) {
 						res.send({"error": "The username you have chosen is not available."});
 						return;
 					}
+					session.user = user;
 
 					// now update the session with the user ID
-					res.send({"userID": user.id});	
+					res.send(session.getClientDataJson())
+					// res.send({"userID": user.id});	
 				});
 			});
 		});
