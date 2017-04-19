@@ -212,6 +212,8 @@ function LoginDialog() {
 				setModalCss();
 				$(".ui-dialog-titlebar-close").hide();
 				$("#login_dialog").show();
+				$("#login_username").val("");
+				$("#login_password").val("");
 		    }
 		});
 

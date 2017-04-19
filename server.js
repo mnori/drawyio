@@ -67,29 +67,40 @@ function App() {
 		}
 	}
 
+	// Perhaps this method should be attached to the Session object?
 	function loadSession(req, res, sessionID, callback) {
 		var sql = [
-			"SELECT session.*, user.* FROM session",
+			"SELECT ",
+			"	session.id 				as session_id,",
+			"	session.name 			as session_name,",
+			"	session.ip_address 		as session_ip_address,",
+			"	session.last_active 	as session_last_active,",
+
+			"	user.id 				as user_id,",
+			"	user.name 				as user_name,",
+			"	user.session_id 		as user_session_id,",
+			"	user.password 			as user_password,",
+			"	user.joined	 			as user_joined",
+
+			"FROM session",
 			"LEFT JOIN user ON",
 			"	session.id = user.session_id",
 			"WHERE",
 			"	session.id = "+db.esc(sessionID)
 		].join("\n");
 
-		// problem is that the field names overwrite each other
-		// could rename each one explicitly of course...
-
 		db.query(
 			sql, 
 			function(results, fields, error) {
-				console.log(results);
-				console.log(fields);
+				var row = results[0];
 				if (!results || results.length == 0) { // not in database
 					createSession(req, res, callback); // create new session
 					return;
 				} else {
 					// session is in DB
-					var session = new models.Session(results[0], req, app);
+					var session = new models.Session(req, app);
+					session.id = row["session_id"];
+					session.name = row["session_name"];
 
 					// save to update the last_active and ip address
 					session.save(callback);
@@ -108,10 +119,9 @@ function App() {
 		res.cookie('sessionID', sessionID, { httpOnly: true });
 
 		// insert session data into the DB
-		var session = new models.Session({
-			"id": sessionID,
-			"name": null // This will be overwritten when user changes name
-		}, req, app);
+		var session = new models.Session(req, app);
+		session.id = sessionID;
+		session.name = null
 		session.save(callback);
 	}
 

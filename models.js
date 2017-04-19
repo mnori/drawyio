@@ -11,13 +11,13 @@ function init() {
 	};
 }
 
-function Session(fields, req, app) {
+function Session(req, app) {
 	var self = this;
 
 	// TODO change this to use setting variables outside the class
-	this.init = function(fields, req, app) {
-		this.id = fields.id;
-		this.name = fields.name;
+	this.init = function(req, app) {
+		// this.id = fields.id; // set outside class
+		// this.name = fields.name;
 		this.ipAddress = req.connection.remoteAddress;
 		this.lastActive = new Date();
 		this.app = app;
@@ -57,7 +57,7 @@ function Session(fields, req, app) {
 		});
 	}
 
-	this.init(fields, req, app);
+	this.init(req, app);
 }
 
 // TODO make all of the model classes follow this pattern
@@ -95,15 +95,29 @@ function User(app, id) {
 					callback(false);
 				} else {
 					var row = results[0];
-					self.id = row["id"];
-					self.name = row["name"];
-					self.sessionID = row["session_id"];
-					self.password = row["password"]
-					self.joined = new Date(row["joined"]);
+					self.populate(row);
 					callback(true);
 				}
 			}
 		);
+	}
+
+	this.populate = function(row) {
+		row = self.stripPrefix(row);
+		self.id = row["id"];
+		self.name = row["name"];
+		self.sessionID = row["session_id"];
+		self.password = row["password"]
+		self.joined = new Date(row["joined"]);
+	}
+
+	// helper for when a join was used
+	this.stripPrefix = function(row) {
+		out = {}
+		for (var property in row) {
+    		out[property.replace("user_", "")] = row[property];
+		}
+		return out;
 	}
 
 	this.save = function(callback) {
