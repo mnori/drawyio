@@ -401,7 +401,7 @@ function App() {
 							width: settings.DRAWING_PARAMS.width,
 							height: settings.DRAWING_PARAMS.height,
 							settings: settings,
-							session: session.getClientDataJson()
+							sessionData: session.getClientDataJson()
 						});	
 					} else {
 						send404(res);
@@ -442,7 +442,7 @@ function App() {
 						res.render("snapshot.html", { 
 							snapshot: snapshot, 
 							settings: settings,
-							session: session.getClientDataJson()
+							sessionData: session.getClientDataJson()
 						});	
 					} else {
 						send404(res);
