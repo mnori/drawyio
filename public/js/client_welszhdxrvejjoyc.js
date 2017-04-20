@@ -29,6 +29,15 @@ function initGlobal(conf) {
 	loginDialog = new LoginDialog();
 
 	initGlobalResizeHandler();
+
+	// activate the nickname button
+	$("#manage_account_btn").click(function() { 
+		if (conf["sessionData"]["type"] == "guest") {
+			nickDialog.show(true); 	
+		} else {
+			console.log("Logged in");
+		}
+	});
 }
 
 function initGlobalResizeHandler() {
@@ -134,9 +143,6 @@ function NickDialog() {
 		// the style changes based on the user type
 		// TODO put this in a function
 		receiveSessionData(conf["sessionData"]);
-
-		// activate the nickname button
-		$("#change_nick_btn").click(function() { self.show(true); });
 	}
 
 	// Set up modal dialogue for changing the nickname
