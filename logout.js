@@ -2,18 +2,22 @@ var bcrypt = require('bcrypt');
 
 // Logout backend flow
 function logout(req, res, app) {
-	res.send({"error": "Not yet implemented"});
+	// Load session
+	app.getSession(req, res, function(session) {
+		// Detach the session from the user. save updated user into the database
+		var user = session.user; 
+		user.sessionID = null;
+		user.save(function() {
 
-	// // Load session
-	// app.getSession(req, res, function(session) {
-
-	// 	session.user.sessionID = null;
-		
-
-	// 	res.send(session.getClientData());	
-	// });
-
-	// ... send sessionData at the end
+			// Change the nickname back to the default
+			session.name = app.settings.DEFAULT_NICK;
+			session.user = null;
+			session.save(function() {
+				// send updated sessionData at the end		
+				res.send(session.getClientData());
+			});
+		});
+	});
 }
 
 module.exports = {

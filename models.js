@@ -129,8 +129,12 @@ function User(app, id) {
 
 		// if the ID exists, the row is already in the DB, so update
 		// Otherwise, we're creating a brand new user
-		var updateSql = (self.id) ? 
-			("ON DUPLICATE KEY UPDATE session_id = "+db.esc(self.sessionID)) : "";
+		if (self.id) {
+			var sessSql = self.sessionID ? db.esc(self.sessionID) : "NULL"
+			updateSql = "ON DUPLICATE KEY UPDATE session_id = "+sessSql
+		} else {
+			updateSql = "";
+		}
 		db.query([
 			"INSERT INTO user (id, name, session_id, password, joined)",
 			"VALUES (",

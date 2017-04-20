@@ -42,7 +42,7 @@ var migrations = [
 				"CREATE TABLE user (",
 				"	id BIGINT NOT NULL AUTO_INCREMENT,",
 				"	name VARCHAR("+settings.USER_NAME_LEN+") NOT NULL UNIQUE,",
-				"	session_id VARCHAR("+settings.SESSION_ID_LEN+") NOT NULL,",
+				"	session_id VARCHAR("+settings.SESSION_ID_LEN+"),",
 				"	password VARCHAR("+settings.PASSWORD_HASH_LEN+") NOT NULL,",
 				"	joined DATETIME NOT NULL,",
 				"	PRIMARY KEY (id),",

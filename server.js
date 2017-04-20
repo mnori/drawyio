@@ -94,12 +94,12 @@ function App() {
 		db.query(
 			sql, 
 			function(results, fields, error) {
-				var row = results[0];
 				if (!results || results.length == 0) { // not in database
-					createSession(row, req, res, callback); // create new session
+					createSession(null, req, res, callback); // create new session
 					return;
 				} else {
 					// session is in DB
+					var row = results[0];
 					var session = new models.Session(req, app);
 					session.id = row["session_id"];
 					session.name = row["session_name"];
@@ -114,7 +114,7 @@ function App() {
 
 	function addUserToSession(row, session) {
 		console.log("addUserToSession()");
-		if (row["user_id"] == null) {
+		if (row["user_id"] == null) { // no user
 			return;
 		}
 		var user = new models.User(app);
@@ -136,7 +136,10 @@ function App() {
 		var session = new models.Session(req, app);
 		session.id = sessionID;
 		session.name = "Anonymous";
-		addUserToSession(row, session);
+
+		if (row) {
+			addUserToSession(row, session);
+		}
 		session.save(callback);
 	}
 

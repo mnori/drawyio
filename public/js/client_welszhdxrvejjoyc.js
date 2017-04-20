@@ -247,6 +247,8 @@ function AccountDialog() {
 				}
 				if (!processError(response, handleClose)) { // success
 					// update the sessionData coming back from the client
+					receiveSessionData(response);
+										
 					$("#account_dialog").dialog("close");
 				}
 			});
