@@ -240,8 +240,16 @@ function AccountDialog() {
 		});
 		// Set up OK button event handler
 		$("#account_logout").click(function() {
-			console.log("account_logout");
-
+			$.ajax({url: "/ajax/logout"}).done(function(response) {
+				$("#account_dialog").dialog("close");
+				var handleClose = function() {
+					accountDialog.show();
+				}
+				if (!processError(response, handleClose)) { // success
+					// update the sessionData coming back from the client
+					$("#account_dialog").dialog("close");
+				}
+			});
 		});
 		$("#account_continue").click(function() {
 			$("#account_dialog").dialog("close");
