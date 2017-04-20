@@ -113,14 +113,12 @@ function App() {
 	}
 
 	function addUserToSession(row, session) {
-		console.log("addUserToSession()");
 		if (row["user_id"] == null) { // no user
 			return;
 		}
 		var user = new models.User(app);
 		user.populate(row);
 		session.user = user;
-		console.log(session.user);
 	}
 
 	// Create a session cookie in the database
@@ -261,7 +259,6 @@ function App() {
 	}
 
 	function getGallery(params, callback) {
-		console.log(params);
 		if (params["type"] == "room") {
 			getGalleryRooms(params, callback);
 		} else if (params["type"] == "snapshot") {
@@ -308,7 +305,6 @@ function App() {
 
 			// check if reached end
 			var reachedEnd = results.length < (pageSize + 1);
-			console.log("reachedEnd: "+reachedEnd);
 
 			// Respond with the filled out template
 			callback(out, reachedEnd);
@@ -359,7 +355,7 @@ function App() {
 			var reachedEnd = results.length < (pageSize + 1);
 
 			// Respond with the filled out template
-			callback(out);
+			callback(out, reachedEnd);
 		});
 	}
 

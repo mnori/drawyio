@@ -99,18 +99,17 @@ function GalleryUI(type) {
 				url: "/ajax/gallery/"+type+"s", 
 			}).done(function(html) {
 				$("#gallery").html(html);
+				listenMore();
 			});
 		})
 
 		listenMore();
-
-		// Load older entries
-		
 	}
 
 	var listenMore = function() {
 		var more = $("#gallery_more");
 		if (more.length == 0) {
+			console.log("FUCK");
 			return;
 		}
 		$("#gallery_more").click(function() {
