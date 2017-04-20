@@ -38,7 +38,7 @@ function initGlobal(conf) {
 // either ask user for nickname, or give them the option of logging out
 function manageAccount() {
 	if (conf["sessionData"]["type"] == "guest") {
-		nickDialog.show(true); // this starts the login flow by asking for a nickname
+		nickDialog.show(); // this starts the login flow by asking for a nickname
 	} else {
 		accountDialog.show();
 	}
@@ -203,15 +203,9 @@ function NickDialog() {
 		})
 	}
 
-	this.show = function(rename) {
-		var existingNick = conf["sessionData"]["name"] 
-			? conf["sessionData"]["name"] : "Anonymous";
-		$("#nick_input").val(existingNick);
+	this.show = function() {
+		$("#nick_input").val(conf["sessionData"]["name"]);
 		$("#nick_dialog").dialog("open");
-		if (rename) {
-			$("#nick_message").html("Please enter a new nickname.");
-			$("#nick_dialog").prev().find(".ui-dialog-title").text("Alert");
-		}
 	}
 	init();
 	return this;

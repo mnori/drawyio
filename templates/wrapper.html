@@ -39,14 +39,13 @@
 
     <!-- Nickname dialog, with link to login dialog -->
     <div id="nick_dialog" class="modal_dialog" title="Welcome" style="display: none;">
-        <p id="nick_message" class="modal_message">Enter a nickname to get started.</p>
-        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
-        <p class="modal_message modal_message_before_button">Or already registered?</p>
         <div class="modal_button_container">
             <a id="nick_login" class="button modal_button modal_button_left" href="javascript:void(0)">
                 <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Log in
             </a>
         </div>
+        <p id="nick_message" class="modal_message">Or enter a nickname to get started.</p>
+        <input id="nick_input" class="modal_input" type="text" value="Anonymous" maxlength="{{ settings.USER_NAME_LEN }}" />
         <div class="modal_button_container">
             <a id="nick_ok" class="button modal_button" href="javascript:void(0)">
                 <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Continue
