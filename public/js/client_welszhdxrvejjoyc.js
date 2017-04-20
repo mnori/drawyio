@@ -291,6 +291,11 @@ function LoginDialog() {
 		    }
 		});
 
+		$("#login_back").click(function() {
+			$("#login_dialog").dialog("close");
+			nickDialog.show();
+		});
+
 		$("#login_cancel").click(function() {
 			$("#login_dialog").dialog("close");
 		});
