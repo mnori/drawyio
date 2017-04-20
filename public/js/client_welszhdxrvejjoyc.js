@@ -443,6 +443,9 @@ function ErrorDialog() {
 	}
 
 	this.show = function(errorMessageIn, okCallback) {
+		var titleHtml = "<i class=\"fa fa-times button_icon\" aria-hidden=\"true\"></i>Error"
+		$("#error_dialog").prev().find(".ui-dialog-title").html(titleHtml);
+
 		var ok = $("#error_button");
 		// Set up OK button event handler
 		ok.off(); // remove any event handlers
@@ -487,6 +490,9 @@ function InfoDialog() {
 	}
 
 	this.show = function(messageIn) {
+		var titleHtml = "<i class=\"fa fa-info button_icon\" aria-hidden=\"true\"></i>Info"
+		$("#info_dialog").prev().find(".ui-dialog-title").html(titleHtml);
+
 		var ok = $("#info_button");
 		// Set up OK button event handler
 		ok.off(); // remove any event handlers
