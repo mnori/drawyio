@@ -26,6 +26,7 @@ function initGlobal(conf) {
 	registerDialog = new RegisterDialog();
 	roomDialog = new RoomDialog(conf.snapshotID);
 	errorDialog = new ErrorDialog();
+	infoDialog = new InfoDialog();
 	galleriesDialog = new GalleriesDialog();
 	loginDialog = new LoginDialog();
 
@@ -244,6 +245,7 @@ function AccountDialog() {
 					receiveSessionData(response);
 										
 					$("#account_dialog").dialog("close");
+					infoDialog.show("You are now logged out.");
 				}
 			});
 		});
@@ -309,6 +311,7 @@ function LoginDialog() {
 				if (!processError(response, handleClose)) { // success
 					receiveSessionData(response);
 					$("#login_dialog").dialog("close");
+					infoDialog.show("You are now logged in.");
 				}
 			});
 		})
@@ -366,6 +369,7 @@ function RegisterDialog() {
 				}
 				if (!processError(response, handleClose)) { // success
 					receiveSessionData(JSON.parse(response));
+					infoDialog.show("Registration successful, you are now logged in.");
 				}
 				grecaptcha.reset(); // reset the captcha
 			});
@@ -456,6 +460,41 @@ function ErrorDialog() {
 		$("#error_message").html(errorMessage)
 		$("#error_dialog").dialog("open");
 
+	}
+	init();
+	return this;
+}
+
+function InfoDialog() {
+	function init() {
+		setup();
+	}
+
+	function setup() {
+		$("#info_dialog").dialog({
+			resizable: false,
+			// height: 582,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				$(".ui-dialog-titlebar-close").hide();
+				setModalCss();
+		    }
+		});
+	}
+
+	this.show = function(messageIn) {
+		var ok = $("#info_button");
+		// Set up OK button event handler
+		ok.off(); // remove any event handlers
+		ok.click(function() {
+			$("#info_dialog").dialog("close");
+		});
+		$("#info_message").html(messageIn)
+		$("#info_dialog").dialog("open");
 	}
 	init();
 	return this;
