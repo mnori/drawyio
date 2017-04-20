@@ -11,6 +11,11 @@ function login(req, res, app) {
 	var username = req.query.username;
 	var password = req.query.password;
 
+	if (!username || !password) { // check for blank fields
+		res.send({"error": "Please enter a username and password."})
+		return;
+	}
+
 	var user = new app.models.User(app);
 	user.name = username;
 	user.load(function(ok) {

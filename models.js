@@ -82,8 +82,6 @@ function User(app, id) {
 
 	this.load = function(callback) {
 		var db = self.app.db;
-
-		var whereStr;
 		if (this.id) {
 			whereStr = "id = "+db.esc(this.id);
 		} else if (this.name) {
