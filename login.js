@@ -6,8 +6,6 @@ function login(req, res, app) {
 
 	var errorMsg = "The username and/or password were incorrect."
 
-	console.log("Query:")
-	console.log(req.query);
 	var username = req.query.username;
 	var password = req.query.password;
 

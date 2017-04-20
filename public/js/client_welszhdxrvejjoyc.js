@@ -102,13 +102,26 @@ function GalleryUI(type) {
 			});
 		})
 
+		listenMore();
+
 		// Load older entries
+		
+	}
+
+	var listenMore = function() {
+		var more = $("#gallery_more");
+		if (more.length == 0) {
+			return;
+		}
 		$("#gallery_more").click(function() {
 
 			// Fetch more gallery data using ajax
 			var checkedID = $("input[type='radio']:checked.galleries_type").attr("id");
 			var type = (checkedID == "galleries_snapshots") ? "snapshot" : "room";
 			var oldest = findOldestUnixtime();
+			if (oldest)
+
+			$("#gallery_more_container").remove();
 
 			var data = {
 				oldestTime: ""+oldest
@@ -117,12 +130,11 @@ function GalleryUI(type) {
 				url: "/ajax/gallery/"+type+"s", 
 				data: data
 			}).done(function(html) {
-				if (html.trim() === "") {
-					// reached the end, remove the more button
-					$("#gallery_more").remove();
+				if ($("#gallery_end").length > 0) {
+					$("#gallery_more").hide();
 				}
 				$("#gallery").append(html);
-
+				listenMore();
 			});
 		});
 	}

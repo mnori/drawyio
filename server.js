@@ -214,11 +214,12 @@ function App() {
 		// The index page (will be replaced with something else soon)
 		expressApp.get("/", function(req, res) { 
 			self.getSession(req, res, function(session) {
-				getGallery({"type": "room"}, function(entries) {
+				getGallery({"type": "room"}, function(entries, reachedEnd) {
 					res.render("index.html", { 
 						entries: entries,
 						settings: settings,
-						sessionData: session.getClientDataJson()
+						sessionData: session.getClientDataJson(),
+						reachedEnd: reachedEnd
 					});
 				});
 			});
@@ -229,13 +230,14 @@ function App() {
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
 			self.getSession(req, res, function(session) {
-				getGallery({"type": galType}, function(entries) {
+				getGallery({"type": galType}, function(entries, reachedEnd) {
 					res.render("galleries.html", { 
 						entries: entries,
 						type: galType,
 						titleTxt: titleTxt,
 						settings: settings,
-						sessionData: session.getClientDataJson()
+						sessionData: session.getClientDataJson(),
+						reachedEnd: reachedEnd
 					});
 				});
 			});
@@ -245,10 +247,11 @@ function App() {
 		expressApp.get("/ajax/gallery/:type", function(req, res) { 
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			req.query.type = galType;
-			getGallery(req.query, function(entries) {
+			getGallery(req.query, function(entries, reachedEnd) {
 				res.render("gallery_"+req.query.type+"s.html", { 
 					settings: settings,
-					entries: entries
+					entries: entries,
+					reachedEnd: reachedEnd
 				});
 			});
 		});
@@ -268,18 +271,21 @@ function App() {
 		}
 	}
 
+	// we should probably merge this and the next function somewhat, lots of
+	// duplicated logic, especially for paging
 	function getGallerySnapshots(params, callback) {
 		var out = []
 		var timestamp = parseInt(params.oldestTime);
 		var dateFilter = (!params.oldestTime) ? "" :
 			"AND created < FROM_UNIXTIME("+timestamp+")";
+		var pageSize = settings.MIN_DRAWINGS_MEMORY;
 
 		db.query([
 			"SELECT * FROM snapshot",
 			"WHERE is_private = '0'",
 			dateFilter,
 			"ORDER BY created DESC",
-			"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
+			"LIMIT 0, "+(pageSize + 1)
 		].join("\n"), function(results, fields, error) {
 			if (!results) {
 				callback(out);
@@ -287,7 +293,10 @@ function App() {
 			}
 
 			// Arrange into template format
-			results.forEach(row => {
+			var max = (results.length < pageSize) ? results.length : pageSize;
+			for (var i = 0; i < max; i++) {
+				var row = results[i];
+
 				// Generate the row of data for the template
 				var agoStr = getAgo(row["created"])
 				out.push({ 
@@ -295,10 +304,14 @@ function App() {
 					unixtime: new Date(row.created).getTime() / 1000,
 					ago: agoStr
 				});	
-			});
+			};
+
+			// check if reached end
+			var reachedEnd = results.length < (pageSize + 1);
+			console.log("reachedEnd: "+reachedEnd);
 
 			// Respond with the filled out template
-			callback(out);
+			callback(out, reachedEnd);
 		});
 	}
 
@@ -307,13 +320,14 @@ function App() {
 		var timestamp = parseInt(params.oldestTime);
 		var dateFilter = (!params.oldestTime) ? "" :
 			"AND created < FROM_UNIXTIME("+timestamp+")";
+		var pageSize = settings.MIN_DRAWINGS_MEMORY;
 
 		db.query([
 			"SELECT * FROM room",
 			"WHERE is_private = '0'",
 			dateFilter,
 			"ORDER BY modified DESC",
-			"LIMIT 0, "+settings.MIN_DRAWINGS_MEMORY
+			"LIMIT 0, "+(pageSize + 1)
 		].join("\n"), function(results, fields, error) {
 
 			if (!results) {
@@ -322,7 +336,9 @@ function App() {
 			}
 
 			// Arrange into template format
-			results.forEach(row => {
+			var max = (results.length < pageSize) ? results.length : pageSize;
+			for (var i = 0; i < max; i++) {
+				var row = results[i];
 
 				// Generate the row of data for the template
 				var nUsers = 0;
@@ -337,7 +353,10 @@ function App() {
 					ago: agoStr,
 					unixtime: new Date(row.created).getTime() / 1000
 				});	
-			});
+			};
+
+			// check if reached end
+			var reachedEnd = results.length < (pageSize + 1);
 
 			// Respond with the filled out template
 			callback(out);
