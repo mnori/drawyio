@@ -22,6 +22,7 @@ function initGlobal(conf) {
 	console.log(conf["sessionData"]);
 
 	nickDialog = new NickDialog();
+	accountDialog = new AccountDialog();
 	registerDialog = new RegisterDialog();
 	roomDialog = new RoomDialog(conf.snapshotID);
 	errorDialog = new ErrorDialog();
@@ -31,13 +32,16 @@ function initGlobal(conf) {
 	initGlobalResizeHandler();
 
 	// activate the nickname button
-	$("#manage_account_btn").click(function() { 
-		if (conf["sessionData"]["type"] == "guest") {
-			nickDialog.show(true); 	
-		} else {
-			console.log("Logged in");
-		}
-	});
+	$("#manage_account_btn").click(manageAccount);
+}
+
+// either ask user for nickname, or give them the option of logging out
+function manageAccount() {
+	if (conf["sessionData"]["type"] == "guest") {
+		nickDialog.show(true); // this starts the login flow by asking for a nickname
+	} else {
+		accountDialog.show();
+	}
 }
 
 function initGlobalResizeHandler() {
@@ -52,13 +56,17 @@ function initGlobalResizeHandler() {
 
 function receiveSessionData(sessionData) {
 	conf["sessionData"] = sessionData;
-	$("#nick_indicator").text(sessionData["name"]); // using .text() 	escapes html
+	insertSessionName("nick_indicator", sessionData);
+}
+
+function insertSessionName(elementID, sessionData) {
+	$("#"+elementID).text(sessionData["name"]); // using .text() 	escapes html
 	if (sessionData["type"] == "user") {
-		$("#nick_indicator").removeClass("nick_indicator_guest");
-		$("#nick_indicator").addClass("nick_indicator_user");
+		$("#"+elementID).removeClass("nick_indicator_guest");
+		$("#"+elementID).addClass("nick_indicator_user");
 	} else {
-		$("#nick_indicator").removeClass("nick_indicator_user");
-		$("#nick_indicator").addClass("nick_indicator_guest");
+		$("#"+elementID).removeClass("nick_indicator_user");
+		$("#"+elementID).addClass("nick_indicator_guest");
 	}
 }
 
@@ -204,6 +212,44 @@ function NickDialog() {
 			$("#nick_message").html("Please enter a new nickname.");
 			$("#nick_dialog").prev().find(".ui-dialog-title").text("Alert");
 		}
+	}
+	init();
+	return this;
+}
+
+function AccountDialog() {
+	var self = this;
+	function init() {
+		setup();
+	}
+
+	function setup() {
+		$("#account_dialog").dialog({
+			resizable: false,
+			// height: 582,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				$(".ui-dialog-titlebar-close").hide();
+				insertSessionName("account_dialog_name", conf["sessionData"]);
+				setModalCss();
+		    }
+		});
+		// Set up OK button event handler
+		$("#account_logout").click(function() {
+			console.log("account_logout");
+
+		});
+		$("#account_continue").click(function() {
+			$("#account_dialog").dialog("close");
+		});
+	}
+
+	this.show = function() {
+		$("#account_dialog").dialog("open");
 	}
 	init();
 	return this;

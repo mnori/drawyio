@@ -101,6 +101,20 @@
         </nav>
     </div>
 
+    <!-- Account dialog -->
+    <div id="account_dialog" class="modal_dialog" title="Info" style="display: none;">
+        <form>
+            <p class="modal_message">You are logged in as &#34;<span id="account_dialog_name"></span>&#34;.</p>
+
+            <a id="account_continue" class="button modal_button" href="javascript:void(0)">
+                <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Continue
+            </a>
+            <a id="account_logout" class="button modal_button" href="javascript:void(0)">
+                <i class="fa fa-power-off button_icon" aria-hidden="true"></i>Log out
+            </a>
+        </form>
+    </div>
+
     <!-- Register dialog -->
     <div id="register_dialog" class="modal_dialog" title="Register your nickname (optional)" style="display: none;">
         <form>
