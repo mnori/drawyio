@@ -14,10 +14,7 @@ function init() {
 function Session(req, app) {
 	var self = this;
 
-	// TODO change this to use setting variables outside the class
 	this.init = function(req, app) {
-		// this.id = fields.id; // set outside class
-		// this.name = fields.name;
 		this.ipAddress = req.connection.remoteAddress;
 		this.lastActive = new Date();
 		this.app = app;
@@ -90,7 +87,7 @@ function User(app, id) {
 		} else if (this.sessionID) {
 			whereStr = "session_id = "+db.esc(this.sessionID);
 		} else {
-			console.log("Load with nothing!!!");
+			console.log("Load with nothing!!!"); // should not happen
 		}
 		db.query("SELECT * FROM user WHERE "+whereStr, 
 			function(results, fields, error) {
