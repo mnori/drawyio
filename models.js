@@ -22,13 +22,15 @@ function Session(req, app) {
 	}
 
 	// For returning session data to the client.
-	// obvs this should not include password or other sensitive fields
+	// Obvs this should not include password or other sensitive fields
 	this.getClientData = function() {
-		return {
+		var out = {
 			"id": this.id,
 			"name": (this.user) ? this.user.name : this.name,
-			"type": (this.user) ? "user" : "guest"
+			"type": (this.user) ? this.user.type : "guest"
 		}
+		console.log(out);
+		return out;
 	}
 
 	this.getClientDataJson = function() {

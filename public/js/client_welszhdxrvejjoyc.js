@@ -60,12 +60,22 @@ function receiveSessionData(sessionData) {
 	insertSessionName("nick_indicator", sessionData);
 }
 
+// Insert a session name with some styling
 function insertSessionName(elementID, sessionData) {
 	$("#"+elementID).text(sessionData["name"]); // using .text() 	escapes html
-	if (sessionData["type"] == "user") {
+
+	// gotta be a nicer way of doing this...
+	if (sessionData["type"] == "mod") {
+		$("#"+elementID).addClass("nick_indicator_mod");
+		$("#"+elementID).removeClass("nick_indicator_user");
 		$("#"+elementID).removeClass("nick_indicator_guest");
+		
+	} else if (sessionData["type"] == "user") {
+		$("#"+elementID).removeClass("nick_indicator_mod");
 		$("#"+elementID).addClass("nick_indicator_user");
+		$("#"+elementID).removeClass("nick_indicator_guest");
 	} else {
+		$("#"+elementID).removeClass("nick_indicator_mod");
 		$("#"+elementID).removeClass("nick_indicator_user");
 		$("#"+elementID).addClass("nick_indicator_guest");
 	}

@@ -902,10 +902,15 @@ input::selection {
 	z-index: 1000000100;
 }
 
-.nick_indicator_guest {
-	font-family: ubuntuLightItalic;
+.nick_indicator_mod {
+	font-family: ubuntuBold;
+	color: #6f96ff;
 }
 
 .nick_indicator_user {
 	font-family: ubuntuRegular;
+}
+
+.nick_indicator_guest {
+	font-family: ubuntuLightItalic;
 }
