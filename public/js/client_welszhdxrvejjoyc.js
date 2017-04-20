@@ -1330,14 +1330,32 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 				var element = $(this);
 				element.css("font-family", getFontValue(element.html()));
 			});
-		}, function(htmlIn) { // getVal
+		}, function(htmlIn) { // getButtonHtml
 			return "<span style=\"font-family: "+getFontValue(htmlIn)+";\">Font</span>"
 		});
 
-		// getVal
-		roomMenu = new ToolOptionMenu(this, "room_menu", null, function(htmlIn) { 
-			return "<i class=\"fa fa-snowflake-o bars_button\" aria-hidden=\"true\"></i>"
-		});
+		
+		roomMenu = new ToolOptionMenu(this, "room_menu",
+			function(id) { // onOpen handler
+				// Remove select highlighting, since this is really a menu, 
+				// not a select element
+
+				// TODO come up with an alternative menu class that looks the same but does
+				// not use the <select> element
+
+				// console.log($("#room_menu-menu"));
+				// console.log($("#room_menu-menu").find(".ui-state-active"));
+
+
+			},
+			function(htmlIn) { // getButtonHtml
+				return "<i class=\"fa fa-snowflake-o bars_button\" aria-hidden=\"true\"></i>"
+			},
+			function(value) { // onSelect - when the user clicks an option
+				console.log(value);
+			},
+			true // this indicates we should hide the highlighting when the menu opens
+		);
 
 		toggleButtons("paint");
 
@@ -2229,12 +2247,16 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 
 // Wrapper for tool menu UI elements, which use jquery selectmenu
-function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
+function ToolOptionMenu(drawUI, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isMenuIn) {
 	var ui = drawUI;
 	var id = idIn;
 	var menuButton = $("#"+id);
 	var onOpen = onOpenIn
-	var getVal = getValIn
+	var onSelect = onSelectIn;
+	var getButtonHtml = getButtonHtmlIn
+
+	// Whether to hide highlighted stuff when the menu opens
+	var isMenu = (isMenuIn) ? true : false;
 
 	var self = this; // scoping help
 	
@@ -2243,23 +2265,33 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 		menuButton.selectmenu({
 
 			// When the menu opens, reposition to the desired location to the left of the tool
-			open: function() { self.position(); },
+			open: function() { 
+				self.position(); // calls onOpen
+			},
 			close: function(ev) {
 				var button = $("#"+id+"-button");
 				button.removeClass("button_pressed");
 				button.blur();
 			},
 
-			create: setLabel,
-			select: setLabel
+			create: function() { setLabel(this); },
+			select: function() {
+				setLabel(this);
+				if (onSelectIn) {
+					onSelect($(this).val());
+					console.log(menuButton.selectmenu("option"));
+				}
+			}
 		});
 		$("#"+id+"-button").addClass("button_tool");
 	}
 
-	function setLabel() {
+	function setLabel(element) {
 		var brushSize = $("#"+id);
 		var widget = brushSize.selectmenu("widget");
-		var val = (getVal != null) ? getVal($(this).val()) : $(this).val();
+
+		// getButtonHtml obtains the html to display inside the button
+		var val = (getButtonHtml != null) ? getButtonHtml($(element).val()) : $(element).val();
 		widget.html(
 			"<span class=\"ui-selectmenu-text\">"+
 				"<i class=\"fa fa-caret-left\" aria-hidden=\"true\"></i>&nbsp;"+val+
@@ -2290,6 +2322,11 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getValIn) {
 			"left": (offset.left - menu.width())+"px",
 			"z-index": 1000000012
 		});
+		if (isMenu) { // hide the selected style
+			console.log($("#"+id+"-menu"));
+			console.log($("#"+id+"-menu").find(".ui-state-active"));
+			$("#"+id+"-menu").find(".ui-state-active").removeClass("ui-state-active")
+		}
 		$("#"+id+"-button").addClass("button_pressed");
 	}
 
