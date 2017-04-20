@@ -72,6 +72,7 @@ function User(app, id) {
 	this.sessionID = null;
 	this.password = null;
 	this.joined = null;
+	this.type = null;
 	this.app = app;
 
 	var self = this;
@@ -109,7 +110,8 @@ function User(app, id) {
 		self.id = row["id"];
 		self.name = row["name"];
 		self.sessionID = row["session_id"];
-		self.password = row["password"]
+		self.password = row["password"];
+		self.type = row["type"];
 		self.joined = new Date(row["joined"]);
 	}
 
@@ -134,12 +136,13 @@ function User(app, id) {
 			updateSql = "";
 		}
 		db.query([
-			"INSERT INTO user (id, name, session_id, password, joined)",
+			"INSERT INTO user (id, name, session_id, password, type, joined)",
 			"VALUES (",
 			"	"+db.esc(self.id)+",",
 			"	"+db.esc(self.name)+",",
 			"	"+db.esc(self.sessionID)+",",
 			"	"+db.esc(self.password)+",",
+			"	"+db.esc(self.type)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.joined)+")",
 			")",
 			updateSql

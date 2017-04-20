@@ -106,6 +106,7 @@ function GalleryUI(type) {
 		listenMore();
 	}
 
+	// Listen to the "load more" button
 	var listenMore = function() {
 		var more = $("#gallery_more");
 		if (more.length == 0) {

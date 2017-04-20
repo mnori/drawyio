@@ -82,6 +82,7 @@ function App() {
 			"	user.name 				as user_name,",
 			"	user.session_id 		as user_session_id,",
 			"	user.password 			as user_password,",
+			"	user.type 				as user_type,",
 			"	user.joined	 			as user_joined",
 
 			"FROM session",

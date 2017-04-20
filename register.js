@@ -67,6 +67,7 @@ function createUser(req, res, app) {
 				user.name = session.name;
 				user.sessionID = session.id;
 				user.password = hash;
+				user.type = "user";
 				user.joined = new Date();
 
 				// save user into database

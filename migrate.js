@@ -44,6 +44,7 @@ var migrations = [
 				"	name VARCHAR("+settings.USER_NAME_LEN+") NOT NULL UNIQUE,",
 				"	session_id VARCHAR("+settings.SESSION_ID_LEN+"),",
 				"	password VARCHAR("+settings.PASSWORD_HASH_LEN+") NOT NULL,",
+				"	type ENUM('user', 'mod') NOT NULL,",
 				"	joined DATETIME NOT NULL,",
 				"	PRIMARY KEY (id),",
 				"	FOREIGN KEY (session_id) REFERENCES session(id)",
