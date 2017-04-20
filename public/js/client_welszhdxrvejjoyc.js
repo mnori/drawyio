@@ -19,8 +19,6 @@ var conf;
 function initGlobal(conf) {
 	conf = conf;
 
-	console.log(conf["sessionData"]);
-
 	nickDialog = new NickDialog();
 	accountDialog = new AccountDialog();
 	registerDialog = new RegisterDialog();
@@ -2247,6 +2245,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 
 
 // Wrapper for tool menu UI elements, which use jquery selectmenu
+// TODO Pass in an options object instead of all these seperate parameters
 function ToolOptionMenu(drawUI, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isMenuIn) {
 	var ui = drawUI;
 	var id = idIn;
@@ -2323,8 +2322,6 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isM
 			"z-index": 1000000012
 		});
 		if (isMenu) { // hide the selected style
-			console.log($("#"+id+"-menu"));
-			console.log($("#"+id+"-menu").find(".ui-state-active"));
 			$("#"+id+"-menu").find(".ui-state-active").removeClass("ui-state-active")
 		}
 		$("#"+id+"-button").addClass("button_pressed");
