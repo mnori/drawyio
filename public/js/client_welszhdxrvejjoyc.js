@@ -841,15 +841,20 @@ function setModalCss() {
 
 // DRAWING UI ///////////////////////////////////////////////////////////////////////////////
 
+
+// drawID, widthIn, heightIn
+
 // Initialise the drawing image UI
-function drawUI(drawIdIn, widthIn, heightIn) {
+function drawUI() {
+	var drawID = opts["roomID"];
+	var width = opts["width"];
+	var height = opts["height"];
+
 	var emitInterval = 33; // ~= 30FPS
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
 	var mouseEmitInterval = 20; // throttle all misc mouse output
-	var width = widthIn;
-	var height = heightIn;
 	var drawingCanvas = $("#drawing_canvas");
 	var previewCanvas = $("#drawing_canvas_preview");
 	var croppingCanvas = $("#crop_canvas");
@@ -857,14 +862,13 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var ctx = drawingCanvas[0].getContext('2d'); // the user editable element
 	var previewCtx = previewCanvas[0].getContext('2d'); // the user editable element
 	var doc = $(document);
-	var socket = io.connect("/drawing_socket_"+drawIdIn);
-	var drawID = drawIdIn;
+	var socket = io.connect("/drawing_socket_"+drawID);
 	var layerCodeLen = 32;
 	var highestLayerID = 1;
 	var lastEmit = $.now(); // part of general purpose intervalling system
 	var lastPaintProcess = $.now(); // paint interval stuff 
 	var paintProcessCutoff = 250;
-	var modDialog = new ModDialog("room", drawIdIn);
+	var modDialog = new ModDialog("room", drawID);
 
 	// Delete a remote canvas after a certain amount of time
 	var remoteCanvasDeleteCutoff = 4000;

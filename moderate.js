@@ -25,15 +25,16 @@ function editRoom(req, res, app) {
 		return;
 	}
 	app.getRoom(req.query["id"], function(room) {
-		if (room != null) {
-			room.isPrivate = req.query["isPrivate"];
-			room.isDeleted = req.query["isDeleted"];
-			room.saveDB(function() {
-				res.send("ok");	
-			});
-		} else {
+		if (room == null) {
 			res.send({"error": "Drawing not found."});
+			return;
 		}
+
+		room.isPrivate = req.query["isPrivate"];
+		room.isDeleted = req.query["isDeleted"];
+		room.saveDB(function() {
+			res.send("ok");	
+		});
 	});
 }
 

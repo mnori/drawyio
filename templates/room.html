@@ -137,6 +137,13 @@
 	</div>
 	<script>
 		initGlobal(conf);
+		var opts = {
+			"roomID": "{{ room.id }}",
+			"width": {{ width }},
+			"height": {{ height }},
+			"isPrivate": {{ room.isPrivate }},
+			"isDeleted": {{ room.isDeleted }}
+		};
 		drawUI("{{ room.id }}", {{ width }}, {{ height }});
 	</script>
 {% endblock %}
