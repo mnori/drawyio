@@ -228,7 +228,7 @@ function App() {
 		var sessionID = utils.randomString(settings.SESSION_ID_LEN);
 
 		// add cookie to response
-		res.cookie('sessionID', sessionID, { httpOnly: true });
+		res.cookie('sessionID', sessionID, { httpOnly: false });
 
 		// insert session data into the DB
 		var session = new models.Session(req, app);
@@ -386,6 +386,11 @@ function App() {
 	// Send drawing data to client
 	this.sendRoom = function(data, socket) {
 		var drawID = data.drawID;
+		console.log("sendRoom()")
+		console.log(data);
+
+		// now load and check the session
+
 		self.getRoom(drawID, false, function(room) {
 			if (room == null) {
 				socket.emit(JSON.stringify({"error": "Room not found."}));
@@ -407,6 +412,8 @@ function App() {
 		) { // invalid draw ID or layer code supplied
 			return; // nothing to do, there is no client side confirmation -yet
 		}
+
+		// false - means we do not accept new data for deleted images
 		self.getRoom(drawID, false, function(drawing) {
 			if (drawing == null) {
 				console.log("WARNING: "+drawID+" does not exist!");
@@ -433,7 +440,10 @@ function App() {
 			send404(req, res);
 		} else {
 			self.getSession(req, res, function(session) {
-				self.getRoom(roomID, false, function(room) {
+				var includeDeleted = session.isMod() ? true : false;
+
+				console.log("includeDeleted: ["+includeDeleted+"]");
+				self.getRoom(roomID, includeDeleted, function(room) {
 					if (room != null) {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
 							room.name : settings.DEFAULT_SNAPSHOT_NAME;
@@ -615,7 +625,7 @@ function App() {
 		var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
 		var isPrivate = req.query.isPrivate === "true" ? "1" : "0";
 
-		var errorStr = "Cannot create snapshot because the image has not yet been edited.";
+		var errorStr = "Can't create snapshot from this room at the moment.";
 
 		// get the room
 		self.getRoom(roomID, false, function(room) {
@@ -729,8 +739,11 @@ function App() {
 		var room = self.rooms.get(drawID);	
 
 		// TODO get rid of this strange case
-		if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
+		if (typeof(loadCallback) === "undefined") { 
+			// This should never ever happen anymore
 			console.log("WARNING: CALLBACK IS UNDEFINED, DOING NOTHING")
+			console.log("THIS SHOULD NEVER HAPPEN")
+
 			// if (room.isDeleted) {
 			// 	return null;
 			// } else {
@@ -739,7 +752,7 @@ function App() {
 		} else if (typeof(loadCallback) !== "undefined") {
 			if (room != null) { // already in memory
 				// check session and deleted flag here
-				if (room.isDeleted) {
+				if (room.isDeleted && !includeDeleted) {
 					loadCallback(null);
 				} else {
 					loadCallback(room);
@@ -747,16 +760,16 @@ function App() {
 			} else { 
 				// room is not in memory. try to load it
 				// when loading, add a mysql parameter
-				fetchRoom(drawID, loadCallback);
+				fetchRoom(drawID, includeDeleted, loadCallback);
 			}
 		}
 	}
 
 	// checks mysql database, then disk
-	function fetchRoom(drawID, loadCallback) {
-		db.query(
-			"SELECT * FROM room WHERE id="+db.esc(drawID), 
-			function(results, fields) {
+	function fetchRoom(drawID, includeDeleted, loadCallback) {
+		var deletedSql = !includeDeleted ? " AND is_deleted = '0'" : "";
+		var sql = "SELECT * FROM room WHERE id="+db.esc(drawID)+deletedSql
+		db.query(sql, function(results, fields) {
 				if (results.length == 0) {
 					loadCallback(null);
 				} else {

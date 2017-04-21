@@ -29,7 +29,7 @@ function initGlobal(conf) {
 	snapID = undefined;
 	if (conf) snapID = conf.snapshotID;
 	roomDialog = new RoomDialog(snapID);
-	
+
 	errorDialog = new ErrorDialog();
 	infoDialog = new InfoDialog();
 	galleriesDialog = new GalleriesDialog();
@@ -2043,7 +2043,10 @@ function drawUI() {
 
 	// Ask the server for drawing data
 	function getDrawing() {
-		socket.emit("get_drawing", {"drawID": drawID});
+		socket.emit("get_drawing", {
+			"drawID": drawID,
+			"sessionID": getCookie("sessionID")
+		});
 	}
 
 	// Update drawing with new draw data from the server
@@ -2487,6 +2490,7 @@ function setCookie(cname, cvalue, exdays) {
 
 function getCookie(cname) {
 	var name = cname + "=";
+	console.log(document.cookie);
 	var decodedCookie = decodeURIComponent(document.cookie);
 	var ca = decodedCookie.split(';');
 	for(var i = 0; i <ca.length; i++) {
