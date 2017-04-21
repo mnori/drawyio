@@ -328,7 +328,8 @@ function App() {
 
 		db.query([
 			"SELECT * FROM room",
-			"WHERE is_private = '0'",
+			"WHERE is_private = '0'", // 
+			"AND is_deleted = '0'",   // these two flags could be passed in for mods
 			dateFilter,
 			"ORDER BY modified DESC",
 			"LIMIT 0, "+(pageSize + 1)
