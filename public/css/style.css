@@ -420,15 +420,15 @@ input {
 	margin-bottom: 5px;
 }
 
-#room_menu_container {
+#mod_button_container {
 	position: absolute;
 	bottom: 12px;
 	right: 12px;
 }
 
-#room_menu-button {
+/*#room_menu-button {
 	margin: 0px;
-}
+}*/
 
 /* Peer pointer stuff */
 .pointer_dot {

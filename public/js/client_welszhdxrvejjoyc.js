@@ -12,6 +12,7 @@ var registerDialog;
 var nickDialog;
 var errorDialog;
 var loginDialog;
+var modDialog = null;
 var conf;
 
 // Set up the global JS that runs on all pages
@@ -22,6 +23,8 @@ function initGlobal(conf) {
 	nickDialog = new NickDialog();
 	accountDialog = new AccountDialog();
 	registerDialog = new RegisterDialog();
+
+	// should only be attached inside the snapshot page
 	roomDialog = new RoomDialog(conf.snapshotID);
 	errorDialog = new ErrorDialog();
 	infoDialog = new InfoDialog();
@@ -155,6 +158,126 @@ function GalleryUI(type) {
 }
 
 // DIALOGS ///////////////////////////////////////////////////////////////////////////////
+
+function ModDialog(entityType, entityID) {
+	this.entityType = entityType;
+	this.entityID = entityID;
+	function init() {
+		setup();
+		// $("#create_drawing_btn").click(function() { 
+		// 	setTitle("Create new room");
+		// 	self.show(); 
+		// });
+
+		// // is there a snapshot button?
+		// var snapshotButton = $("#create_snapshot_room");
+		// if (snapshotButton.length == 1) {
+		// 	snapshotButton.click(function() {
+		// 		setTitle("Create new room from image");
+		// 		self.show(roomIDIn);
+		// 	});
+		// }
+	}
+
+	function setTitle(value) {
+		// $("#room_dialog").prev().find(".ui-dialog-title").text(value);
+	}
+
+	function setup() {
+		$("#mod_dialog").dialog({
+			resizable: false,
+			// height: 582,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				setModalCss();
+
+				// // Set up radio buttons 
+				// $(".room_visibility").checkboxradio();
+
+				// $(".room_visibility:first").attr("checked", "checked");
+				// $(".room_visibility").checkboxradio("refresh");				
+				// $(".room_visibility").change(function() {
+				// 	var value = $(this).attr("id");
+				// 	if (value == "room_visibility_public") {
+				// 		$("#room_public_info").show();
+				// 		$("#room_private_info").hide();
+				// 	} else {
+				// 		$("#room_public_info").hide();
+				// 		$("#room_private_info").show();
+				// 	}
+				// })
+
+				// $(".ui-dialog-titlebar-close").hide();
+				// $("#nick_dialog").show();
+		    }
+		});
+
+		// Set up OK button event handler
+		$("#mod_ok").click(function() {
+			process();
+			$("#mod_dialog").dialog("close");
+		});
+
+		$("#mod_cancel").click(function() {
+			$("#mod_dialog").dialog("close");
+		});
+	}
+	function process() {
+		console.log("process() invoked");
+
+		// var roomName = $("#room_name_input").val();
+
+		// var visibility = $("input[type='radio']:checked.room_visibility").attr("id");
+		// var isPrivate = (visibility == "room_visibility_private") ? true : false;
+
+		// var params = {
+		// 	name: roomName,
+		// 	isPrivate: isPrivate
+		// }
+		// if (snapshotID != null) {
+		// 	params["snapshotID"] = snapshotID;
+		// }
+
+		// $.ajax({
+		// 	url: "/ajax/create_room", 
+		// 	data: params
+		// }).done(function(roomID) {
+		// 	// Redirect to the snapshot's page
+		// 	window.location.href = "/r/"+roomID;
+		// });
+	}
+
+	this.show = function(snapshotIDIn) {
+		console.log("show() invoked");
+		// if (typeof(snapshotIDIn) !== "undefined") {
+		// 	snapshotID = snapshotIDIn;
+		// } else {
+		// 	snapshotID = null;
+		// }
+
+		// if (snapshotID) { // if snapshot, we must pass the name through
+		// 	var el = $("#snapshot_title");
+		// 	var txt = el.text();
+
+		// 	// TODO load from settings file - must pass from server to client
+		// 	if (txt == "An unnamed snapshot") {
+		// 		txt = "An unnamed room";
+		// 	}
+		// 	$("#room_name_input").val(txt);
+		// 	$("#room_name_input").select();
+		// } else {
+		// 	$("#room_name_input").val("An unnamed room");
+		// 	$("#room_name_input").select();
+		// }
+		$("#mod_dialog").dialog("open");
+	}
+
+	init();
+}
 
 function NickDialog() {
 	// Set up a modal asking about setting the nickname
@@ -774,6 +897,7 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 	var lastEmit = $.now(); // part of general purpose intervalling system
 	var lastPaintProcess = $.now(); // paint interval stuff 
 	var paintProcessCutoff = 250;
+	var modDialog = new ModDialog("room", drawIdIn);
 
 	// Delete a remote canvas after a certain amount of time
 	var remoteCanvasDeleteCutoff = 4000;
@@ -1332,28 +1456,33 @@ function drawUI(drawIdIn, widthIn, heightIn) {
 			return "<span style=\"font-family: "+getFontValue(htmlIn)+";\">Font</span>"
 		});
 
-		
-		roomMenu = new ToolOptionMenu(this, "room_menu",
-			function(id) { // onOpen handler
-				// Remove select highlighting, since this is really a menu, 
-				// not a select element
+		$("#mod_button").click(function() {
+			console.log("#mod_button clicked");
+			modDialog.show();
+		});
 
-				// TODO come up with an alternative menu class that looks the same but does
-				// not use the <select> element
+		// roomMenu = new ToolOptionMenu(this, "room_menu",
+		// 	function(id) { // onOpen handler
+		// 		// Remove select highlighting, since this is really a menu, 
+		// 		// not a select element
 
-				// console.log($("#room_menu-menu"));
-				// console.log($("#room_menu-menu").find(".ui-state-active"));
+		// 		// TODO come up with an alternative menu class that looks the same but does
+		// 		// not use the <select> element
+
+		// 		// console.log($("#room_menu-menu"));
+		// 		// console.log($("#room_menu-menu").find(".ui-state-active"));
 
 
-			},
-			function(htmlIn) { // getButtonHtml
-				return "<i class=\"fa fa-snowflake-o bars_button\" aria-hidden=\"true\"></i>"
-			},
-			function(value) { // onSelect - when the user clicks an option
-				console.log(value);
-			},
-			true // this indicates we should hide the highlighting when the menu opens
-		);
+		// 	},
+		// 	function(htmlIn) { // getButtonHtml
+		// 		return "<i class=\"fa fa-snowflake-o bars_button\" aria-hidden=\"true\"></i>"
+		// 	},
+		// 	function(value) { // onSelect - when the user clicks an option
+				
+		// 		console.log(value);
+		// 	},
+		// 	true // this indicates we should hide the highlighting when the menu opens
+		// );
 
 		toggleButtons("paint");
 

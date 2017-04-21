@@ -1,0 +1,32 @@
+<div id="mod_dialog" class="modal_dialog" title="Moderation tools" style="display: none;">
+    <p class="modal_message">Visibility</p>
+    <div>
+        <label for="mod_visibility_public">
+            Public
+        </label><label for="mod_visibility_private">
+            Private
+        </label>
+        <input class="modal_radio room_visibility" type="radio" name="mod_visibility" id="mod_visibility_public">
+        <input class="modal_radio mod_visibility" type="radio" name="mod_visibility" id="mod_visibility_private">
+    </div>
+
+    <p class="modal_message">Deleted</p>
+    <div>
+        <label for="mod_not_deleted">
+            Not deleted
+        </label>
+        <label for="mod_deleted">
+            Deleted
+        </label>
+        <input class="modal_radio mod_deleted" type="radio" name="mod_deleted" id="mod_deleted_not_deleted">
+        <input class="modal_radio mod_deleted" type="radio" name="mod_deleted" id="mod_deleted_deleted">
+    </div>
+    
+    <a id="mod_ok" class="button modal_button" href="javascript:void(0)">
+        <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
+    </a>
+
+    <a id="mod_cancel" class="button modal_button" href="javascript:void(0)">
+        <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+    </a>
+</div>

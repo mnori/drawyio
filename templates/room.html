@@ -3,6 +3,9 @@
 {% extends "wrapper.html" %}
 
 {% block content %}
+
+	{% include "mod_dialog.html" %}
+
 	<!-- Snapshot dialog -->
 	<div id="snapshot_dialog" class="modal_dialog" title="Create a permanent snapshot" style="display: none;">
 		<p id="snapshot_name_label" class="modal_message">Name your snapshot</p>
@@ -51,11 +54,10 @@
 		</div>
 		<div id="controls">
 
-			<div id="room_menu_container" class="option_container">
-				<select id="room_menu" class="controls_selectmenu">
-					<option>Make private</option>
-					<option>Delete</option>
-				</select>
+			<div id="mod_button_container" class="option_container">
+				<a id="mod_button" class="button button_tool" href="javascript:void(0)">
+					<i class="fa fa-snowflake-o" aria-hidden="true"></i>
+				</a>
 			</div>
 
 			<a id="snapshot" class="button button_tool" href="javascript:void(0)">

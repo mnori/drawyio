@@ -28,6 +28,7 @@ function App() {
 	const utils = require("./utils") // Misc utilities
 	const login = require("./login")
 	const logout = require("./logout")
+	const moderate = require("./moderate")
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;
@@ -50,6 +51,100 @@ function App() {
 		cleanup(settings);
 		server.listen(settings.PORT);
 		console.log("Running on http://localhost:" + settings.PORT);
+	}
+
+	// Set up all URL endpoints
+	function configureRoutes(expressApp) {
+
+		// Tell node to serve static files from the "public" subdirectory
+		expressApp.use(express.static("public"));
+
+		// Create a new drawing in memory, and return its unique ID to the client
+		expressApp.get("/ajax/create_room", createRoom);
+
+		// Create a new drawing in memory, and return its unique ID to the client
+		expressApp.get("/ajax/create_snapshot", createSnapshot);
+
+		expressApp.get("/ajax/register", function(req, res) {
+			register.register(req, res, app);
+		});
+
+		expressApp.get("/ajax/login", function(req, res) {
+			login.login(req, res, app);
+		});
+
+		expressApp.get("/ajax/logout", function(req, res) {
+			logout.logout(req, res, app);
+		});
+
+		expressApp.get("/ajax/set_session_name", setSessionName);
+
+		// Moderation AJAX
+		expressApp.get("/ajax/moderate", function(req, res) {
+			moderate.handleRequest(req, res, app);
+		});
+
+		// Render a drawing's page or its image
+		expressApp.get("/r/:id", function(req, res) {
+			req.params.id.includes(".png") ? 
+				sendRoomImage(req, res) : 
+				renderRoomPage(req, res);	
+		});
+
+		// Render snapshot page or image
+		expressApp.get("/s/:id", function(req, res) {
+			req.params.id.includes(".png") ? 
+				sendSnapshotImage(req, res) : 
+				renderSnapshotPage(req, res);
+		});
+
+		// The index page (will be replaced with something else soon)
+		expressApp.get("/", function(req, res) { 
+			self.getSession(req, res, function(session) {
+				getGallery({"type": "room"}, function(entries, reachedEnd) {
+					res.render("index.html", { 
+						entries: entries,
+						settings: settings,
+						sessionData: session.getClientDataJson(),
+						reachedEnd: reachedEnd
+					});
+				});
+			});
+		}); 
+
+		// Galleries page
+		expressApp.get("/gallery/:type", function(req, res) {
+			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
+			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
+			self.getSession(req, res, function(session) {
+				getGallery({"type": galType}, function(entries, reachedEnd) {
+					res.render("galleries.html", { 
+						entries: entries,
+						type: galType,
+						titleTxt: titleTxt,
+						settings: settings,
+						sessionData: session.getClientDataJson(),
+						reachedEnd: reachedEnd
+					});
+				});
+			});
+		});
+
+		// Galleries AJAX - can switch between rooms or snapshots
+		expressApp.get("/ajax/gallery/:type", function(req, res) { 
+			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
+			req.query.type = galType;
+			getGallery(req.query, function(entries, reachedEnd) {
+				res.render("gallery_"+req.query.type+"s.html", { 
+					settings: settings,
+					entries: entries,
+					reachedEnd: reachedEnd
+				});
+			});
+		});
+
+		// Default action if nothing else matched - 404
+		expressApp.use(function(req, res, next) { send404(res); })
 	}
 
 	// Adds session cookie to request
@@ -168,95 +263,6 @@ function App() {
 				});
 			}
 		});
-	}
-
-	// Set up all URL endpoints
-	function configureRoutes(expressApp) {
-
-		// Tell node to serve static files from the "public" subdirectory
-		expressApp.use(express.static("public"));
-
-		// Create a new drawing in memory, and return its unique ID to the client
-		expressApp.get("/ajax/create_room", createRoom);
-
-		// Create a new drawing in memory, and return its unique ID to the client
-		expressApp.get("/ajax/create_snapshot", createSnapshot);
-
-		expressApp.get("/ajax/register", function(req, res) {
-			register.register(req, res, app);
-		});
-
-		expressApp.get("/ajax/login", function(req, res) {
-			login.login(req, res, app);
-		});
-
-		expressApp.get("/ajax/logout", function(req, res) {
-			logout.logout(req, res, app);
-		});
-
-		expressApp.get("/ajax/set_session_name", setSessionName);
-
-		// Render a drawing's page or its image
-		expressApp.get("/r/:id", function(req, res) {
-			req.params.id.includes(".png") ? 
-				sendRoomImage(req, res) : 
-				renderRoomPage(req, res);	
-		});
-
-		// Render snapshot page or image
-		expressApp.get("/s/:id", function(req, res) {
-			req.params.id.includes(".png") ? 
-				sendSnapshotImage(req, res) : 
-				renderSnapshotPage(req, res);
-		});
-
-		// The index page (will be replaced with something else soon)
-		expressApp.get("/", function(req, res) { 
-			self.getSession(req, res, function(session) {
-				getGallery({"type": "room"}, function(entries, reachedEnd) {
-					res.render("index.html", { 
-						entries: entries,
-						settings: settings,
-						sessionData: session.getClientDataJson(),
-						reachedEnd: reachedEnd
-					});
-				});
-			});
-		}); 
-
-		// Galleries page
-		expressApp.get("/gallery/:type", function(req, res) {
-			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
-			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
-			self.getSession(req, res, function(session) {
-				getGallery({"type": galType}, function(entries, reachedEnd) {
-					res.render("galleries.html", { 
-						entries: entries,
-						type: galType,
-						titleTxt: titleTxt,
-						settings: settings,
-						sessionData: session.getClientDataJson(),
-						reachedEnd: reachedEnd
-					});
-				});
-			});
-		});
-
-		// Galleries AJAX - can switch between rooms or snapshots
-		expressApp.get("/ajax/gallery/:type", function(req, res) { 
-			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
-			req.query.type = galType;
-			getGallery(req.query, function(entries, reachedEnd) {
-				res.render("gallery_"+req.query.type+"s.html", { 
-					settings: settings,
-					entries: entries,
-					reachedEnd: reachedEnd
-				});
-			});
-		});
-
-		// Default action if nothing else matched - 404
-		expressApp.use(function(req, res, next) { send404(res); })
 	}
 
 	function getGallery(params, callback) {
