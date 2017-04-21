@@ -178,7 +178,7 @@ function ModDialog(entityType, entityID, processCallback) {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				setModalCss();
+				modalOpenSetup();
 				self.configureRadios();
 		    }
 		});
@@ -286,9 +286,8 @@ function NickDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-		        setModalCss();
+		        modalOpenSetup();
 				$("#nick_input").select();
-				$(".ui-dialog-titlebar-close").hide();
 				$("#nick_dialog").show();
 		    }
 		});
@@ -349,9 +348,8 @@ function AccountDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				$(".ui-dialog-titlebar-close").hide();
 				insertSessionName("account_dialog_name", conf["sessionData"]);
-				setModalCss();
+				modalOpenSetup();
 		    }
 		});
 		// Set up OK button event handler
@@ -400,8 +398,7 @@ function LoginDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				setModalCss();
-				$(".ui-dialog-titlebar-close").hide();
+				modalOpenSetup();
 				$("#login_dialog").show();
 				$("#login_username").val("");
 				$("#login_password").val("");
@@ -460,8 +457,7 @@ function RegisterDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				$(".ui-dialog-titlebar-close").hide();
-				setModalCss();
+				modalOpenSetup();
 		    }
 		});
 
@@ -521,8 +517,7 @@ function GalleriesDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				$(".ui-dialog-titlebar-close").hide();
-				setModalCss();
+				modalOpenSetup();
 		    }
 		});
 		// Set up OK button event handler
@@ -557,8 +552,7 @@ function ErrorDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				$(".ui-dialog-titlebar-close").hide();
-				setModalCss();
+				modalOpenSetup();
 		    }
 		});
 	}
@@ -604,8 +598,7 @@ function InfoDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				$(".ui-dialog-titlebar-close").hide();
-				setModalCss();
+				modalOpenSetup();
 		    }
 		});
 	}
@@ -679,7 +672,7 @@ function RoomDialog(roomIDIn) {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				setModalCss();
+				modalOpenSetup();
 
 				// Set up radio buttons 
 				$(".room_visibility").checkboxradio();
@@ -696,8 +689,6 @@ function RoomDialog(roomIDIn) {
 						$("#room_private_info").show();
 					}
 				})
-
-				$(".ui-dialog-titlebar-close").hide();
 				$("#nick_dialog").show();
 		    }
 		});
@@ -783,7 +774,7 @@ function SnapshotDialog(roomIDIn) {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				setModalCss();
+				modalOpenSetup();
 
 				// Set up radio buttons 
 				$(".snapshot_visibility").checkboxradio();
@@ -801,7 +792,6 @@ function SnapshotDialog(roomIDIn) {
 					}
 				})
 
-				$(".ui-dialog-titlebar-close").hide();
 				$("#nick_dialog").show();
 		    }
 		});
@@ -846,7 +836,7 @@ function SnapshotDialog(roomIDIn) {
 	init();
 }
 
-function setModalCss() {
+function modalOpenSetup() {
 	$(".ui-widget-overlay").css({
 		"background-color": "#000",
 		"opacity": 0.5,
@@ -855,6 +845,7 @@ function setModalCss() {
 	$(".ui-dialog").css({
 		"z-index": 1000000021
 	})
+	$(".ui-dialog-titlebar-close").hide();
 }
 
 // DRAWING UI ///////////////////////////////////////////////////////////////////////////////

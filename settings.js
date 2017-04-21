@@ -35,10 +35,9 @@ module.exports = {
 	// CLEANUP_INTERVAL: 1000,
 
 	// after n ms, delete image from memory, providing there is enough stuff
-	// for the front page (10 minutes)
-	// this will disconnect sockets, so we should wait quite a while here.
-	// DELETE_TIME: 600000,
-	DELETE_TIME: 600000,
+	// for the front page
+	// this will disconnect sockets, so we should wait quite a while here (10 minutes).
+	DELETE_TIME: 10 * 60 * 1000,
 
 	ROOM_NAME_LEN: 50,
 	SNAPSHOT_NAME_LEN: 50,
