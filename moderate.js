@@ -30,8 +30,8 @@ function editRoom(req, res, app) {
 			return;
 		}
 
-		room.isPrivate = req.query["isPrivate"] ? true : false;
-		room.isDeleted = req.query["isDeleted"] ? true : false;
+		room.isPrivate = req.query["isPrivate"] != "0" ? true : false;
+		room.isDeleted = req.query["isDeleted"] != "0" ? true : false;
 		room.saveDB(function() {
 			res.send("ok");	
 		});
@@ -48,8 +48,6 @@ function editSnapshot(req, res, app) {
 			res.send({"error": "Snapshot not found."});
 			return;
 		}
-
-		// TODO bug here - we need different code from editRoom, not sure why
 		snapshot.isPrivate = req.query["isPrivate"] != "0" ? true : false;
 		snapshot.isDeleted = req.query["isDeleted"] != "0" ? true : false;
 		snapshot.isStaffPick = req.query["isStaffPick"] != "0" ? true : false;

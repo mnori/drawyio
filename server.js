@@ -286,7 +286,8 @@ function App() {
 
 		db.query([
 			"SELECT * FROM snapshot",
-			"WHERE is_private = '0'",
+			"WHERE is_private = '0'", // 
+			"AND is_deleted = '0'",   // these two flags could be passed in for mods
 			dateFilter,
 			"ORDER BY created DESC",
 			"LIMIT 0, "+(pageSize + 1)
@@ -837,7 +838,7 @@ function App() {
 			snapshot.isDeleted = fields["is_deleted"] == 0 ? false : true;
 			snapshot.isStaffPick = fields["is_staff_pick"] == 0 ? false : true;
 			snapshot.created = new Date(fields["created"]);
-			
+
 			callback(snapshot);
 		}).catch(function(err) {
 			console.log("Warning - loadSnapshotImage failed with ["+inFilepath+"]")
