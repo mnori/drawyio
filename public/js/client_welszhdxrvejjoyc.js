@@ -159,14 +159,16 @@ function GalleryUI(type) {
 
 // DIALOGS ///////////////////////////////////////////////////////////////////////////////
 
-function ModDialog(entityType, entityID) {
+function ModDialog(entityType, entityID, processCallback) {
 	this.entityType = entityType;
 	this.entityID = entityID;
-	function init() {
-		setup();
+	this.processCallback = (processCallback) ? processCallback : null;
+	var self = this;
+	this.init = function() {
+		this.setup();
 	}
 
-	function setup() {
+	this.setup = function() {
 		$("#mod_dialog").dialog({
 			resizable: false,
 			// height: 582,
@@ -190,7 +192,7 @@ function ModDialog(entityType, entityID) {
 
 		// Set up OK button event handler
 		$("#mod_ok").click(function() {
-			process();
+			self.process();
 			$("#mod_dialog").dialog("close");
 		});
 
@@ -198,30 +200,37 @@ function ModDialog(entityType, entityID) {
 			$("#mod_dialog").dialog("close");
 		});
 	}
-	function process() {
-		
+	this.process = function() {
 		var isPrivate = (getRadio("mod_visibility") == "mod_visibility_private");
 		var isDeleted = (getRadio("mod_deleted") == "mod_deleted_yes");
 		var isStaffPick = (getRadio("mod_staffpick") == "mod_staffpick_yes");
 
-		console.log("isPrivate: "+isPrivate);
-		console.log("isDeleted: "+isDeleted);
-		console.log("isStaffPick: "+isStaffPick);
+		$.ajax({
+			url: "/ajax/moderate", 
+			data: {
+				"id": self.entityID,
+				"type": self.entityType,
+				"isPrivate": isPrivate,
+				"isDeleted": isDeleted,
+				"isStaffPick": isStaffPick,
 
-		// $.ajax({
-		// 	url: "/ajax/create_room", 
-		// 	data: params
-		// }).done(function(roomID) {
-		// 	// Redirect to the snapshot's page
-		// 	window.location.href = "/r/"+roomID;
-		// });
+			}
+		}).done(function(response) {
+			if (!processError(response)) {
+				if (this.processCallback) {
+					// set response stuff into the drawUI using some callback
+					this.processCallback(response);
+				}
+				infoDialog.show("Settings applied.");	
+			}
+		});
 	}
 
 	this.show = function(snapshotIDIn) {
 		$("#mod_dialog").dialog("open");
 	}
 
-	init();
+	this.init();
 }
 
 // simple helper for setting up jqueryui radio buttons
