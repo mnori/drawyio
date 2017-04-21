@@ -471,16 +471,33 @@ function App() {
 		if (!self.validation.checkRoomID(roomID)) { // check code is valid
 			send404(req, res);
 		} else {
-			loadImage(settings.ROOMS_DIR+"/"+roomID+".png", function(buffer) {
-				if (buffer == null) { // not found
-					send404(req, res);
-					return;
-				}
-				res.writeHead(200, {
-					'Content-Type': 'image/png',
-					'Content-Length': buffer.length
+
+			// get session
+			self.getSession(req, res, function(session) {
+
+				// can user view deleted images?
+				var includeDeleted = session.isMod() ? true : false;
+
+				// load room from database
+				self.getRoom(roomID, includeDeleted, function(room) {
+					if (!room) { // not found
+						send404(req, res);
+						return;
+					}
+
+					// load image from disk
+					loadImage(settings.ROOMS_DIR+"/"+roomID+".png", function(buffer) {
+						if (buffer == null) { // not found
+							send404(req, res);
+							return;
+						}
+						res.writeHead(200, {
+							'Content-Type': 'image/png',
+							'Content-Length': buffer.length
+						});
+						res.end(buffer);
+					});
 				});
-				res.end(buffer);
 			});
 		}
 	}
@@ -511,9 +528,13 @@ function App() {
 		var snapID = req.params.id.replace(".png", "");
 		if (!self.validation.checkSnapshotID(snapID)) { // check code is valid
 			send404(req, res);
-		} else {
+		} else {	
+
+			// get session to check perms
 			self.getSession(req, res, function(session) {
 				var includeDeleted = session.isMod() ? true : false;
+
+				// snapshot getter also loads buffer
 				self.getSnapshot(snapID, includeDeleted, function(snapshot) {
 					if (snapshot == null || snapshot.buffer == null) {
 						send404(req, res);
@@ -526,18 +547,6 @@ function App() {
 					res.end(snapshot.buffer);
 				});
 			});
-			
-			// loadImage(settings.SNAPSHOTS_DIR+"/"+snapID+".png", function(buffer) {
-			// 	if (buffer == null) { // not found
-			// 		send404(req, res);
-			// 		return;
-			// 	}
-			// 	res.writeHead(200, {
-			// 		'Content-Type': 'image/png',
-			// 		'Content-Length': buffer.length
-			// 	});
-			// 	res.end(buffer);
-			// });
 		}
 	}
 

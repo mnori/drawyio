@@ -265,14 +265,9 @@ function Room(idIn, startLayer, fields, isModified, app) {
 			// Returns the drawing data to the client. The callback method is placed here
 			// so that we can pass the socket in as well
 			socket.on("get_drawing", function(data) { 
-				console.log("get_drawing with data");
-				console.log(data);
-				// validate
 				if (
-					typeof(data.drawID) == undefined ||
-					!validation.checkRoomID(data.drawID) || 
-					typeof(data.sessionID) == undefined || 
-					!validation.checkSessionID(data.sessionID)
+					!data.drawID || !validation.checkRoomID(data.drawID) || 
+					!data.sessionID || !validation.checkSessionID(data.sessionID)
 				) {
 					socket.emit("update_drawing", "error");
 				} else {
