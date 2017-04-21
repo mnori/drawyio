@@ -144,7 +144,11 @@ function App() {
 		});
 
 		// Default action if nothing else matched - 404
-		expressApp.use(function(req, res, next) { send404(res); })
+		expressApp.use(function(req, res, next) { 
+			self.getSession(req, res, function(session) {
+				send404(req, res); 
+			});
+		})
 	}
 
 	// Adds session cookie to request
@@ -369,15 +373,12 @@ function App() {
 	}
 
 	this.receiveTool = function(data, socket) {
-		if (
-			typeof(socket.drawID) == undefined || 
-			!self.validation.checkRoomID(socket.drawID)
-		) {
+		if (!socket.drawID || !self.validation.checkRoomID(socket.drawID)) {
 			return;
 		}
-		self.getRoom(socket.drawID, function(drawing) {
-			if (drawing != null) {
-				drawing.broadcastTool(data, socket);
+		self.getRoom(socket.drawID, false, function(room) {
+			if (room != null) {
+				room.broadcastTool(data, socket);
 			}
 		});
 	}
@@ -385,10 +386,14 @@ function App() {
 	// Send drawing data to client
 	this.sendRoom = function(data, socket) {
 		var drawID = data.drawID;
-		self.getRoom(drawID, function(drawing) {
-			var output = drawing.getJson();
+		self.getRoom(drawID, false, function(room) {
+			if (room == null) {
+				socket.emit(JSON.stringify({"error": "Room not found."}));
+				return;
+			}
+			var output = room.getJson();
 			socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
-			socket.emit("update_drawing", drawing.getJson());
+			socket.emit("update_drawing", room.getJson());
 		}); 
 	}
 
@@ -402,7 +407,7 @@ function App() {
 		) { // invalid draw ID or layer code supplied
 			return; // nothing to do, there is no client side confirmation -yet
 		}
-		self.getRoom(drawID, function(drawing) {
+		self.getRoom(drawID, false, function(drawing) {
 			if (drawing == null) {
 				console.log("WARNING: "+drawID+" does not exist!");
 			} else {
@@ -413,17 +418,22 @@ function App() {
 		});
 	}
 
-	function send404(res) {
-		res.status(404).render("404.html", {settings: settings})
+	function send404(req, res) {
+		self.getSession(req, res, function(session) {
+			res.status(404).render("404.html", {
+				settings: settings,
+				sessionData: session.getClientDataJson()
+			})
+		});
 	}
 
 	function renderRoomPage(req, res) {
 		var roomID = req.params.id
 		if (!self.validation.checkRoomID(roomID)) { // check code is valid
-			send404(res);
+			send404(req, res);
 		} else {
 			self.getSession(req, res, function(session) {
-				self.getRoom(roomID, function(room) {
+				self.getRoom(roomID, false, function(room) {
 					if (room != null) {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
 							room.name : settings.DEFAULT_SNAPSHOT_NAME;
@@ -436,7 +446,7 @@ function App() {
 							sessionData: session.getClientDataJson()
 						});	
 					} else {
-						send404(res);
+						send404(req, res);
 					}
 				});
 			});
@@ -447,11 +457,11 @@ function App() {
 	function sendRoomImage(req, res) {
 		var roomID = req.params.id.replace(".png", "");
 		if (!self.validation.checkRoomID(roomID)) { // check code is valid
-			send404(res);
+			send404(req, res);
 		} else {
 			loadImage(settings.ROOMS_DIR+"/"+roomID+".png", function(buffer) {
 				if (buffer == null) { // not found
-					send404(res);
+					send404(req, res);
 					return;
 				}
 				res.writeHead(200, {
@@ -466,10 +476,10 @@ function App() {
 	function renderSnapshotPage(req, res) {
 		var snapID = req.params.id.replace(".png", "");
 		if (!self.validation.checkSnapshotID(snapID)) { // check code is valid
-			send404(res);
+			send404(req, res);
 		} else {
 			self.getSession(req, res, function(session) {
-				self.getSnapshot(snapID, function(snapshot) {
+				self.getSnapshot(snapID, false, function(snapshot) {
 					if (snapshot != null) {
 						res.render("snapshot.html", { 
 							snapshot: snapshot, 
@@ -477,7 +487,7 @@ function App() {
 							sessionData: session.getClientDataJson()
 						});	
 					} else {
-						send404(res);
+						send404(req, res);
 					}
 				});
 			});
@@ -488,11 +498,11 @@ function App() {
 		var snapID = req.params.id.replace(".png", "");
 		if (!self.validation.checkSnapshotID(snapID)) { // check code is valid
 			console.
-			send404(res);
+			send404(req, res);
 		} else {
 			loadImage(settings.SNAPSHOTS_DIR+"/"+snapID+".png", function(buffer) {
 				if (buffer == null) { // not found
-					send404(res);
+					send404(req, res);
 					return;
 				}
 				res.writeHead(200, {
@@ -608,7 +618,7 @@ function App() {
 		var errorStr = "Cannot create snapshot because the image has not yet been edited.";
 
 		// get the room
-		self.getRoom(roomID, function(room) {
+		self.getRoom(roomID, false, function(room) {
 			if (room == null) {
 				res.json({"error": errorStr});
 				return;
@@ -684,7 +694,9 @@ function App() {
 
 		function recurse() {
 			newID = utils.randomString(length);
-			getter(newID, function(entity) {
+
+			// this is where getRoom / getSnapshot is called
+			getter(newID, true, function(entity) {
 				if (entity === null) {
 					callback(newID)
 				} else {
@@ -712,14 +724,29 @@ function App() {
 		};
 	}
 
-	this.getRoom = function(drawID, loadCallback) {
-		var drawing = self.rooms.get(drawID);	
+	this.getRoom = function(drawID, includeDeleted, loadCallback) {
+
+		var room = self.rooms.get(drawID);	
+
+		// TODO get rid of this strange case
 		if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
-			return drawing;
+			console.log("WARNING: CALLBACK IS UNDEFINED, DOING NOTHING")
+			// if (room.isDeleted) {
+			// 	return null;
+			// } else {
+			// 	return room;
+			// }
 		} else if (typeof(loadCallback) !== "undefined") {
-			if (drawing != null) { // already in memory
-				loadCallback(drawing);
-			} else { // drawing is not in memory. try to load it
+			if (room != null) { // already in memory
+				// check session and deleted flag here
+				if (room.isDeleted) {
+					loadCallback(null);
+				} else {
+					loadCallback(room);
+				}
+			} else { 
+				// room is not in memory. try to load it
+				// when loading, add a mysql parameter
 				fetchRoom(drawID, loadCallback);
 			}
 		}
@@ -727,13 +754,16 @@ function App() {
 
 	// checks mysql database, then disk
 	function fetchRoom(drawID, loadCallback) {
-		db.query("SELECT * FROM room WHERE id="+db.esc(drawID), function(results, fields) {
-			if (results.length == 0) {
-				loadCallback(null);
-			} else {
-				createRoomFromImage(drawID, loadCallback, results[0]);
+		db.query(
+			"SELECT * FROM room WHERE id="+db.esc(drawID), 
+			function(results, fields) {
+				if (results.length == 0) {
+					loadCallback(null);
+				} else {
+					createRoomFromImage(drawID, loadCallback, results[0]);
+				}
 			}
-		});
+		);
 	}
 
 	// Try to load a drawing from disk
@@ -815,7 +845,7 @@ function App() {
 		}, settings.CLEANUP_INTERVAL);
 	}
 
-	this.getSnapshot = function(snapID, callback) {
+	this.getSnapshot = function(snapID, includeDeleted, callback) {
 		db.query("SELECT * FROM snapshot WHERE id="+db.esc(snapID), function(results, fields) {
 			if (results.length == 0) {
 				callback(null);

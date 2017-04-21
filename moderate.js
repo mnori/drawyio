@@ -24,7 +24,7 @@ function editRoom(req, res, app) {
 		res.send({"error": "Room ID is invalid."});
 		return;
 	}
-	app.getRoom(req.query["id"], function(room) {
+	app.getRoom(req.query["id"], true, function(room) {
 		if (room == null) {
 			res.send({"error": "Drawing not found."});
 			return;
@@ -43,7 +43,7 @@ function editSnapshot(req, res, app) {
 		res.send({"error": "Snapshot ID is invalid."});
 		return;
 	}
-	app.getSnapshot(req.query["id"], function(snapshot) {
+	app.getSnapshot(req.query["id"], true, function(snapshot) {
 		if (snapshot == null) {
 			res.send({"error": "Snapshot not found."});
 			return;

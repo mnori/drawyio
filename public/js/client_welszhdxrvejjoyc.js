@@ -25,7 +25,11 @@ function initGlobal(conf) {
 	registerDialog = new RegisterDialog();
 
 	// should only be attached inside the snapshot page
-	roomDialog = new RoomDialog(conf.snapshotID);
+	// TODO fix
+	snapID = undefined;
+	if (conf) snapID = conf.snapshotID;
+	roomDialog = new RoomDialog(snapID);
+	
 	errorDialog = new ErrorDialog();
 	infoDialog = new InfoDialog();
 	galleriesDialog = new GalleriesDialog();
