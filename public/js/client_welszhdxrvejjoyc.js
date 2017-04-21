@@ -179,14 +179,7 @@ function ModDialog(entityType, entityID, processCallback) {
 			closeOnEscape: false,
 			open: function(event, ui) {
 				setModalCss();
-				// Set up radio buttons 
-				// Note that in the future, we should persist this using values
-				// from the server, passed in via constructor
-				// we can enter the value as a second parameter
-				// needs to be stored back in teh drawUI
-				configureRadio("mod_visibility");
-				configureRadio("mod_deleted");
-				configureRadio("mod_staffpick");
+				self.configureRadios();
 		    }
 		});
 
@@ -200,6 +193,26 @@ function ModDialog(entityType, entityID, processCallback) {
 			$("#mod_dialog").dialog("close");
 		});
 	}
+
+	this.configureRadios = function() {
+		configureRadio(
+			"mod_visibility", opts["isPrivate"] ? "mod_visibility_private" : null
+		);
+		configureRadio(
+			"mod_deleted", opts["isDeleted"] ? "mod_deleted_yes" : null
+		);
+
+		if (typeof(opts["isStaffPick"]) === "undefined") {
+			// staff pick is hidden for room
+			$("#mod_staff_pick_container").hide();
+		} else {
+			$("#mod_staff_pick_container").show();
+			configureRadio(
+				"mod_staffpick", opts["mod_staffpick_yes"] ? "mod_staffpick_yes" : null
+			);
+		}
+	}
+
 	this.process = function() {
 		var isPrivate = (getRadio("mod_visibility") == "mod_visibility_private");
 		var isDeleted = (getRadio("mod_deleted") == "mod_deleted_yes");
@@ -234,9 +247,14 @@ function ModDialog(entityType, entityID, processCallback) {
 }
 
 // simple helper for setting up jqueryui radio buttons
-function configureRadio(elClass) {
+function configureRadio(elClass, checkedID) {
 	$("."+elClass).checkboxradio();
-	$("."+elClass+":first").attr("checked", "checked");
+	if (checkedID) {
+		$("#"+checkedID).attr("checked", "checked");
+	} else {
+		$("."+elClass+":first").attr("checked", "checked");	
+	}
+	
 	$("."+elClass).checkboxradio("refresh");				
 }
 
