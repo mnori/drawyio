@@ -210,9 +210,9 @@ function ModDialog(entityType, entityID, processCallback) {
 			data: {
 				"id": self.entityID,
 				"type": self.entityType,
-				"isPrivate": isPrivate,
-				"isDeleted": isDeleted,
-				"isStaffPick": isStaffPick,
+				"isPrivate": isPrivate ? 1 : 0,
+				"isDeleted": isDeleted ? 1 : 0,
+				"isStaffPick": isStaffPick ? 1 : 0,
 
 			}
 		}).done(function(response) {

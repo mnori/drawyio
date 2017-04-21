@@ -37,6 +37,13 @@ function Session(req, app) {
 		return JSON.stringify(this.getClientData());
 	}
 
+	this.isMod = function() {
+		if (!this.user || !this.user.isMod()) {
+			return false;
+		}
+		return true;
+	}
+
 	this.save = function(callback) {
 		var db = self.app.db;
 		var nameStr = self.name ? db.esc(self.name) : "'Anonymous'";
@@ -102,6 +109,10 @@ function User(app, id) {
 				}
 			}
 		);
+	}
+
+	this.isMod = function() {
+		return this.type == "mod"; // or potentially admin in the future
 	}
 
 	this.populate = function(row) {
@@ -280,30 +291,35 @@ function Room(idIn, startLayer, fields, isModified, app) {
 	}
 
 	this.save = function() {
-		var db = self.app.db;
 		var baseBuf = utils.base64ToBuffer(self.getUnmergedLayer(0).base64); // base image
-		self.app.sharp(baseBuf).png().toBuffer().then(function(buffer) {
-			if (self.isModified) { // save modified images
+		if (self.isModified) { // save modified images
+			self.app.sharp(baseBuf).png().toBuffer().then(function(buffer) {
 				self.app.saveImage(self.id, buffer, function(err) { // save image file to disk
-					// insert or update the room in the database
-					var snapSql = (self.snapshotID == null)
-						? "NULL" : db.esc(self.snapshotID)
-					db.query([
-						"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
-						"VALUES (",
-						"	"+db.esc(self.id)+",", // id
-						"	"+snapSql+",", // snapshot_id
-						"	"+db.esc(self.name)+",", // name
-						"	"+(self.isPrivate ? "1" : "0")+",", // is_private
-						"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
-						"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
-						")",
-						"ON DUPLICATE KEY UPDATE",
-						"	modified = FROM_UNIXTIME("+self.getModifiedS()+")"
-					].join("\n"));
+					self.saveDB();			
 				});	
-			} 
-		});
+			});
+		} 
+	}
+
+	// just saves to the database. doesn't attempt to process the image
+	this.saveDB = function() {
+		var db = self.app.db;
+		// insert or update the room in the database
+		var snapSql = (self.snapshotID == null)
+			? "NULL" : db.esc(self.snapshotID)
+		db.query([
+			"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
+			"VALUES (",
+			"	"+db.esc(self.id)+",", // id
+			"	"+snapSql+",", // snapshot_id
+			"	"+db.esc(self.name)+",", // name
+			"	"+(self.isPrivate ? "1" : "0")+",", // is_private
+			"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
+			"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
+			")",
+			"ON DUPLICATE KEY UPDATE",
+			"	modified = FROM_UNIXTIME("+self.getModifiedS()+")"
+		].join("\n"));
 	}
 
 	// Broadcast a single layer to all sockets except originator
