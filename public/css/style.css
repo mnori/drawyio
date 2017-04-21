@@ -405,7 +405,7 @@ input {
 	margin-right: 20px;
 }
 
-#controls > a {
+#controls > a, #snapshot_controls > a {
 	margin-bottom: 12px;
 }
 
