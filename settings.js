@@ -36,8 +36,9 @@ module.exports = {
 
 	// after n ms, delete image from memory, providing there is enough stuff
 	// for the front page (10 minutes)
+	// this will disconnect sockets, so we should wait quite a while here.
 	// DELETE_TIME: 600000,
-	DELETE_TIME: 60000,
+	DELETE_TIME: 600000,
 
 	ROOM_NAME_LEN: 50,
 	SNAPSHOT_NAME_LEN: 50,
