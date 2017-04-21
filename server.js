@@ -491,7 +491,8 @@ function App() {
 			send404(req, res);
 		} else {
 			self.getSession(req, res, function(session) {
-				self.getSnapshot(snapID, false, function(snapshot) {
+				var includeDeleted = session.isMod() ? true : false;
+				self.getSnapshot(snapID, includeDeleted, function(snapshot) {
 					if (snapshot != null) {
 						res.render("snapshot.html", { 
 							snapshot: snapshot, 
@@ -861,8 +862,12 @@ function App() {
 	}
 
 	this.getSnapshot = function(snapID, includeDeleted, callback) {
-		db.query("SELECT * FROM snapshot WHERE id="+db.esc(snapID), function(results, fields) {
-			if (results.length == 0) {
+		var sql = "SELECT * FROM snapshot WHERE id="+db.esc(snapID);
+		if (!includeDeleted) {
+			sql += " AND is_deleted = '0'";
+		}
+		db.query(sql, function(results, fields) {
+			if (!results || results.length == 0) {
 				callback(null);
 			} else {
 				loadSnapshotImage(snapID, callback, results[0]);
