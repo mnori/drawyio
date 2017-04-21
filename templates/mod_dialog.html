@@ -6,20 +6,30 @@
         </label><label for="mod_visibility_private">
             Private
         </label>
-        <input class="modal_radio room_visibility" type="radio" name="mod_visibility" id="mod_visibility_public">
-        <input class="modal_radio mod_visibility" type="radio" name="mod_visibility" id="mod_visibility_private">
+        <input id="mod_visibility_public" class="modal_radio mod_visibility" type="radio" name="mod_visibility">
+        <input id="mod_visibility_private" class="modal_radio mod_visibility" type="radio" name="mod_visibility">
     </div>
 
     <p class="modal_message">Deleted</p>
     <div>
-        <label for="mod_not_deleted">
-            Not deleted
+        <label for="mod_deleted_no">
+            No
+        </label><label for="mod_deleted_yes">
+            Yes
         </label>
-        <label for="mod_deleted">
-            Deleted
+        <input id="mod_deleted_no" class="modal_radio mod_deleted" type="radio" name="mod_deleted">
+        <input id="mod_deleted_yes" class="modal_radio mod_deleted" type="radio" name="mod_deleted" >
+    </div>
+
+    <p class="modal_message">Staff pick</p>
+    <div>
+        <label for="mod_staffpick_no">
+            No
+        </label><label for="mod_staffpick_yes">
+            Yes
         </label>
-        <input class="modal_radio mod_deleted" type="radio" name="mod_deleted" id="mod_deleted_not_deleted">
-        <input class="modal_radio mod_deleted" type="radio" name="mod_deleted" id="mod_deleted_deleted">
+        <input id="mod_staffpick_no" class="modal_radio mod_staffpick" type="radio" name="mod_staffpick">
+        <input id="mod_staffpick_yes" class="modal_radio mod_staffpick" type="radio" name="mod_staffpick" >
     </div>
     
     <a id="mod_ok" class="button modal_button" href="javascript:void(0)">

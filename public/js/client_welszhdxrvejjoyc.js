@@ -164,23 +164,6 @@ function ModDialog(entityType, entityID) {
 	this.entityID = entityID;
 	function init() {
 		setup();
-		// $("#create_drawing_btn").click(function() { 
-		// 	setTitle("Create new room");
-		// 	self.show(); 
-		// });
-
-		// // is there a snapshot button?
-		// var snapshotButton = $("#create_snapshot_room");
-		// if (snapshotButton.length == 1) {
-		// 	snapshotButton.click(function() {
-		// 		setTitle("Create new room from image");
-		// 		self.show(roomIDIn);
-		// 	});
-		// }
-	}
-
-	function setTitle(value) {
-		// $("#room_dialog").prev().find(".ui-dialog-title").text(value);
 	}
 
 	function setup() {
@@ -194,25 +177,14 @@ function ModDialog(entityType, entityID) {
 			closeOnEscape: false,
 			open: function(event, ui) {
 				setModalCss();
-
-				// // Set up radio buttons 
-				// $(".room_visibility").checkboxradio();
-
-				// $(".room_visibility:first").attr("checked", "checked");
-				// $(".room_visibility").checkboxradio("refresh");				
-				// $(".room_visibility").change(function() {
-				// 	var value = $(this).attr("id");
-				// 	if (value == "room_visibility_public") {
-				// 		$("#room_public_info").show();
-				// 		$("#room_private_info").hide();
-				// 	} else {
-				// 		$("#room_public_info").hide();
-				// 		$("#room_private_info").show();
-				// 	}
-				// })
-
-				// $(".ui-dialog-titlebar-close").hide();
-				// $("#nick_dialog").show();
+				// Set up radio buttons 
+				// Note that in the future, we should persist this using values
+				// from the server, passed in via constructor
+				// we can enter the value as a second parameter
+				// needs to be stored back in teh drawUI
+				configureRadio("mod_visibility");
+				configureRadio("mod_deleted");
+				configureRadio("mod_staffpick");
 		    }
 		});
 
@@ -227,20 +199,14 @@ function ModDialog(entityType, entityID) {
 		});
 	}
 	function process() {
-		console.log("process() invoked");
+		
+		var isPrivate = (getRadio("mod_visibility") == "mod_visibility_private");
+		var isDeleted = (getRadio("mod_deleted") == "mod_deleted_yes");
+		var isStaffPick = (getRadio("mod_staffpick") == "mod_staffpick_yes");
 
-		// var roomName = $("#room_name_input").val();
-
-		// var visibility = $("input[type='radio']:checked.room_visibility").attr("id");
-		// var isPrivate = (visibility == "room_visibility_private") ? true : false;
-
-		// var params = {
-		// 	name: roomName,
-		// 	isPrivate: isPrivate
-		// }
-		// if (snapshotID != null) {
-		// 	params["snapshotID"] = snapshotID;
-		// }
+		console.log("isPrivate: "+isPrivate);
+		console.log("isDeleted: "+isDeleted);
+		console.log("isStaffPick: "+isStaffPick);
 
 		// $.ajax({
 		// 	url: "/ajax/create_room", 
@@ -252,31 +218,23 @@ function ModDialog(entityType, entityID) {
 	}
 
 	this.show = function(snapshotIDIn) {
-		console.log("show() invoked");
-		// if (typeof(snapshotIDIn) !== "undefined") {
-		// 	snapshotID = snapshotIDIn;
-		// } else {
-		// 	snapshotID = null;
-		// }
-
-		// if (snapshotID) { // if snapshot, we must pass the name through
-		// 	var el = $("#snapshot_title");
-		// 	var txt = el.text();
-
-		// 	// TODO load from settings file - must pass from server to client
-		// 	if (txt == "An unnamed snapshot") {
-		// 		txt = "An unnamed room";
-		// 	}
-		// 	$("#room_name_input").val(txt);
-		// 	$("#room_name_input").select();
-		// } else {
-		// 	$("#room_name_input").val("An unnamed room");
-		// 	$("#room_name_input").select();
-		// }
 		$("#mod_dialog").dialog("open");
 	}
 
 	init();
+}
+
+// simple helper for setting up jqueryui radio buttons
+function configureRadio(elClass) {
+	$("."+elClass).checkboxradio();
+	$("."+elClass+":first").attr("checked", "checked");
+	$("."+elClass).checkboxradio("refresh");				
+}
+
+// Get ID of selected radio element
+function getRadio(elClass) {
+	var idOut = $("input[type='radio']:checked."+elClass).attr("id");
+	return idOut
 }
 
 function NickDialog() {
