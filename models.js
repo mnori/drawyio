@@ -512,16 +512,47 @@ function Room(idIn, startLayer, fields, isModified, app) {
 }
 
 // Stores a permanent snapshot of a drawing image
-function Snapshot(snapID, buffer, fields) {
-	this.init = function(snapID, buffer, fields) {
-		this.id = snapID;
-		this.buf = buffer;
-		this.roomID = fields["room_id"]
-		this.name = fields["name"]
-		this.isPrivate = fields["is_private"] == 0 ? false : true;
-		this.created = new Date(fields["created"]);
+function Snapshot() {
+	var self = this;
+	this.init = function() {
+		this.id = null;
+		this.buf = null;
+		this.roomID = null;
+		this.name = null;
+		this.isPrivate = false;
+		this.isDeleted = false;
+		this.isStaffPick = false;
+		this.created = null;
 	}
-	this.init(snapID, buffer, fields);
+
+	this.save = function(app, callback) {
+		var db = app.db;
+
+		console.log(self.isPrivate);
+
+		var isPrivate = self.isPrivate ? "'1'" : "'0'";
+		var isDeleted = self.isDeleted ? "'1'" : "'0'";
+		var isStaffPick = self.isDeleted ? "'1'" : "'0'";
+
+		db.query([
+			"INSERT INTO snapshot (",
+			"	id, room_id, name, is_private, is_deleted, is_staff_pick, created",
+			")",
+			"VALUES (",
+			"	"+db.esc(this.id)+",",
+			"	"+db.esc(this.roomID)+",",
+			"	"+db.esc(this.name)+",",
+			"	"+isPrivate+",",
+			"	"+isDeleted+",",
+			"	"+isStaffPick+",",
+			"	NOW()",
+			") ON DUPLICATE KEY UPDATE",
+			"	is_private = "+isPrivate+",",
+			"	is_deleted = "+isDeleted+",",
+			"	is_staff_pick = "+isStaffPick
+		].join("\n"), callback);
+	}
+	this.init();
 }
 
 function getUnixtime(val) {

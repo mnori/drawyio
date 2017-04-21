@@ -467,7 +467,7 @@ function App() {
 			send404(res);
 		} else {
 			self.getSession(req, res, function(session) {
-				getSnapshot(snapID, function(snapshot) {
+				self.getSnapshot(snapID, function(snapshot) {
 					if (snapshot != null) {
 						res.render("snapshot.html", { 
 							snapshot: snapshot, 
@@ -621,6 +621,13 @@ function App() {
 				// copy file into a snapshot file
 				copyFile(sourceFilepath, destFilepath, function() {
 					// now insert the entry into the database
+					var snapshot = new models.Snapshot();
+
+					snapshot.id = snapID;
+					snapshot.roomID = roomID;
+					snapshot.name = name;
+					snapshot.isPrivate = isPrivate;
+
 					db.query([
 						"INSERT INTO snapshot (id, room_id, name, is_private, created)",
 						"VALUES (",
@@ -665,7 +672,7 @@ function App() {
 
 	// Make a unique drawing ID by attempting to random generate one up to n times
 	function makeSnapshotID(callback) {
-		makeRandomID(getSnapshot, callback, settings.SNAPSHOT_ID_LEN);
+		makeRandomID(self.getSnapshot, callback, settings.SNAPSHOT_ID_LEN);
 	}
 
 	function makeRandomID(getter, callback, length) {
@@ -806,7 +813,7 @@ function App() {
 		}, settings.CLEANUP_INTERVAL);
 	}
 
-	function getSnapshot(snapID, callback) {
+	this.getSnapshot = function(snapID, callback) {
 		db.query("SELECT * FROM snapshot WHERE id="+db.esc(snapID), function(results, fields) {
 			if (results.length == 0) {
 				callback(null);
@@ -820,10 +827,21 @@ function App() {
 	function loadSnapshotImage(snapID, callback, fields) {
 		var inFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
 		sharp(inFilepath).png().toBuffer().then(function(buffer) {
-			var snapshot = new models.Snapshot(snapID, buffer, fields);
+			var snapshot = new models.Snapshot();
+
+			// TODO move this into Snapshot class
+			snapshot.id = fields["id"]
+			snapshot.roomID = fields["room_id"];
+			snapshot.name = fields["name"];
+			snapshot.isPrivate = fields["is_private"] == 0 ? false : true;
+			snapshot.isDeleted = fields["is_deleted"] == 0 ? false : true;
+			snapshot.isStaffPick = fields["is_staff_pick"] == 0 ? false : true;
+			snapshot.created = new Date(fields["created"]);
+			
 			callback(snapshot);
 		}).catch(function(err) {
-			console.log("Warning - loadSnapshotImage failed with "+snapID+"!")
+			console.log("Warning - loadSnapshotImage failed with ["+inFilepath+"]")
+			console.log(err);
 			callback(null);
 		});
 	}

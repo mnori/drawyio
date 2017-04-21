@@ -37,6 +37,15 @@ function initGlobal(conf) {
 	$("#manage_account_btn").click(manageAccount);
 }
 
+function SnapshotUI() {
+	console.log("SnapshotUI() invoked");
+	var modDialog = new ModDialog("snapshot", opts["snapshotID"]);
+	$("#mod_button").click(function() {
+		console.log(modDialog);
+		modDialog.show();
+	});
+}
+
 // either ask user for nickname, or give them the option of logging out
 function manageAccount() {
 	if (conf["sessionData"]["type"] == "guest") {
@@ -208,7 +217,7 @@ function ModDialog(entityType, entityID, processCallback) {
 		} else {
 			$("#mod_staff_pick_container").show();
 			configureRadio(
-				"mod_staffpick", opts["mod_staffpick_yes"] ? "mod_staffpick_yes" : null
+				"mod_staffpick", opts["isStaffPick"] ? "mod_staffpick_yes" : null
 			);
 		}
 	}
@@ -1437,7 +1446,6 @@ function drawUI() {
 		});
 
 		$("#mod_button").click(function() {
-			console.log("#mod_button clicked");
 			modDialog.show();
 		});
 

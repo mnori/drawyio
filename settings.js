@@ -50,7 +50,7 @@ module.exports = {
 		channels: 4,
 		rgbaPixel: 0xFFFFFFFF
 	},
-	DB_CONNECT_PARAMS: {
+	DB_CONNECT_PARAMS: { // must
 		host: "localhost",
 		user: "root",
 		password: ""

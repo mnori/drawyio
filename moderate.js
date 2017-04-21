@@ -14,8 +14,8 @@ function handleRequest(req, res, app) {
 function process(req, res, app) {
 	if (req.query["type"] == "room") {
 		editRoom(req, res, app);
-	} else { // ... snapshot
-		res.send({"error": "Snapshot mod tools not yet implemented."});		
+	} else {
+		editSnapshot(req, res, app);
 	}
 }
 
@@ -30,9 +30,31 @@ function editRoom(req, res, app) {
 			return;
 		}
 
-		room.isPrivate = req.query["isPrivate"];
-		room.isDeleted = req.query["isDeleted"];
+		room.isPrivate = req.query["isPrivate"] ? true : false;
+		room.isDeleted = req.query["isDeleted"] ? true : false;
 		room.saveDB(function() {
+			res.send("ok");	
+		});
+	});
+}
+
+function editSnapshot(req, res, app) {
+	if (!app.validation.checkSnapshotID(req.query["id"])) {
+		res.send({"error": "Snapshot ID is invalid."});
+		return;
+	}
+	app.getSnapshot(req.query["id"], function(snapshot) {
+		if (snapshot == null) {
+			res.send({"error": "Snapshot not found."});
+			return;
+		}
+
+		// TODO bug here - we need different code from editRoom, not sure why
+		snapshot.isPrivate = req.query["isPrivate"] != "0" ? true : false;
+		snapshot.isDeleted = req.query["isDeleted"] != "0" ? true : false;
+		snapshot.isStaffPick = req.query["isStaffPick"] != "0" ? true : false;
+
+		snapshot.save(app, function() {
 			res.send("ok");	
 		});
 	});
