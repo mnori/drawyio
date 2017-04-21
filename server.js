@@ -373,7 +373,7 @@ function App() {
 		) {
 			return;
 		}
-		getRoom(socket.drawID, function(drawing) {
+		self.getRoom(socket.drawID, function(drawing) {
 			if (drawing != null) {
 				drawing.broadcastTool(data, socket);
 			}
@@ -383,7 +383,7 @@ function App() {
 	// Send drawing data to client
 	this.sendRoom = function(data, socket) {
 		var drawID = data.drawID;
-		getRoom(drawID, function(drawing) {
+		self.getRoom(drawID, function(drawing) {
 			var output = drawing.getJson();
 			socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
 			socket.emit("update_drawing", drawing.getJson());
@@ -400,7 +400,7 @@ function App() {
 		) { // invalid draw ID or layer code supplied
 			return; // nothing to do, there is no client side confirmation -yet
 		}
-		getRoom(drawID, function(drawing) {
+		self.getRoom(drawID, function(drawing) {
 			if (drawing == null) {
 				console.log("WARNING: "+drawID+" does not exist!");
 			} else {
@@ -421,7 +421,7 @@ function App() {
 			send404(res);
 		} else {
 			self.getSession(req, res, function(session) {
-				getRoom(roomID, function(room) {
+				self.getRoom(roomID, function(room) {
 					if (room != null) {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 
 							room.name : settings.DEFAULT_SNAPSHOT_NAME;
@@ -606,7 +606,7 @@ function App() {
 		var errorStr = "Cannot create snapshot because the image has not yet been edited.";
 
 		// get the room
-		getRoom(roomID, function(room) {
+		self.getRoom(roomID, function(room) {
 			if (room == null) {
 				res.json({"error": errorStr});
 				return;
@@ -660,7 +660,7 @@ function App() {
 
 	// Make a unique drawing ID by attempting to random generate one up to n times
 	function makeDrawID(callback) {
-		makeRandomID(getRoom, callback, settings.ID_LEN);
+		makeRandomID(self.getRoom, callback, settings.ID_LEN);
 	}
 
 	// Make a unique drawing ID by attempting to random generate one up to n times
@@ -703,7 +703,7 @@ function App() {
 		};
 	}
 
-	function getRoom(drawID, loadCallback) {
+	this.getRoom = function(drawID, loadCallback) {
 		var drawing = self.rooms.get(drawID);	
 		if (typeof(loadCallback) === "undefined") { // return the value - can be null or not null
 			return drawing;

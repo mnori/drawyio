@@ -209,6 +209,7 @@ function Room(idIn, startLayer, fields, isModified, app) {
 		}
 		this.snapshotID = (fields.snapshot_id == null) ? null : fields.snapshot_id;
 		this.isPrivate = (fields.is_private == "1") ? true : false;
+		this.isDeleted = (fields.is_deleted == "1") ? true : false;
 
 		// add the first layer, bypass the addLayer since it updates modified flags
 		this.nLayers++;
@@ -302,24 +303,31 @@ function Room(idIn, startLayer, fields, isModified, app) {
 	}
 
 	// just saves to the database. doesn't attempt to process the image
-	this.saveDB = function() {
+	this.saveDB = function(callback) {
 		var db = self.app.db;
-		// insert or update the room in the database
 		var snapSql = (self.snapshotID == null)
-			? "NULL" : db.esc(self.snapshotID)
+			? "NULL" : db.esc(self.snapshotID);
+		var isPrivate = self.isPrivate ? "'1'" : "'0'";
+		var isDeleted = self.isDeleted ? "'1'" : "'0'";
+
 		db.query([
-			"INSERT INTO room (id, snapshot_id, name, is_private, created, modified)",
+			"INSERT INTO room (",
+			"	id, snapshot_id, name, is_private, is_deleted, created, modified",
+			")",
 			"VALUES (",
 			"	"+db.esc(self.id)+",", // id
 			"	"+snapSql+",", // snapshot_id
 			"	"+db.esc(self.name)+",", // name
-			"	"+(self.isPrivate ? "1" : "0")+",", // is_private
+			"	"+isPrivate+",",
+			"	"+isDeleted+",", 
 			"	FROM_UNIXTIME("+self.getCreatedS()+"),", // created
 			"	FROM_UNIXTIME("+self.getModifiedS()+")", // modified
 			")",
 			"ON DUPLICATE KEY UPDATE",
-			"	modified = FROM_UNIXTIME("+self.getModifiedS()+")"
-		].join("\n"));
+			"	modified = FROM_UNIXTIME("+self.getModifiedS()+"),",
+			"	is_private = "+isPrivate+",",
+			"	is_deleted = "+isDeleted,
+		].join("\n"), callback);
 	}
 
 	// Broadcast a single layer to all sockets except originator

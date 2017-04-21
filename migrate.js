@@ -58,6 +58,7 @@ var migrations = [
 				"	snapshot_id CHAR("+settings.ID_LEN+") REFERENCES snapshot(id),",
 				"	name VARCHAR("+settings.ROOM_NAME_LEN+") DEFAULT '"+settings.DEFAULT_ROOM_NAME+"',",
 				"	is_private BOOLEAN NOT NULL DEFAULT '0',",
+				"	is_deleted BOOLEAN NOT NULL DEFAULT '0',",
 				"	created DATETIME NOT NULL,",
 				"	modified DATETIME NOT NULL,",
 				"	PRIMARY KEY (id)",

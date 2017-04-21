@@ -12,17 +12,29 @@ function handleRequest(req, res, app) {
 }
 
 function process(req, res, app) {
-	var params = req.query;
-
-	if (params["type"] == "room") {
-
-	} else {
-		// ... snapshot
+	if (req.query["type"] == "room") {
+		editRoom(req, res, app);
+	} else { // ... snapshot
+		res.send({"error": "Snapshot mod tools not yet implemented."});		
 	}
+}
 
-	console.log("Reached process() with params:");
-	console.log(params);
-	res.send("ok");
+function editRoom(req, res, app) {
+	if (!app.validation.checkRoomID(req.query["id"])) {
+		res.send({"error": "Room ID is invalid."});
+		return;
+	}
+	app.getRoom(req.query["id"], function(room) {
+		if (room != null) {
+			room.isPrivate = req.query["isPrivate"];
+			room.isDeleted = req.query["isDeleted"];
+			room.saveDB(function() {
+				res.send("ok");	
+			});
+		} else {
+			res.send({"error": "Drawing not found."});
+		}
+	});
 }
 
 module.exports = {
