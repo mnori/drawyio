@@ -164,12 +164,12 @@ function App() {
 		} else { 
 			// check for session in database. no session? create new cookie
 			// create new session as well
-			loadSession(req, res, cookie, callback);
+			self.loadSession(req, res, cookie, callback);
 		}
 	}
 
 	// Perhaps this method should be attached to the Session object?
-	function loadSession(req, res, sessionID, callback) {
+	this.loadSession = function(req, res, sessionID, callback) {
 		var sql = [
 			"SELECT ",
 			"	session.id 				as session_id,",
@@ -195,7 +195,11 @@ function App() {
 			sql, 
 			function(results, fields, error) {
 				if (!results || results.length == 0) { // not in database
-					createSession(null, req, res, callback); // create new session
+					if (res) { // res is null when not an http request
+						createSession(null, req, res, callback); // create new session	
+					} else {
+						callback(null);
+					}
 					return;
 				} else {
 					// session is in DB
@@ -385,21 +389,21 @@ function App() {
 
 	// Send drawing data to client
 	this.sendRoom = function(data, socket) {
-		var drawID = data.drawID;
-		console.log("sendRoom()")
-		console.log(data);
-
-		// now load and check the session
-
-		self.getRoom(drawID, false, function(room) {
-			if (room == null) {
-				socket.emit(JSON.stringify({"error": "Room not found."}));
-				return;
-			}
-			var output = room.getJson();
-			socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
-			socket.emit("update_drawing", room.getJson());
-		}); 
+		// load session
+		// req and res are null since this is not standard http
+		self.loadSession(null, null, data.sessionID, function(session) {
+			var includeDeleted = (session && session.isMod()) ? true : false;
+			var drawID = data.drawID;
+			self.getRoom(drawID, includeDeleted, function(room) {
+				if (room == null) {
+					socket.emit(JSON.stringify({"error": "Room not found."}));
+					return;
+				}
+				var output = room.getJson();
+				socket.drawID = drawID; // link socket to drawing - useful for disconnects and stuff
+				socket.emit("update_drawing", room.getJson());
+			}); 
+		});
 	}
 
 	// Adds a layer from raw data coming from the socket
@@ -441,8 +445,6 @@ function App() {
 		} else {
 			self.getSession(req, res, function(session) {
 				var includeDeleted = session.isMod() ? true : false;
-
-				console.log("includeDeleted: ["+includeDeleted+"]");
 				self.getRoom(roomID, includeDeleted, function(room) {
 					if (room != null) {
 						var snapshotName = (room.name != settings.DEFAULT_ROOM_NAME) ? 

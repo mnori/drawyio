@@ -15,7 +15,7 @@ function Session(req, app) {
 	var self = this;
 
 	this.init = function(req, app) {
-		this.ipAddress = req.connection.remoteAddress;
+		this.ipAddress = (req) ? req.connection.remoteAddress : "0.0.0.0";
 		this.lastActive = new Date();
 		this.app = app;
 		this.user = null;
