@@ -510,20 +510,34 @@ function App() {
 	function sendSnapshotImage(req, res) {
 		var snapID = req.params.id.replace(".png", "");
 		if (!self.validation.checkSnapshotID(snapID)) { // check code is valid
-			console.
 			send404(req, res);
 		} else {
-			loadImage(settings.SNAPSHOTS_DIR+"/"+snapID+".png", function(buffer) {
-				if (buffer == null) { // not found
-					send404(req, res);
-					return;
-				}
-				res.writeHead(200, {
-					'Content-Type': 'image/png',
-					'Content-Length': buffer.length
+			self.getSession(req, res, function(session) {
+				var includeDeleted = session.isMod() ? true : false;
+				self.getSnapshot(snapID, includeDeleted, function(snapshot) {
+					if (snapshot == null || snapshot.buffer == null) {
+						send404(req, res);
+						return;
+					}
+					res.writeHead(200, {
+						'Content-Type': 'image/png',
+						'Content-Length': snapshot.buffer.length
+					});
+					res.end(snapshot.buffer);
 				});
-				res.end(buffer);
 			});
+			
+			// loadImage(settings.SNAPSHOTS_DIR+"/"+snapID+".png", function(buffer) {
+			// 	if (buffer == null) { // not found
+			// 		send404(req, res);
+			// 		return;
+			// 	}
+			// 	res.writeHead(200, {
+			// 		'Content-Type': 'image/png',
+			// 		'Content-Length': buffer.length
+			// 	});
+			// 	res.end(buffer);
+			// });
 		}
 	}
 
@@ -889,22 +903,12 @@ function App() {
 			snapshot.isDeleted = fields["is_deleted"] == 0 ? false : true;
 			snapshot.isStaffPick = fields["is_staff_pick"] == 0 ? false : true;
 			snapshot.created = new Date(fields["created"]);
+			snapshot.buffer = buffer;
 
 			callback(snapshot);
 		}).catch(function(err) {
 			console.log("Warning - loadSnapshotImage failed with ["+inFilepath+"]")
 			console.log(err);
-			callback(null);
-		});
-	}
-
-	// Try to load a drawing from disk
-	function loadSnapshotImageSimple(snapID, callback, fields) {
-		var inFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
-		sharp(inFilepath).png().toBuffer().then(function(buffer) {
-			callback(buffer);
-		}).catch(function(err) {
-			console.log("Warning - loadSnapshotImageSimple failed with "+snapID+"!")
 			callback(null);
 		});
 	}
