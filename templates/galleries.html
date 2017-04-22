@@ -9,18 +9,35 @@
 		</label><label for="galleries_snapshots">
 			Snapshots
 		</label>
+
 		<input class="modal_radio galleries_type" type="radio" name="galleries_type" id="galleries_rooms">
 		<input class="modal_radio galleries_type" type="radio" name="galleries_type" id="galleries_snapshots">
 	</div>
 
-	<div class="modbar">
+	<div class="control_bar">
 		<label for="modbar_public">
 			Public
 		</label><label for="modbar_private">
 			Private
 		</label>
-		<input class="modal_radio modbar_checkbox" type="checkbox" name="modbar_flag" id="modbar_public">
-		<input class="modal_radio modbar_checkbox" type="checkbox" name="modbar_flag" id="modbar_private">
+		<input id="modbar_public" class="modal_radio modbar_opts" type="radio" name="modbar_visibility">
+		<input id="modbar_private" class="modal_radio modbar_opts" type="radio" name="modbar_visibility">
+
+		<label for="modbar_deleted_no">
+			Not deleted
+		</label><label for="modbar_deleted_yes">
+			Deleted
+		</label>
+		<input id="modbar_deleted_no" class="modal_radio modbar_opts" type="radio" name="modbar_deleted">
+		<input id="modbar_deleted_yes" class="modal_radio modbar_opts" type="radio" name="modbar_deleted">
+
+		<label for="modbar_staffpick_no">
+			Not featured
+		</label><label for="modbar_staffpick_yes">
+			Featured
+		</label>
+		<input id="modbar_staffpick_no" class="modal_radio modbar_opts" type="radio" name="modbar_staffpick">
+		<input id="modbar_staffpick_yes" class="modal_radio modbar_opts" type="radio" name="modbar_staffpick">
 	</div>
 
 	<div id="gallery">

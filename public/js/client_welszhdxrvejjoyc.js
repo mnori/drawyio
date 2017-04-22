@@ -129,8 +129,13 @@ function GalleryUI(type) {
 			});
 		})
 
+		$("#modbar_public").attr("checked", "checked");
+		$("#modbar_deleted_no").attr("checked", "checked");
+		$("#modbar_staffpick_no").attr("checked", "checked");
+
 		// set up mod tools (if perms are set)
-		$(".modbar_checkbox").checkboxradio();
+		$(".modbar_opts").checkboxradio();
+
 
 		listenMore();
 	}

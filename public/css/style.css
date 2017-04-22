@@ -797,7 +797,7 @@ input::selection {
 }
 
 
-.ui-checkboxradio-radio-label, .ui-checkboxradio-radio-label:active {
+.ui-checkboxradio-label, .ui-checkboxradio-label:active {
 	color: #333;
 	border-radius: 0px;
 	font-family: ubuntuRegular;
@@ -811,7 +811,7 @@ input::selection {
     display: inline-block;
 }
 
-.ui-checkboxradio-radio-label:hover {
+.ui-checkboxradio-label:hover {
 	color: #222 !important;
 	border: 1px solid #777 !important;
 }
@@ -845,7 +845,7 @@ input::selection {
 }
 
 .control_bar {
-	margin-bottom: 20px;
+	margin-bottom: 12px;
 	margin-left: 1px; /* due to gallery hover borders */
 }
 
@@ -856,6 +856,10 @@ input::selection {
 #gallery_more {
 	display: inline-block;
 	margin: 0 none;
+}
+
+#gallery_modbar {
+	margin-bottom: 12px;
 }
 
 .big_button, .big_button:hover, .big_button:active {
