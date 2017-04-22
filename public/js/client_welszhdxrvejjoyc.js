@@ -101,12 +101,12 @@ function GalleryUI(type) {
 
 		// select particular radio buttons
 		if (type == "room") {
-			$("#galleries_rooms").attr("checked", "checked");
+			$("#gallery_type_room").attr("checked", "checked");
 		} else {
-			$("#galleries_snapshots").attr("checked", "checked");
+			$("#gallery_type_snapshot").attr("checked", "checked");
 		}
-		$("#modbar_public").attr("checked", "checked");
-		$("#modbar_deleted_no").attr("checked", "checked");
+		$("#gallery_public").attr("checked", "checked");
+		$("#gallery_not_deleted").attr("checked", "checked");
 	
 		// initialise
 		$(".gallery_opts").checkboxradio();
@@ -117,24 +117,33 @@ function GalleryUI(type) {
 		listenMore();
 	}
 
+	// Fetches gallery data using ajax
 	this.requestGallery = function() {
-		console.log("requestGallery invoked");
+		console.log("requestGallery() invoked");
 
-		// getRadio("mod_visibility")
-
-		// Fetch gallery data using ajax
-		var value = $(this).attr("id");
-		var type = (value == "galleries_snapshots") ? "snapshot" : "room";
+		// Handle the type - room | snapshot
+		var type = (getRadio("gallery_type") == "gallery_type_snapshot") 
+			? "snapshot" : "room";
 		var title = type == "snapshot" ? "Snapshots" : "Rooms";
 		title = "DrawIO - "+title;
-		// update the browser URL
-		// TODO - apply this thing across the entire site one day
 		window.history.pushState(
 			"new type", title, "/gallery/"+type+"s");
 		document.title = title;
 
+		// Get visibility
+		var isPrivate = (getRadio("gallery_visibility") == "gallery_private")
+			? true : false;;
+
+		// Get deleted
+		var isDeleted = (getRadio("gallery_deleted") == "gallery_deleted")
+			? true : false;
+
 		$.ajax({
 			url: "/ajax/gallery/"+type+"s", 
+			data: {
+				"isPrivate": isPrivate,
+				"isDeleted": isDeleted
+			}
 		}).done(function(html) {
 			$("#gallery").html(html);
 			listenMore();

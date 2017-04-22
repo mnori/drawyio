@@ -4,32 +4,32 @@
 
 {% block content %}
 	<div class="control_bar">
-		<label for="galleries_rooms">
+		<label for="gallery_type_room">
 			Rooms
-		</label><label for="galleries_snapshots">
+		</label><label for="gallery_type_snapshot">
 			Snapshots
 		</label>
 
-		<input class="modal_radio gallery_opts gallery_type" type="radio" name="gallery_type" id="galleries_rooms">
-		<input class="modal_radio gallery_opts gallery_type" type="radio" name="gallery_type" id="galleries_snapshots">
+		<input id="gallery_type_room" class="modal_radio gallery_opts gallery_type" type="radio" name="gallery_type" >
+		<input id="gallery_type_snapshot" class="modal_radio gallery_opts gallery_type" type="radio" name="gallery_type">
 	</div>
 
 	<div class="control_bar">
-		<label for="modbar_public">
+		<label for="gallery_public">
 			Public
-		</label><label for="modbar_private">
+		</label><label for="gallery_private">
 			Private
 		</label>
-		<input id="modbar_public" class="modal_radio gallery_opts galleries_visibility" type="radio" name="modbar_visibility">
-		<input id="modbar_private" class="modal_radio gallery_opts galleries_visibility" type="radio" name="modbar_visibility">
+		<input id="gallery_public" class="modal_radio gallery_opts gallery_visibility" type="radio" name="modbar_visibility">
+		<input id="gallery_private" class="modal_radio gallery_opts gallery_visibility" type="radio" name="modbar_visibility">
 
-		<label for="modbar_deleted_no">
+		<label for="gallery_not_deleted">
 			Not deleted
-		</label><label for="modbar_deleted_yes">
+		</label><label for="gallery_deleted">
 			Deleted
 		</label>
-		<input id="modbar_deleted_no" class="modal_radio gallery_opts galleries_deleted" type="radio" name="modbar_deleted">
-		<input id="modbar_deleted_yes" class="modal_radio gallery_opts galleries_deleted" type="radio" name="modbar_deleted">
+		<input id="gallery_not_deleted" class="modal_radio gallery_opts gallery_deleted" type="radio" name="modbar_deleted">
+		<input id="gallery_deleted" class="modal_radio gallery_opts gallery_deleted" type="radio" name="modbar_deleted">
 	</div>
 
 	<div id="gallery">
