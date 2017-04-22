@@ -19,7 +19,7 @@
     <title>{% block title %}{% endblock %}</title>
 
     <!-- recaptcha -->
-    <script src='https://www.google.com/recaptcha/api.js'></script>
+    <script src='https://www.google.com/recaptcha/api.js?render=explicit'></script>
 
     <!-- Some JS libraries -->
     <script src="/js/jquery-3.1.1.js"></script>
@@ -154,7 +154,7 @@
             <input id="register_pw2" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
 
             <div class="recaptcha_container">
-                <div class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>
+                <div id="register_captcha" class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>
             </div>
 
             <a id="register_back" class="button modal_button modal_button_left" href="javascript:void(0)">
@@ -224,6 +224,11 @@
         <p id="room_private_info" class="modal_info" style="display: none;">
             Room won't appear in public galleries. Only people with the link can view and edit.
         </p>
+
+        <div class="recaptcha_container">
+            <div class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>
+        </div>
+
         <a id="room_ok" class="button modal_button" href="javascript:void(0)">
             <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
         </a>
@@ -243,7 +248,8 @@
 
     <script>
         var conf = {
-            "sessionData": {{ sessionData|safe }}
+            "sessionData": {{ sessionData|safe }},
+            "recaptchaSiteKey": "{{ settings.RECAPTCHA_SITE_KEY }}"
         }
     </script>
     {% block js %}{% endblock %}

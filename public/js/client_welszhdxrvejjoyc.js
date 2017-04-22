@@ -588,6 +588,9 @@ function RegisterDialog() {
 
 	this.show = function() {
 		$("#register_dialog").dialog("open");
+		recaptcha1 = grecaptcha.render("register_captcha", {
+			"sitekey": conf["recaptchaSiteKey"]
+		});
 	}
 
 	init();
