@@ -14,21 +14,22 @@ function App() {
 	const nano = require('nanoseconds'); // For measuring performance
 	const expressApp = express();
 	const ta = require('time-ago')(); // set up time-ago human readable dates library
-	const server = require("http").Server(expressApp) // set up socket.io
-	this.io = require("socket.io")(server)
+	const server = require("http").Server(expressApp); // set up socket.io
+	this.io = require("socket.io")(server);
 
-	var cookieParser = require('cookie-parser')
+	var cookieParser = require('cookie-parser');
 	this.recaptcha = require('express-recaptcha');
 
-	var settings = this.settings = require("./settings") // Our settings
-	this.validation = require("./validation") // Validation tools
-	const database = require("./database") // Our db wrexpressApper
-	var models = this.models = require("./models") // Data classes
+	var settings = this.settings = require("./settings"); // Our settings
+	this.validation = require("./validation"); // Validation tools
+	const database = require("./database"); // Our db wrexpressApper
+	var models = this.models = require("./models"); // Data classes
 	const register = require("./register") // Registration flow
-	const utils = require("./utils") // Misc utilities
-	const login = require("./login")
-	const logout = require("./logout")
-	const moderate = require("./moderate")
+	const utils = require("./utils"); // Misc utilities
+	const login = require("./login");
+	const logout = require("./logout");
+	const moderate = require("./moderate");
+	this.passwords = require("./passwords");
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;

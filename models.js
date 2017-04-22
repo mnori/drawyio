@@ -29,7 +29,6 @@ function Session(req, app) {
 			"name": (this.user) ? this.user.name : this.name,
 			"type": (this.user) ? this.user.type : "guest"
 		}
-		console.log(out);
 		return out;
 	}
 

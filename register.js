@@ -1,27 +1,16 @@
-var bcrypt = require('bcrypt');
-
 // Code to register users goes here
 
 function register(req, res, app) {
-	console.log("register() invoked");
-	console.log(req.query);
-
 	var errors = [];
 
 	// Check password submission
 	var pw1 = req.query.pw1;
 	var pw2 = req.query.pw2;
-	if (!app.validation.checkPassword(pw1) || !app.validation.checkPassword(pw2)) {
-		errors.push("Password must be at least "+
-			app.settings.PASSWORD_MIN_LEN+" characters long.")
-	}
-	if (pw1 != pw2) {
-		errors.push("Passwords must match.");
-	}
+	
+	app.passwords.check(pw1, pw2, errors, app);
 
 	// Check CAPTCHA response exists
 	if (!req.query["g-recaptcha-response"]) { // user has not done the recaptcha
-		console.log("No captcha response");
 		errors.push("Please respond to \"I'm not a robot\".");
 	}
 
@@ -43,7 +32,6 @@ function checkErrorsAndContinue(req, res, errors, app) {
 	if (errors.length > 0) { // single place where errors are send to client
 		res.send({"errors": errors});
 	} else {
-		console.log("CAPTCHA check passed!");
 		createUser(req, res, app);
 	}
 }
