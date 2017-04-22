@@ -109,12 +109,19 @@
         <form>
             <p class="modal_message">You are logged in as &#34;<span id="account_dialog_name"></span>&#34;.</p>
 
-            <a id="account_continue" class="button modal_button" href="javascript:void(0)">
-                <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Continue
+            
+            <a id="change_password" class="button modal_button modal_button_left" href="javascript:void(0)">
+                <i class="fa fa-lock button_icon" aria-hidden="true"></i>Change password
             </a>
-            <a id="account_logout" class="button modal_button" href="javascript:void(0)">
-                <i class="fa fa-power-off button_icon" aria-hidden="true"></i>Log out
-            </a>
+            
+            <div class="account_dialog_bottom" style="float: right;">
+                <a id="account_continue" class="button modal_button" href="javascript:void(0)">
+                    <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Continue
+                </a>
+                <a id="account_logout" class="button modal_button" href="javascript:void(0)">
+                    <i class="fa fa-power-off button_icon" aria-hidden="true"></i>Log out
+                </a>
+            </div>
         </form>
     </div>
 

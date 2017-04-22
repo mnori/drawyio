@@ -918,3 +918,11 @@ input::selection {
 .nick_indicator_guest {
 	font-family: ubuntuLightItalic;
 }
+
+.account_dialog_bottom {
+	float: right;
+}
+
+#change_password {
+	margin-top: 0px;
+}
