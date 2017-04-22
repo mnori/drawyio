@@ -279,8 +279,6 @@ function App() {
 	}
 
 	function getGallery(params, session, callback) {
-		console.log("getGallery() called with params:");
-		console.log(params);
 		if (params["type"] == "room") {
 			getGalleryRooms(params, session, callback);
 		} else if (params["type"] == "snapshot") {

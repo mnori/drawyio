@@ -83,9 +83,7 @@ function User(app, id) {
 
 	var self = this;
 
-	this.init = function() {
-		console.log("User init() invoked");
-	}
+	this.init = function() {}
 
 	this.load = function(callback) {
 		var db = self.app.db;
