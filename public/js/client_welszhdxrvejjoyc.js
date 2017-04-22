@@ -442,16 +442,23 @@ function ChangePwDialog() {
 
 		$("#change_pw_submit").click(function() {
 			console.log("submit invoked");
-			// // Register the user
-			// $.ajax({
-			// 	url: "/ajax/register", 
-			// 	data: {
-			// 		"pw1": $("#register_pw1").val(),
-			// 		"pw2": $("#register_pw2").val(),
-			// 		"g-recaptcha-response": grecaptcha.getResponse()
-			// 	}
-			// }).done(function(response) {
-			// 	$("#register_dialog").dialog("close");
+			$.ajax({
+				url: "/ajax/changepw", 
+				data: {
+					"pw_curr": $("#change_pw_curr").val(),
+					"pw1": $("#change_pw1").val(),
+					"pw2": $("#change_pw2").val()
+				}
+			}).done(function(response) {
+				$("#change_pw_dialog").dialog("close");
+				var handleClose = function() { // Close button OK click event handler
+					changePwDialog.show();
+				}
+				if (!processError(response, handleClose)) { // success
+					infoDialog.show("Password changed successfully.")
+				};
+			});
+			// 	
 			// 	var handleClose = function() { // Close button OK click event handler
 			// 		registerDialog.show();
 			// 	}

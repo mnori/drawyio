@@ -70,6 +70,10 @@ function App() {
 			register.register(req, res, app);
 		});
 
+		expressApp.get("/ajax/changepw", function(req, res) {
+			self.passwords.change(req, res, app);
+		});
+
 		expressApp.get("/ajax/login", function(req, res) {
 			login.login(req, res, app);
 		});

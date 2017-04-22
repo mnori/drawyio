@@ -23,8 +23,16 @@ function encrypt(password, app, callback) {
 	});
 }
 
+// Change password form
+function change(req, res, app) {
+	console.log("change() invoked");
+	console.log(req.query);
+	res.send({"error": "Not yet implemented"});
+}
+
 module.exports = {
 	compare: compare,
 	checkNew: checkNew,
-	encrypt: encrypt
+	encrypt: encrypt,
+	change: change
 };
