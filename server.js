@@ -296,8 +296,7 @@ function App() {
 
 		db.query([
 			"SELECT * FROM snapshot",
-			"WHERE is_private = '0'", // 
-			"AND is_deleted = '0'",   // these two flags could be passed in for mods
+			getModFlagSql(params),
 			dateFilter,
 			"ORDER BY created DESC",
 			"LIMIT 0, "+(pageSize + 1)
@@ -338,8 +337,7 @@ function App() {
 
 		db.query([
 			"SELECT * FROM room",
-			"WHERE is_private = '0'", // 
-			"AND is_deleted = '0'",   // these two flags could be passed in for mods
+			getModFlagSql(params),
 			dateFilter,
 			"ORDER BY modified DESC",
 			"LIMIT 0, "+(pageSize + 1)
@@ -376,6 +374,12 @@ function App() {
 			// Respond with the filled out template
 			callback(out, reachedEnd);
 		});
+	}
+
+	function getModFlagSql(params) {
+		var privateSql = (params["isPrivate"] == "true") ? "'1'" : "'0'";
+		var deletedSql = (params["isDeleted"] == "true") ? "'1'" : "'0'";
+		return "WHERE is_private = "+privateSql+" AND is_deleted = "+deletedSql;
 	}
 
 	this.receiveTool = function(data, socket) {
