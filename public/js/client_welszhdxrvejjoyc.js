@@ -588,13 +588,15 @@ function RegisterDialog() {
 
 	this.show = function() {
 		$("#register_dialog").dialog("open");
-		recaptcha1 = grecaptcha.render("register_captcha", {
-			"sitekey": conf["recaptchaSiteKey"]
-		});
+		renderCaptcha("register_captcha");
 	}
 
 	init();
 	return this;
+}
+
+function renderCaptcha(idIn) {
+	grecaptcha.render(idIn, {"sitekey": conf["recaptchaSiteKey"]});
 }
 
 function GalleriesDialog() {
@@ -826,6 +828,7 @@ function RoomDialog(roomIDIn) {
 	}
 
 	this.show = function(snapshotIDIn) {
+		renderCaptcha("room_captcha");
 		if (typeof(snapshotIDIn) !== "undefined") {
 			snapshotID = snapshotIDIn;
 		} else {
