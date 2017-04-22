@@ -138,7 +138,12 @@ function User(app, id) {
 		// Otherwise, we're creating a brand new user
 		if (self.id) {
 			var sessSql = self.sessionID ? db.esc(self.sessionID) : "NULL"
-			updateSql = "ON DUPLICATE KEY UPDATE session_id = "+sessSql
+			updateSql = [
+				"ON DUPLICATE KEY UPDATE ",
+				"	session_id = "+sessSql+",",
+				"	password = "+db.esc(self.password),
+			].join("\n");
+
 		} else {
 			updateSql = "";
 		}
@@ -157,8 +162,6 @@ function User(app, id) {
 			if (error) {
 				callback(error)
 			} else {
-				console.log(results)
-				console.log(results.insertId);
 				if (results.insertId) {
 					self.id = results.insertId;
 				}

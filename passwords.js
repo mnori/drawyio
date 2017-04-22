@@ -12,8 +12,6 @@ function checkNew(pw1, pw2, errors, app) {
 		errors.push("Password must be at least "+
 			app.settings.PASSWORD_MIN_LEN+" characters long.")
 	}
-	console.log("pw1: ["+pw1+"]")
-	console.log("pw2: ["+pw2+"]")
 	if (pw1 != pw2) {
 		errors.push("Passwords must match.");
 	}
@@ -43,29 +41,31 @@ function change(req, res, app) {
 				errors.push("Existing password is incorrect.");
 			}
 			// Check new passwords fit criteria
-			console.log(req.query.pw1);
-			console.log(req.query.pw2);
-
 			checkNew(req.query.pw1, req.query.pw2, errors, app);
 
 			if (errors.length > 0) {
 				res.send({"errors": errors});
 				return;
 			}
-			res.send("ok");
+
+			var newPW = req.query.pw1;
+			app.passwords.encrypt(newPW, app, function(err, hash) {
+				if (err) {
+					res.send({"error": "Could not create password."});
+					return;
+				}
+				user.password = hash;
+				// save user into database
+				user.save(function(err) {
+					if (err) {
+						res.send({"error": "Could not save password."});
+						return;
+					}
+					res.send("ok");
+				});
+			});
 		});
 	});
-		// compare(req.query["pwCurr"], user.password, function() {
-		// });
-
-
-		// 	res.send("error": "Existing password is incorrect.")
-		// 	errors.push()
-		// }
-
-	// console.log("change() invoked");
-	// console.log(req.query);
-	// res.send({"error": "Not yet implemented"});
 }
 
 module.exports = {

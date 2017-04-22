@@ -458,21 +458,15 @@ function ChangePwDialog() {
 					infoDialog.show("Password changed successfully.")
 				};
 			});
-			// 	
-			// 	var handleClose = function() { // Close button OK click event handler
-			// 		registerDialog.show();
-			// 	}
-			// 	if (!processError(response, handleClose)) { // success
-			// 		receiveSessionData(JSON.parse(response));
-			// 		infoDialog.show("Registration successful, you are now logged in.");
-			// 	}
-			// 	grecaptcha.reset(); // reset the captcha
-			// });
 		});
 	}
 
 	this.show = function() {
+		$("#change_pw_curr").val("");
+		$("#change_pw1").val("");
+		$("#change_pw2").val("");
 		$("#change_pw_dialog").dialog("open");
+
 	}
 
 	init();
