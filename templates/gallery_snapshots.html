@@ -1,6 +1,8 @@
 {% for entry in entries %}
 	<a href="/s/{{ entry.row.id }}" class="thumb">
-		<div class="thumb_title">{{ entry.row.name }}</div>
+		<div class="thumb_title">
+			{% if entry.featured %}<i class="fa fa-star button_icon" aria-hidden="true"></i>{% endif %}{{ entry.row.name }}
+		</div>
 		<img src="/s/{{ entry.row.id }}.png" class="thumb_img" style="width: {{ width }}, height: {{ height }}" /><br />
 		<div class="thumb_inf">
 			<div class="thumb_ago" data-unixtime="{{ entry.unixtime }}">{{ entry.ago }}</div>

@@ -315,6 +315,7 @@ function App() {
 				var agoStr = getAgo(row["created"])
 				out.push({ 
 					row: row, 
+					featured: row["is_staff_pick"] ? true : false,
 					unixtime: new Date(row.created).getTime() / 1000,
 					ago: agoStr
 				});	
