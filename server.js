@@ -586,8 +586,6 @@ function App() {
 		console.log("createRoom() invoked");
 		console.log(req.query);
 
-		// check the captcha here
-
 		var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
 		var isPrivate = req.query.isPrivate === "true" ? "1" : "0";
 
@@ -595,51 +593,58 @@ function App() {
 		var snapshotID = (typeof(req.query.snapshotID) == "undefined") ? null :
 			req.query.snapshotID;
 
-		if (snapshotID && !self.validation.checkSnapshotID(snapshotID)) {
-			res.send("error");
-			return;
-		}
+		// captcha check
+		var errors = []
+		app.captcha.check(req, app, errors, function() {
 
-		// 1. Find a unique drawing ID
-		makeDrawID(function(drawID) {
-			if (drawID == null) { // exceeded max tries
-				console.log("WARNING: Max tries exceeded")
-				res.send("error");
-				return;
+			if (snapshotID && !self.validation.checkSnapshotID(snapshotID)) {
+				errors.push("Invalid snapshot ID");
 			}
 
-			var bufferToRoom = function(buffer) {
-				if (buffer == null) {
-					console.log("Failed to create drawing from snapshot");
+			// 1. Find a unique drawing ID
+			makeDrawID(function(drawID) {
+				if (drawID == null) { // exceeded max tries
+					errors.push("Unknown error")
+				}
+
+				if (errors.length > 0) {
+					res.send({"errors": errors});
 					return;
 				}
-				var layer = bufferToLayer(drawID, buffer);
 
-				// create a dummy mysql row to initialise the object
-				var nowMysql = utils.getNowMysql();
-				var fields = {
-					"name": name,
-					"is_private": isPrivate,
-					"created": nowMysql,
-					"modified": nowMysql
+				var bufferToRoom = function(buffer) {
+					if (buffer == null) {
+						console.log("Failed to create drawing from snapshot");
+						return;
+					}
+					var layer = bufferToLayer(drawID, buffer);
+
+					// create a dummy mysql row to initialise the object
+					var nowMysql = utils.getNowMysql();
+					var fields = {
+						"name": name,
+						"is_private": isPrivate,
+						"created": nowMysql,
+						"modified": nowMysql
+					}
+
+					if (snapshotID) { // an optional field - originating snapshot
+						fields["snapshot_id"] = snapshotID;
+					}
+
+					// create room in memory
+					var drawing = new models.Room(drawID, layer, fields, false, app);
+
+					// respond with drawing ID
+					res.send(drawID);
 				}
 
-				if (snapshotID) { // an optional field - originating snapshot
-					fields["snapshot_id"] = snapshotID;
+				if (!snapshotID) {
+					getEmptyBuffer(bufferToRoom);
+				} else {
+					getBufferFromSnapshot(snapshotID, bufferToRoom);
 				}
-
-				// create room in memory
-				var drawing = new models.Room(drawID, layer, fields, false, app);
-
-				// respond with drawing ID
-				res.send(drawID);
-			}
-
-			if (!snapshotID) {
-				getEmptyBuffer(bufferToRoom);
-			} else {
-				getBufferFromSnapshot(snapshotID, bufferToRoom);
-			}
+			});
 		});
 	}
 

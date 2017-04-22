@@ -572,7 +572,7 @@ function RegisterDialog() {
 				data: {
 					"pw1": $("#register_pw1").val(),
 					"pw2": $("#register_pw2").val(),
-					"g-recaptcha-response": grecaptcha.getResponse()
+					"g-recaptcha-response": grecaptcha.getResponse(self.grWidgetID)
 				}
 			}).done(function(response) {
 				$("#register_dialog").dialog("close");
@@ -583,7 +583,6 @@ function RegisterDialog() {
 					receiveSessionData(JSON.parse(response));
 					infoDialog.show("Registration successful, you are now logged in.");
 				}
-				// grecaptcha.reset(); // reset the captcha
 			});
 		});
 	}
@@ -598,12 +597,13 @@ function RegisterDialog() {
 	return self;
 }
 
+// Render captcha using a specific dom element id
 function renderCaptcha(ctx, idIn) {
-	if (ctx.widgetID !== undefined) {
+	if (ctx.grWidgetID !== undefined) {
 		console.log("widgetID: ["+ctx.widgetID+"]")
-		grecaptcha.reset(ctx.widgetID);
+		grecaptcha.reset(ctx.grWidgetID);
 	} else {
-		ctx.widgetID = grecaptcha.render(idIn, {"sitekey": conf["recaptchaSiteKey"]});	
+		ctx.grWidgetID = grecaptcha.render(idIn, {"sitekey": conf["recaptchaSiteKey"]});	
 	}
 }
 
@@ -821,7 +821,7 @@ function RoomDialog(roomIDIn) {
 		var params = {
 			"name": roomName,
 			"isPrivate": isPrivate,
-			"g-recaptcha-response": grecaptcha.getResponse()
+			"g-recaptcha-response": grecaptcha.getResponse(self.grWidgetID)
 		}
 		if (snapshotID != null) {
 			params["snapshotID"] = snapshotID;
@@ -830,9 +830,15 @@ function RoomDialog(roomIDIn) {
 		$.ajax({
 			url: "/ajax/create_room", 
 			data: params
-		}).done(function(roomID) {
-			// Redirect to the snapshot's page
-			window.location.href = "/r/"+roomID;
+		}).done(function(response) {
+			var handleClose = function() { // Close button OK click event handler
+				self.show();
+			}
+			$("#room_dialog").dialog("close");
+			if (!processError(response, handleClose)) {
+				// Redirect to the snapshot's page
+				window.location.href = "/r/"+response;
+			}
 		});
 	}
 
