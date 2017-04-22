@@ -582,6 +582,10 @@ function App() {
 	// Create a blank canvas image to draw on
 	// Alternatively, create a room from a snapshot
 	function createRoom(req, res) {
+		console.log("createRoom() invoked");
+		console.log(req.query);
+
+		// check the captcha here
 
 		var name = req.query.name.substr(0, settings.SNAPSHOT_NAME_LEN);
 		var isPrivate = req.query.isPrivate === "true" ? "1" : "0";

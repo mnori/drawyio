@@ -596,6 +596,7 @@ function RegisterDialog() {
 }
 
 function renderCaptcha(idIn) {
+	$("#register_captcha").empty();
 	grecaptcha.render(idIn, {"sitekey": conf["recaptchaSiteKey"]});
 }
 
@@ -811,8 +812,9 @@ function RoomDialog(roomIDIn) {
 		var isPrivate = (visibility == "room_visibility_private") ? true : false;
 
 		var params = {
-			name: roomName,
-			isPrivate: isPrivate
+			"name": roomName,
+			"isPrivate": isPrivate,
+			"g-recaptcha-response": grecaptcha.getResponse()
 		}
 		if (snapshotID != null) {
 			params["snapshotID"] = snapshotID;
