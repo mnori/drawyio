@@ -445,7 +445,7 @@ function ChangePwDialog() {
 			$.ajax({
 				url: "/ajax/changepw", 
 				data: {
-					"pw_curr": $("#change_pw_curr").val(),
+					"pwCurr": $("#change_pw_curr").val(),
 					"pw1": $("#change_pw1").val(),
 					"pw2": $("#change_pw2").val()
 				}
