@@ -1,7 +1,13 @@
 var bcrypt = require('bcrypt');
 
+// Compare password against its hash
+function compare(pw, hash, callback) {
+	bcrypt.compare(pw, hash, callback);
+}
+
 // Check passwords 1 & 2 match and are above certain length
-function check(pw1, pw2, errors, app) {
+// Used on registration and password changes
+function checkNew(pw1, pw2, errors, app) {
 	if (!app.validation.checkPassword(pw1) || !app.validation.checkPassword(pw2)) {
 		errors.push("Password must be at least "+
 			app.settings.PASSWORD_MIN_LEN+" characters long.")
@@ -18,6 +24,7 @@ function encrypt(password, app, callback) {
 }
 
 module.exports = {
-	check: check,
+	compare: compare,
+	checkNew: checkNew,
 	encrypt: encrypt
 };

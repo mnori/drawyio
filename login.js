@@ -24,7 +24,7 @@ function login(req, res, app) {
 		}
 
 		// Is the password correct?
-		bcrypt.compare(password, user.password, function(err, bres) {
+		app.passwords.compare(password, user.password, function(err, bres) {
 			if (!bres) { // password not OK
 				res.send({"error": errorMsg});
 

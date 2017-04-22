@@ -7,7 +7,7 @@ function register(req, res, app) {
 	var pw1 = req.query.pw1;
 	var pw2 = req.query.pw2;
 	
-	app.passwords.check(pw1, pw2, errors, app);
+	app.passwords.checkNew(pw1, pw2, errors, app);
 
 	// Check CAPTCHA response exists
 	if (!req.query["g-recaptcha-response"]) { // user has not done the recaptcha
