@@ -48,6 +48,7 @@ function editSnapshot(req, res, app) {
 			res.send({"error": "Snapshot not found."});
 			return;
 		}
+		console.log(req.query);
 		snapshot.isPrivate = req.query["isPrivate"] != "0" ? true : false;
 		snapshot.isDeleted = req.query["isDeleted"] != "0" ? true : false;
 		snapshot.isStaffPick = req.query["isStaffPick"] != "0" ? true : false;

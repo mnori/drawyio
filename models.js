@@ -531,7 +531,7 @@ function Snapshot() {
 
 		var isPrivate = self.isPrivate ? "'1'" : "'0'";
 		var isDeleted = self.isDeleted ? "'1'" : "'0'";
-		var isStaffPick = self.isDeleted ? "'1'" : "'0'";
+		var isStaffPick = self.isStaffPick ? "'1'" : "'0'";
 
 		db.query([
 			"INSERT INTO snapshot (",

@@ -98,16 +98,19 @@ function App() {
 				renderSnapshotPage(req, res);
 		});
 
-		// The index page will soon just show staff picks
+		// The index page, showing the staff picks
 		expressApp.get("/", function(req, res) { 
 			self.getSession(req, res, function(session) {
-				getGallery({"type": "room"}, session, function(entries, reachedEnd) {
-					res.render("index.html", { 
-						entries: entries,
-						settings: settings,
-						sessionData: session.getClientDataJson(),
-						reachedEnd: reachedEnd
-					});
+				getGallery(
+					{"type": "snapshot", "isStaffPick": true}, session, 
+					function(entries, reachedEnd) {
+						res.render("index.html", { 
+							entries: entries,
+							settings: settings,
+							sessionData: session.getClientDataJson(),
+							reachedEnd: reachedEnd
+						}
+					);
 				});
 			});
 		}); 
@@ -295,7 +298,7 @@ function App() {
 
 		db.query([
 			"SELECT * FROM snapshot",
-			getModFlagSql(params, session),
+			getGalleryFilterSql(params, session),
 			getDateFilter(params),
 			"ORDER BY created DESC",
 			"LIMIT 0, "+(pageSize + 1)
@@ -336,7 +339,7 @@ function App() {
 
 		db.query([
 			"SELECT * FROM room",
-			getModFlagSql(params, session),
+			getGalleryFilterSql(params, session),
 			getDateFilter(params),
 			"ORDER BY modified DESC",
 			"LIMIT 0, "+(pageSize + 1)
@@ -379,8 +382,13 @@ function App() {
 
 	// Returns sql filter for showing deleted/private stuff
 	// Only allows viewing hidden things when session.isMod is true
-	function getModFlagSql(params, session) {
-		var isMod = session.isMod();
+	function getGalleryFilterSql(params, session) {
+		if (params["isStaffPick"]) { // special case for staff picks
+			return "WHERE is_staff_pick = '1' AND is_deleted = '0' AND is_private = '0'";
+		}
+
+		// gallery browser. moderators can see everything
+		var isMod = session.isMod(); // permission check
 		var privateSql = (isMod && params["isPrivate"] == "true") ? "'1'" : "'0'";
 		var deletedSql = (isMod && params["isDeleted"] == "true") ? "'1'" : "'0'";
 		return "WHERE is_private = "+privateSql+" AND is_deleted = "+deletedSql;
