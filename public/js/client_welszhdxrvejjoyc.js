@@ -96,48 +96,49 @@ function insertSessionName(elementID, sessionData) {
 }
 
 function GalleryUI(type) {
+	var self = this;
 	var init = function(type) {
 
-		// set up galleries type select (room | snapshot)
-		$(".galleries_type").checkboxradio();
-
+		// select particular radio buttons
 		if (type == "room") {
 			$("#galleries_rooms").attr("checked", "checked");
 		} else {
 			$("#galleries_snapshots").attr("checked", "checked");
 		}
-		
-		$(".galleries_type").checkboxradio("refresh");				
-		$(".galleries_type").change(function() {
-
-			// Fetch gallery data using ajax
-			var value = $(this).attr("id");
-			var type = (value == "galleries_snapshots") ? "snapshot" : "room";
-			var title = type == "snapshot" ? "Snapshots" : "Rooms";
-			title = "DrawIO - "+title;
-			// update the browser URL
-			// TODO - apply this thing across the entire site one day
-			window.history.pushState(
-				"new type", title, "/gallery/"+type+"s");
-			document.title = title;
-
-			$.ajax({
-				url: "/ajax/gallery/"+type+"s", 
-			}).done(function(html) {
-				$("#gallery").html(html);
-				listenMore();
-			});
-		})
-
 		$("#modbar_public").attr("checked", "checked");
 		$("#modbar_deleted_no").attr("checked", "checked");
-		$("#modbar_staffpick_no").attr("checked", "checked");
+	
+		// initialise
+		$(".gallery_opts").checkboxradio();
 
-		// set up mod tools (if perms are set)
-		$(".modbar_opts").checkboxradio();
-
+		// attach change event handler
+		$(".gallery_opts").change(this.requestGallery);
 
 		listenMore();
+	}
+
+	this.requestGallery = function() {
+		console.log("requestGallery invoked");
+
+		// getRadio("mod_visibility")
+
+		// Fetch gallery data using ajax
+		var value = $(this).attr("id");
+		var type = (value == "galleries_snapshots") ? "snapshot" : "room";
+		var title = type == "snapshot" ? "Snapshots" : "Rooms";
+		title = "DrawIO - "+title;
+		// update the browser URL
+		// TODO - apply this thing across the entire site one day
+		window.history.pushState(
+			"new type", title, "/gallery/"+type+"s");
+		document.title = title;
+
+		$.ajax({
+			url: "/ajax/gallery/"+type+"s", 
+		}).done(function(html) {
+			$("#gallery").html(html);
+			listenMore();
+		});
 	}
 
 	// Listen to the "load more" button
@@ -149,7 +150,7 @@ function GalleryUI(type) {
 		$("#gallery_more").click(function() {
 
 			// Fetch more gallery data using ajax
-			var checkedID = $("input[type='radio']:checked.galleries_type").attr("id");
+			var checkedID = $("input[type='radio']:checked.gallery_type").attr("id");
 			var type = (checkedID == "galleries_snapshots") ? "snapshot" : "room";
 			var oldest = findOldestUnixtime();
 			var data = {
