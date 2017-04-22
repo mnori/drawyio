@@ -30,6 +30,7 @@ function App() {
 	const logout = require("./logout");
 	const moderate = require("./moderate");
 	this.passwords = require("./passwords");
+	this.captcha = require("./captcha");
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;

@@ -536,6 +536,8 @@ function LoginDialog() {
 }
 
 function RegisterDialog() {
+
+	var self = this;
 	function init() {
 		setup();
 	}
@@ -581,23 +583,28 @@ function RegisterDialog() {
 					receiveSessionData(JSON.parse(response));
 					infoDialog.show("Registration successful, you are now logged in.");
 				}
-				grecaptcha.reset(); // reset the captcha
+				// grecaptcha.reset(); // reset the captcha
 			});
 		});
 	}
 
 	this.show = function() {
 		$("#register_dialog").dialog("open");
-		renderCaptcha("register_captcha");
+		renderCaptcha(self, "register_captcha");
+		console.log(self);
 	}
 
 	init();
-	return this;
+	return self;
 }
 
-function renderCaptcha(idIn) {
-	$("#register_captcha").empty();
-	grecaptcha.render(idIn, {"sitekey": conf["recaptchaSiteKey"]});
+function renderCaptcha(ctx, idIn) {
+	if (ctx.widgetID !== undefined) {
+		console.log("widgetID: ["+ctx.widgetID+"]")
+		grecaptcha.reset(ctx.widgetID);
+	} else {
+		ctx.widgetID = grecaptcha.render(idIn, {"sitekey": conf["recaptchaSiteKey"]});	
+	}
 }
 
 function GalleriesDialog() {
@@ -830,7 +837,7 @@ function RoomDialog(roomIDIn) {
 	}
 
 	this.show = function(snapshotIDIn) {
-		renderCaptcha("room_captcha");
+		renderCaptcha(self, "room_captcha");
 		if (typeof(snapshotIDIn) !== "undefined") {
 			snapshotID = snapshotIDIn;
 		} else {
