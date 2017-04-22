@@ -110,7 +110,7 @@
             <p class="modal_message">You are logged in as &#34;<span id="account_dialog_name"></span>&#34;.</p>
 
             
-            <a id="change_password" class="button modal_button modal_button_left" href="javascript:void(0)">
+            <a id="account_change_pw" class="button modal_button modal_button_left" href="javascript:void(0)">
                 <i class="fa fa-lock button_icon" aria-hidden="true"></i>Change password
             </a>
             
@@ -125,15 +125,33 @@
         </form>
     </div>
 
+    <div id="change_pw_dialog" class="modal_dialog" title="Change password" style="display: none;">
+        <p class="modal_message">Current password</p>    
+        <input id="change_pw_dialog" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
+
+        <p class="modal_message">New password</p>    
+        <input id="change_pw1" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
+
+        <p class="modal_message">Confirm new password</p>    
+        <input id="change_pw2" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
+
+        <a id="change_pw_submit" class="button modal_button" href="javascript:void(0)">
+            <i class="fa fa-arrow-right button_icon" aria-hidden="true"></i>Submit
+        </a>
+        <a id="change_pw_cancel" class="button modal_button" href="javascript:void(0)">
+            <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+        </a>
+    </div>
+
     <!-- Register dialog -->
     <div id="register_dialog" class="modal_dialog" title="Register your nickname (optional)" style="display: none;">
         <form>
             <p class="modal_message">Create an account on drawy.io. No email confirmation required.</p>
 
             <p class="modal_message">Password</p>
-            <input id="register_pw1" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_HASH_LEN }}" />
+            <input id="register_pw1" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
             <p class="modal_message">Confirm password</p>
-            <input id="register_pw2" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_HASH_LEN }}" />
+            <input id="register_pw2" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
 
             <div class="recaptcha_container">
                 <div class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>

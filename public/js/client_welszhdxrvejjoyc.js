@@ -22,6 +22,7 @@ function initGlobal(conf) {
 
 	nickDialog = new NickDialog();
 	accountDialog = new AccountDialog();
+	changePwDialog = new ChangePwDialog();
 	registerDialog = new RegisterDialog();
 
 	// should only be attached inside the snapshot page
@@ -384,6 +385,10 @@ function AccountDialog() {
 				modalOpenSetup();
 		    }
 		});
+		$("#account_change_pw").click(function() {
+			$("#account_dialog").dialog("close");
+			changePwDialog.show();
+		});
 		// Set up OK button event handler
 		$("#account_logout").click(function() {
 			$.ajax({url: "/ajax/logout"}).done(function(response) {
@@ -408,6 +413,61 @@ function AccountDialog() {
 	this.show = function() {
 		$("#account_dialog").dialog("open");
 	}
+	init();
+	return this;
+}
+
+function ChangePwDialog() {
+	function init() {
+		setup();
+	}
+
+	function setup() {
+		$("#change_pw_dialog").dialog({
+			resizable: false,
+			// height: 582,
+			width: 400,
+			modal: true,
+			draggable: false,
+			autoOpen: false,
+			closeOnEscape: false,
+			open: function(event, ui) {
+				modalOpenSetup();
+		    }
+		});
+
+		$("#change_pw_cancel").click(function() {
+			$("#change_pw_dialog").dialog("close");
+		});
+
+		$("#change_pw_submit").click(function() {
+			console.log("submit invoked");
+			// // Register the user
+			// $.ajax({
+			// 	url: "/ajax/register", 
+			// 	data: {
+			// 		"pw1": $("#register_pw1").val(),
+			// 		"pw2": $("#register_pw2").val(),
+			// 		"g-recaptcha-response": grecaptcha.getResponse()
+			// 	}
+			// }).done(function(response) {
+			// 	$("#register_dialog").dialog("close");
+			// 	var handleClose = function() { // Close button OK click event handler
+			// 		registerDialog.show();
+			// 	}
+			// 	if (!processError(response, handleClose)) { // success
+			// 		receiveSessionData(JSON.parse(response));
+			// 		infoDialog.show("Registration successful, you are now logged in.");
+			// 	}
+			// 	grecaptcha.reset(); // reset the captcha
+			// });
+		});
+	}
+
+	this.show = function() {
+		$("#change_pw_dialog").dialog("open");
+	}
+
 	init();
 	return this;
 }
