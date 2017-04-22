@@ -97,6 +97,8 @@ function insertSessionName(elementID, sessionData) {
 
 function GalleryUI(type) {
 	var init = function(type) {
+
+		// set up galleries type select (room | snapshot)
 		$(".galleries_type").checkboxradio();
 
 		if (type == "room") {
@@ -127,6 +129,9 @@ function GalleryUI(type) {
 			});
 		})
 
+		// set up mod tools (if perms are set)
+		$(".modbar_checkbox").checkboxradio();
+
 		listenMore();
 	}
 
@@ -150,8 +155,7 @@ function GalleryUI(type) {
 				data: data
 			}).done(function(html) {
 				$("#gallery_more_container").replaceWith(html);
-				// $("#gallery").append(html);
-				listenMore();
+				listenMore(); // listen to newly created load more button
 			});
 		});
 	}

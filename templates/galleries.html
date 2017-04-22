@@ -13,6 +13,16 @@
 		<input class="modal_radio galleries_type" type="radio" name="galleries_type" id="galleries_snapshots">
 	</div>
 
+	<div class="modbar">
+		<label for="modbar_public">
+			Public
+		</label><label for="modbar_private">
+			Private
+		</label>
+		<input class="modal_radio modbar_checkbox" type="checkbox" name="modbar_flag" id="modbar_public">
+		<input class="modal_radio modbar_checkbox" type="checkbox" name="modbar_flag" id="modbar_private">
+	</div>
+
 	<div id="gallery">
 	{% if type == "snapshot" %}
 	    {% include "gallery_snapshots.html" %}
