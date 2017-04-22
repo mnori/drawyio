@@ -682,8 +682,7 @@ function App() {
 	function createSnapshot(req, res) {
 		var roomID = req.query.roomID;
 		if (!self.validation.checkRoomID(roomID)) { 
-			console.log("Validation failed");
-			req.send("error");
+			req.json({"error": "Validation failed!"});
 			return;
 		}
 
@@ -699,46 +698,56 @@ function App() {
 				return;
 			}
 
-			// create snapshot ID
-			makeSnapshotID(function(snapID) {
-				// copy the image into the right folder
-				var sourceFilepath = settings.ROOMS_DIR+"/"+room.id+".png"
-				var destFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
+			// check CAPTCHA
+			var errors = []
+			app.captcha.check(req, app, errors, function() {
+				if (errors.length > 0) {
+					res.json({"errors": errors});
+					return;
+				}
 
-				// copy file into a snapshot file
-				copyFile(sourceFilepath, destFilepath, function() {
-					// now insert the entry into the database
-					var snapshot = new models.Snapshot();
+				// create snapshot ID
+				makeSnapshotID(function(snapID) {
+					// copy the image into the right folder
+					var sourceFilepath = settings.ROOMS_DIR+"/"+room.id+".png"
+					var destFilepath = settings.SNAPSHOTS_DIR+"/"+snapID+".png"
 
-					snapshot.id = snapID;
-					snapshot.roomID = roomID;
-					snapshot.name = name;
-					snapshot.isPrivate = isPrivate;
+					// copy file into a snapshot file
+					copyFile(sourceFilepath, destFilepath, function() {
+						
+						// now insert the entry into the database
+						var snapshot = new models.Snapshot();
 
-					db.query([
-						"INSERT INTO snapshot (id, room_id, name, is_private, created)",
-						"VALUES (",
-						"	'"+snapID+"',",
-						"	'"+roomID+"',",
-						"	"+db.esc(name)+",",
-						"	'"+isPrivate+"',",
-						"	NOW()",
-						")",
-					].join("\n"), function(results, fields, error) {
-						// send response to client
-						if (error) {
-							// Error occured
-							// Due to missing room ID
-							// Drawing probably hasn't been saved yet
-							res.json({"error": errorStr});
+						snapshot.id = snapID;
+						snapshot.roomID = roomID;
+						snapshot.name = name;
+						snapshot.isPrivate = isPrivate;
 
-						} else {
-							res.send(snapID);
-						}
-					})
+						db.query([
+							"INSERT INTO snapshot (id, room_id, name, is_private, created)",
+							"VALUES (",
+							"	'"+snapID+"',",
+							"	'"+roomID+"',",
+							"	"+db.esc(name)+",",
+							"	'"+isPrivate+"',",
+							"	NOW()",
+							")",
+						].join("\n"), function(results, fields, error) {
+							// send response to client
+							if (error) {
+								// Error occured
+								// Due to missing room ID
+								// Drawing probably hasn't been saved yet
+								res.json({"error": errorStr});
+
+							} else {
+								res.send(snapID);
+							}
+						});
+					});
 				});
 			});
-		})
+		}); // ouch
 	}
 
 	function bufferToLayer(drawID, bufferIn) {

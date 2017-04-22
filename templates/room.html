@@ -27,6 +27,11 @@
 		<p id="snapshot_private_info" class="modal_info" style="display: none;">
 			Saved drawing won't appear in public galleries. Only people with the link can see it. 
 		</p>
+
+		<div class="recaptcha_container">
+            <div id="snapshot_captcha" class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>
+        </div>
+
 		<a id="snapshot_ok" class="button modal_button" href="javascript:void(0)">
 			<i class="fa fa-check button_icon" aria-hidden="true"></i>OK
 		</a>

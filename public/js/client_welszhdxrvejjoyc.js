@@ -933,7 +933,8 @@ function SnapshotDialog(roomIDIn) {
 			data: {
 				roomID: roomID,
 				name: snapshotName,
-				isPrivate: isPrivate
+				isPrivate: isPrivate,
+				"g-recaptcha-response": grecaptcha.getResponse(self.grWidgetID)
 			}
 		}).done(function(response) {
 			if (!processError(response)) {
@@ -945,6 +946,7 @@ function SnapshotDialog(roomIDIn) {
 
 	this.show = function(rename) {
 		$("#snapshot_dialog").dialog("open");
+		renderCaptcha(self, "snapshot_captcha");
 	}
 
 	init();
