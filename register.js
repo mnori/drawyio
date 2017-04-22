@@ -38,43 +38,39 @@ function checkErrorsAndContinue(req, res, errors, app) {
 
 function createUser(req, res, app) {
 
-	// create a salted password
+	// create a salted password string	
 	var password = req.query.pw1;
-	bcrypt.genSalt(app.settings.PASSWORD_SALT_ROUNDS, function(err, salt) {
-		bcrypt.hash(password, salt, function(err, hash) {
-			if (err) {
-				res.send({"error": "Could not create password."});
-				return;
-			}
+	app.passwords.encrypt(password, app, function(err, hash) {
+		if (err) {
+			res.send({"error": "Could not create password."});
+			return;
+		}
 
-			// get session data to help fill out the user data
-			app.getSession(req, res, function(session) {
+		// get session data to help fill out the user data
+		app.getSession(req, res, function(session) {
 
-				// fill out user data
-				var user = new app.models.User(app);
-				user.name = session.name;
-				user.sessionID = session.id;
-				user.password = hash;
-				user.type = "user";
-				user.joined = new Date();
+			// fill out user data
+			var user = new app.models.User(app);
+			user.name = session.name;
+			user.sessionID = session.id;
+			user.password = hash;
+			user.type = "user";
+			user.joined = new Date();
 
-				// save user into database
-				user.save(function(err) {
-					if (err) {
-						// This is a rare case since we already check the username on the
-						// nickname dialog, just before the register dialog
-						res.send({"error": "The username you have chosen is not available."});
-						return;
-					}
-					session.user = user;
+			// save user into database
+			user.save(function(err) {
+				if (err) {
+					// This is a rare case since we already check the username on the
+					// nickname dialog, just before the register dialog
+					res.send({"error": "The username you have chosen is not available."});
+					return;
+				}
+				session.user = user;
 
-					// now update the session with the user ID
-					res.send(session.getClientDataJson())
-					// res.send({"userID": user.id});	
-				});
+				// now update the session with the user ID
+				res.send(session.getClientDataJson())
 			});
 		});
-
 	});
 }
 

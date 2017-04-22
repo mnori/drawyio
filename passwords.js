@@ -11,10 +11,13 @@ function check(pw1, pw2, errors, app) {
 	}
 }
 
-function encrypt() {
-
+function encrypt(password, app, callback) {
+	bcrypt.genSalt(app.settings.PASSWORD_SALT_ROUNDS, function(err, salt) {
+		bcrypt.hash(password, salt, callback);
+	});
 }
 
 module.exports = {
-	check: check
+	check: check,
+	encrypt: encrypt
 };
