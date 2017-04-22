@@ -98,10 +98,10 @@ function App() {
 				renderSnapshotPage(req, res);
 		});
 
-		// The index page (will be replaced with something else soon)
+		// The index page will soon just show staff picks
 		expressApp.get("/", function(req, res) { 
 			self.getSession(req, res, function(session) {
-				getGallery({"type": "room"}, function(entries, reachedEnd) {
+				getGallery({"type": "room"}, session, function(entries, reachedEnd) {
 					res.render("index.html", { 
 						entries: entries,
 						settings: settings,
@@ -117,7 +117,7 @@ function App() {
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			var titleTxt = (galType == "room") ? "Rooms" : "Snapshots";
 			self.getSession(req, res, function(session) {
-				getGallery({"type": galType}, function(entries, reachedEnd) {
+				getGallery({"type": galType}, session, function(entries, reachedEnd) {
 					res.render("galleries.html", { 
 						entries: entries,
 						type: galType,
@@ -134,11 +134,13 @@ function App() {
 		expressApp.get("/ajax/gallery/:type", function(req, res) { 
 			var galType = (req.params.type == "rooms") ? "room" : "snapshot";
 			req.query.type = galType;
-			getGallery(req.query, function(entries, reachedEnd) {
-				res.render("gallery_"+req.query.type+"s.html", { 
-					settings: settings,
-					entries: entries,
-					reachedEnd: reachedEnd
+			self.getSession(req, res, function(session) {
+				getGallery(req.query, session, function(entries, reachedEnd) {
+					res.render("gallery_"+req.query.type+"s.html", { 
+						settings: settings,
+						entries: entries,
+						reachedEnd: reachedEnd
+					});
 				});
 			});
 		});
@@ -273,13 +275,13 @@ function App() {
 		});
 	}
 
-	function getGallery(params, callback) {
+	function getGallery(params, session, callback) {
 		console.log("getGallery() called with params:");
 		console.log(params);
 		if (params["type"] == "room") {
-			getGalleryRooms(params, callback);
+			getGalleryRooms(params, session, callback);
 		} else if (params["type"] == "snapshot") {
-			getGallerySnapshots(params, callback);
+			getGallerySnapshots(params, session, callback);
 		} else {
 			console.log("Invalid type ["+params["type"]+"]")
 		}
@@ -287,17 +289,14 @@ function App() {
 
 	// we should probably merge this and the next function somewhat, lots of
 	// duplicated logic, especially for paging
-	function getGallerySnapshots(params, callback) {
+	function getGallerySnapshots(params, session, callback) {
 		var out = []
-		var timestamp = parseInt(params.oldestTime);
-		var dateFilter = (!params.oldestTime) ? "" :
-			"AND created < FROM_UNIXTIME("+timestamp+")";
 		var pageSize = settings.MIN_DRAWINGS_MEMORY;
 
 		db.query([
 			"SELECT * FROM snapshot",
-			getModFlagSql(params),
-			dateFilter,
+			getModFlagSql(params, session),
+			getDateFilter(params),
 			"ORDER BY created DESC",
 			"LIMIT 0, "+(pageSize + 1)
 		].join("\n"), function(results, fields, error) {
@@ -328,7 +327,7 @@ function App() {
 		});
 	}
 
-	function getGalleryRooms(params, callback) {
+	function getGalleryRooms(params, session, callback) {
 		var out = []
 		var timestamp = parseInt(params.oldestTime);
 		var dateFilter = (!params.oldestTime) ? "" :
@@ -337,8 +336,8 @@ function App() {
 
 		db.query([
 			"SELECT * FROM room",
-			getModFlagSql(params),
-			dateFilter,
+			getModFlagSql(params, session),
+			getDateFilter(params),
 			"ORDER BY modified DESC",
 			"LIMIT 0, "+(pageSize + 1)
 		].join("\n"), function(results, fields, error) {
@@ -376,10 +375,22 @@ function App() {
 		});
 	}
 
-	function getModFlagSql(params) {
-		var privateSql = (params["isPrivate"] == "true") ? "'1'" : "'0'";
-		var deletedSql = (params["isDeleted"] == "true") ? "'1'" : "'0'";
+	// definitely need a gallery file for all this stuff
+
+	// Returns sql filter for showing deleted/private stuff
+	// Only allows viewing hidden things when session.isMod is true
+	function getModFlagSql(params, session) {
+		var isMod = session.isMod();
+		var privateSql = (isMod && params["isPrivate"] == "true") ? "'1'" : "'0'";
+		var deletedSql = (isMod && params["isDeleted"] == "true") ? "'1'" : "'0'";
 		return "WHERE is_private = "+privateSql+" AND is_deleted = "+deletedSql;
+	}
+
+	function getDateFilter(params) {
+		var timestamp = parseInt(params.oldestTime);
+		var dateFilter = (!params.oldestTime) ? "" :
+			"AND created < FROM_UNIXTIME("+timestamp+")";
+		return dateFilter;
 	}
 
 	this.receiveTool = function(data, socket) {
