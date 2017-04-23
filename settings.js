@@ -53,7 +53,7 @@ module.exports = {
 	DB_CONNECT_PARAMS: { // must
 		host: "localhost",
 		user: "root",
-		password: ""
+		password: (isLive) ? "CHANGEME" : ""
 	},
 	DB_NAME: "drawyio",
 	SQL_DEBUG: false, // (isLive) ? false : true,
