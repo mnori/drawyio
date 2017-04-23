@@ -2064,7 +2064,6 @@ function drawUI() {
 		menu.css({ // get the parent element and reposition it
 			"top": offset.top+"px",
 			"left": left+"px",
-			"width": width,
 			"z-index": 1000000012
 		});
 	}

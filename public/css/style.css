@@ -129,12 +129,13 @@ h1 {
 .star_3 { font-size: 14px; }
 
 #drawing_form {
+	margin: -1px;
 	background-color: #eee;
 	float: left;
 	margin-bottom: 20px;
 	position: relative;
-	border: 1px 1px 1px 1px solid #aaa;
 	box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
+	border: 1px solid #888;
 }
 
 .drawing_pointer {
@@ -185,12 +186,11 @@ h1 {
 #text_input {
 	background-color: #fff;
 	position: absolute;
-	top: 0px;
-	left: 0px;
-	height: 45px;
-
-	border: 1px solid #888;
-    box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);
+	margin: 1px;
+	height: 49px;
+	width: 872px;
+	/*border: 1px solid #f00;*/
+    /*box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.3);*/
 }
 
 #text_input_box {
@@ -199,13 +199,12 @@ h1 {
 	padding-bottom: 0px;
 	padding-left: 10px;
 	padding-right: 10px;
-	line-height: 45px;
+	line-height: 48px;
 	font-size: 25px;
 	width: 100%;
 	font-family: ubuntuMonoRegular;
 	margin-right: 20px;
-	width: 780px;
-	z-index:;
+	width: 852px;
 }
 
 input {
