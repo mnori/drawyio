@@ -10,9 +10,11 @@
 		<div id="snapshot_title">{{ snapshot.name }}</div>
 		<img id="snapshot_img" src="/s/{{ snapshot.id }}.png">
 		<div id="snapshot_controls">
-			<a id="mod_button" class="button button_tool" href="javascript:void(0)">
-				<i class="fa fa-snowflake-o" aria-hidden="true"></i>
-			</a>
+			{% if isMod %}
+				<a id="mod_button" class="button button_tool" href="javascript:void(0)">
+					<i class="fa fa-snowflake-o" aria-hidden="true"></i>
+				</a>
+			{% endif %}
 			<a id="create_snapshot_room" class="button button_tool" href="javascript:void(0)">
 				<i class="fa fa-users" aria-hidden="true"></i>
 			</a>

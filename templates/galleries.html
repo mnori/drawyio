@@ -14,23 +14,25 @@
 		<input id="gallery_type_snapshot" class="modal_radio gallery_opts gallery_type" type="radio" name="gallery_type">
 	</div>
 
-	<div class="control_bar">
-		<label for="gallery_public">
-			Public
-		</label><label for="gallery_private">
-			Private
-		</label>
-		<input id="gallery_public" class="modal_radio gallery_opts gallery_visibility" type="radio" name="modbar_visibility">
-		<input id="gallery_private" class="modal_radio gallery_opts gallery_visibility" type="radio" name="modbar_visibility">
+	{% if isMod %}
+		<div class="control_bar">
+			<label for="gallery_public">
+				Public
+			</label><label for="gallery_private">
+				Private
+			</label>
+			<input id="gallery_public" class="modal_radio gallery_opts gallery_visibility" type="radio" name="modbar_visibility">
+			<input id="gallery_private" class="modal_radio gallery_opts gallery_visibility" type="radio" name="modbar_visibility">
 
-		<label for="gallery_not_deleted">
-			Not deleted
-		</label><label for="gallery_deleted">
-			Deleted
-		</label>
-		<input id="gallery_not_deleted" class="modal_radio gallery_opts gallery_deleted" type="radio" name="modbar_deleted">
-		<input id="gallery_deleted" class="modal_radio gallery_opts gallery_deleted" type="radio" name="modbar_deleted">
-	</div>
+			<label for="gallery_not_deleted">
+				Not deleted
+			</label><label for="gallery_deleted">
+				Deleted
+			</label>
+			<input id="gallery_not_deleted" class="modal_radio gallery_opts gallery_deleted" type="radio" name="modbar_deleted">
+			<input id="gallery_deleted" class="modal_radio gallery_opts gallery_deleted" type="radio" name="modbar_deleted">
+		</div>
+	{% endif %}
 
 	<div id="gallery">
 	{% if type == "snapshot" %}

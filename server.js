@@ -132,6 +132,7 @@ function App() {
 						type: galType,
 						titleTxt: titleTxt,
 						settings: settings,
+						isMod: session.isMod(),
 						sessionData: session.getClientDataJson(),
 						reachedEnd: reachedEnd
 					});
@@ -156,10 +157,8 @@ function App() {
 
 		// Default action if nothing else matched - 404
 		expressApp.use(function(req, res, next) { 
-			self.getSession(req, res, function(session) {
-				send404(req, res); 
-			});
-		})
+			send404(req, res); 
+		});
 	}
 
 	// Adds session cookie to request
@@ -485,7 +484,8 @@ function App() {
 							width: settings.DRAWING_PARAMS.width,
 							height: settings.DRAWING_PARAMS.height,
 							settings: settings,
-							sessionData: session.getClientDataJson()
+							sessionData: session.getClientDataJson(),
+							isMod: session.isMod()
 						});	
 					} else {
 						send404(req, res);
@@ -544,7 +544,8 @@ function App() {
 						res.render("snapshot.html", { 
 							snapshot: snapshot, 
 							settings: settings,
-							sessionData: session.getClientDataJson()
+							sessionData: session.getClientDataJson(),
+							isMod: session.isMod()
 						});	
 					} else {
 						send404(req, res);

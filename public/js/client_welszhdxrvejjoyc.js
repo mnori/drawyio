@@ -43,10 +43,8 @@ function initGlobal(conf) {
 }
 
 function SnapshotUI() {
-	console.log("SnapshotUI() invoked");
 	var modDialog = new ModDialog("snapshot", opts["snapshotID"]);
 	$("#mod_button").click(function() {
-		console.log(modDialog);
 		modDialog.show();
 	});
 }
@@ -2593,7 +2591,6 @@ function setCookie(cname, cvalue, exdays) {
 
 function getCookie(cname) {
 	var name = cname + "=";
-	console.log(document.cookie);
 	var decodedCookie = decodeURIComponent(document.cookie);
 	var ca = decodedCookie.split(';');
 	for(var i = 0; i <ca.length; i++) {
