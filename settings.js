@@ -64,7 +64,11 @@ module.exports = {
 	DEFAULT_ROOM_NAME: "An unnamed room",
 	DEFAULT_SNAPSHOT_NAME: "An unnamed snapshot",
 
-	RECAPTCHA_SITE_KEY: "6LetFx0UAAAAANa1w3iqcPSQhie8NcMofdkqSUMg",
-	RECAPTCHA_SECRET_KEY: "6LetFx0UAAAAAD-h_22R8g_b_1Ubqaxem9lqdZNv"
+	RECAPTCHA_SITE_KEY: (isLive)
+		? "CHANGEME"
+		: "6LetFx0UAAAAANa1w3iqcPSQhie8NcMofdkqSUMg",
+	RECAPTCHA_SECRET_KEY: (isLive)
+		? "CHANGEME"
+		: "6LetFx0UAAAAAD-h_22R8g_b_1Ubqaxem9lqdZNv"
 }
 

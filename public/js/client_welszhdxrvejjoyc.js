@@ -118,8 +118,6 @@ function GalleryUI(type) {
 
 	// Fetches gallery data using ajax
 	this.requestGallery = function() {
-		console.log("requestGallery() invoked");
-
 		// Handle the type - room | snapshot
 		var type = (getRadio("gallery_type") == "gallery_type_snapshot") 
 			? "snapshot" : "room";
@@ -439,7 +437,6 @@ function ChangePwDialog() {
 		});
 
 		$("#change_pw_submit").click(function() {
-			console.log("submit invoked");
 			$.ajax({
 				url: "/ajax/changepw", 
 				data: {
@@ -588,7 +585,6 @@ function RegisterDialog() {
 	this.show = function() {
 		$("#register_dialog").dialog("open");
 		renderCaptcha(self, "register_captcha");
-		console.log(self);
 	}
 
 	init();
@@ -598,7 +594,6 @@ function RegisterDialog() {
 // Render captcha using a specific dom element id
 function renderCaptcha(ctx, idIn) {
 	if (ctx.grWidgetID !== undefined) {
-		console.log("widgetID: ["+ctx.widgetID+"]")
 		grecaptcha.reset(ctx.grWidgetID);
 	} else {
 		ctx.grWidgetID = grecaptcha.render(idIn, {"sitekey": conf["recaptchaSiteKey"]});	
@@ -1554,29 +1549,6 @@ function drawUI() {
 			modDialog.show();
 		});
 
-		// roomMenu = new ToolOptionMenu(this, "room_menu",
-		// 	function(id) { // onOpen handler
-		// 		// Remove select highlighting, since this is really a menu, 
-		// 		// not a select element
-
-		// 		// TODO come up with an alternative menu class that looks the same but does
-		// 		// not use the <select> element
-
-		// 		// console.log($("#room_menu-menu"));
-		// 		// console.log($("#room_menu-menu").find(".ui-state-active"));
-
-
-		// 	},
-		// 	function(htmlIn) { // getButtonHtml
-		// 		return "<i class=\"fa fa-snowflake-o bars_button\" aria-hidden=\"true\"></i>"
-		// 	},
-		// 	function(value) { // onSelect - when the user clicks an option
-				
-		// 		console.log(value);
-		// 	},
-		// 	true // this indicates we should hide the highlighting when the menu opens
-		// );
-
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
@@ -2011,7 +1983,21 @@ function drawUI() {
 		if (nickVisible()) {
 			return true;
 		}
+		if (dialogsVisible()) {
+			return true;
+		}
+
 		return false;
+	}
+
+	function dialogsVisible() {
+		var visible = false;
+		$(".ui-dialog").each(function(element) {
+			if ($(this).is(":visible")) {
+				visible = true;
+			}
+		});
+		return visible;
 	}
 
 	function nickVisible() {
@@ -2502,7 +2488,6 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isM
 				setLabel(this);
 				if (onSelectIn) {
 					onSelect($(this).val());
-					console.log(menuButton.selectmenu("option"));
 				}
 			}
 		});
