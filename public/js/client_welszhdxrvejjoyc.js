@@ -2056,8 +2056,8 @@ function drawUI() {
 
 	// emit a tool action
 	function emitTool(toolIn) { 
-		var nickname = conf["username"];
-		if (nickname == null) {
+		var nickname = conf["sessionData"]["name"];
+		if (!nickname) {
 			nickname = "Anonymous"
 		}
 		toolIn.nickname = nickname;
