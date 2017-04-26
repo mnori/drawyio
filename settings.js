@@ -3,9 +3,14 @@ var isLive = false;
 // Settings file for drawy.io node.js backend
 // Define global constants
 module.exports = {
-	DEFAULT_NICK: "Anonymous",
 	IS_LIVE: isLive,
+	DEFAULT_NICK: "Anonymous",
 	VERSION_TXT: "v0.2.0",
+	
+	CLIENT_JS: [ // names of the client source files before minification
+		"client.js"
+	],
+
 	CLIENT_LOCATION: (isLive) ? "/js/client.js" : "/jsdev/client.js",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
@@ -71,5 +76,6 @@ module.exports = {
 	RECAPTCHA_SECRET_KEY: (isLive)
 		? "CHANGEME"
 		: "6LetFx0UAAAAAD-h_22R8g_b_1Ubqaxem9lqdZNv"
+
 }
 

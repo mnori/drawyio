@@ -27,9 +27,13 @@
     <script src="/js/spectrum.js"></script>
     <script src="/js/imagesloaded.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    
+
     <!-- Our own front end code -->
-    <script src="{{ settings.CLIENT_LOCATION }}"></script>
+    {% if settings.IS_LIVE %} {# using minified js #}
+        <script src="/js/client.js"></script>
+    {% else %} 
+        {% include "jsdev.html" %} {# include development js files #}
+    {% endif %}
 
     <!-- CSS -->
     <link href="/css/jquery-ui.css" rel="stylesheet" />
