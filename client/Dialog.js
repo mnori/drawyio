@@ -1,4 +1,4 @@
-// Dialog classes //////////////////////////////////////////////////////////////
+// Dialog classes
 
 function ModDialog(entityType, entityID, processCallback) {
 	this.entityType = entityType;
