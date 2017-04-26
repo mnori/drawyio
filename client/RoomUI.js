@@ -48,6 +48,8 @@ function RoomUI() {
 	var fontFaceMenu = null
 	var toolInCanvas = false;
 
+	var self = this; // scoping help
+
 	// Metadata about the action being performed
 	var tool = {
 		state: "idle",
@@ -576,17 +578,13 @@ function RoomUI() {
 		$("#text").on("mouseup", function() { 
 			$("#text_input_box").focus();
 		});
-
-		console.log("THIS:");
-		console.log(this);
-
-		brushSizeMenu = new ToolOptionMenu(this, "brush_size", null, null);
-		fontSizeMenu = new ToolOptionMenu(this, "font_size", null, null);
-		fontFaceMenu = new ToolOptionMenu(this, "font_face", function(id) { // onOpen
+		brushSizeMenu = new ToolOptionMenu(self, "brush_size", null, null);
+		fontSizeMenu = new ToolOptionMenu(self, "font_size", null, null);
+		fontFaceMenu = new ToolOptionMenu(self, "font_face", function(id) { // onOpen
 			var menu = $("#"+id+"-menu").parent();
 			var options = menu.find(".ui-menu-item-wrapper")
 			options.each(function() {
-				var element = $(this);
+				var element = $(self);
 				element.css("font-family", getFontValue(element.html()));
 			});
 		}, function(htmlIn) { // getButtonHtml
