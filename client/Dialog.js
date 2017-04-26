@@ -428,6 +428,10 @@ function GalleriesDialog() {
 		$("#galleries_ok").click(function() {
 			window.location.href = "/gallery/rooms";
 		});
+
+		// Set up hide checkbox
+		$("#hide_gallery_warning").checkboxradio();
+
 		$("#galleries_btn").click(function(ev) {
 			ev.preventDefault();
 			self.show();
