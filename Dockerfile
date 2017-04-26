@@ -13,6 +13,7 @@ RUN npm install
 WORKDIR /usr/src/app/code
 
 # Install MySQL inside this container
+# NOTE: This would be a lot better inside a seperate container.
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
   && apt-get install -y mysql-server mysql-client libmysqlclient-dev \

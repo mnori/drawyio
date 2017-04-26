@@ -58,6 +58,15 @@ function App() {
 	// Set up all URL endpoints
 	function configureRoutes(expressApp) {
 
+		// Special serving of client js code in the development environment
+		expressApp.get("/jsdev/:filename", function(req, res) {
+			if (settings.IS_LIVE) {
+				send404(req, res);
+			} else {
+				res.sendFile(settings.JSDEV_PATH+"/"+req.params.filename)
+			}
+		});
+
 		// Tell node to serve static files from the "public" subdirectory
 		expressApp.use(express.static("public"));
 

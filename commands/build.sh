@@ -1,4 +1,4 @@
 #!/bin/bash
 # Do docker build
 cd ..
-docker build -t doopsnogg/drawcloud .
+docker build -t mnori/drawcloud .

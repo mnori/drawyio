@@ -50,7 +50,7 @@ module.exports = {
 		channels: 4,
 		rgbaPixel: 0xFFFFFFFF
 	},
-	DB_CONNECT_PARAMS: { // must
+	DB_CONNECT_PARAMS: {
 		host: "localhost",
 		user: "root",
 		password: (isLive) ? "CHANGEME" : ""
@@ -59,6 +59,7 @@ module.exports = {
 	SQL_DEBUG: false, // (isLive) ? false : true,
 	ROOMS_DIR: "/usr/src/app/code/images/rooms",
 	SNAPSHOTS_DIR: "/usr/src/app/code/images/snapshots",
+	JSDEV_PATH: "/usr/src/app/code/client",
 	MIN_DRAWINGS_MEMORY: 16, // this is also the max number of images in the gallery
 
 	DEFAULT_ROOM_NAME: "An unnamed room",
