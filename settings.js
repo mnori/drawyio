@@ -8,7 +8,7 @@ module.exports = {
 	VERSION_TXT: "v0.2.0",
 	
 	CLIENT_JS: [ // names of the client source files before minification
-		"client.js",
+		"global.js",
 		"dialogs.js"
 	],
 
