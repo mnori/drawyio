@@ -107,10 +107,10 @@ function getRadio(elClass) {
 
 function NickDialog(base) {
 	// Set up a modal asking about setting the nickname
-	function init(base) {
-		setup();
-
+	var self = this;
+	this.init = function(base) {
 		this.base = base;
+		setup();
 
 		// the style changes based on the user type
 		// TODO put this in a function
@@ -150,7 +150,7 @@ function NickDialog(base) {
 				}
 				$("#nick_dialog").dialog("close");
 				if (!processError(response, handleClose)) { // success
-					receiveSessionData(response);
+					self.base.receiveSessionData(response);
 					registerDialog.show();
 				}
 			});
@@ -167,16 +167,17 @@ function NickDialog(base) {
 	}
 
 	this.show = function() {
-		$("#nick_input").val(base.conf["sessionData"]["name"]);
+		$("#nick_input").val(self.base.conf["sessionData"]["name"]);
 		$("#nick_dialog").dialog("open");
 	}
-	init(base);
+	this.init(base);
 	return this;
 }
 
-function AccountDialog() {
+function AccountDialog(base) {
 	var self = this;
-	function init() {
+	function init(base) {
+		self.base = base;
 		setup();
 	}
 
@@ -190,7 +191,7 @@ function AccountDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				insertSessionName("account_dialog_name", base.conf["sessionData"]);
+				self.base.insertSessionName("account_dialog_name", base.conf["sessionData"]);
 				dialogOpenSetup();
 		    }
 		});
@@ -207,7 +208,7 @@ function AccountDialog() {
 				}
 				if (!processError(response, handleClose)) { // success
 					// update the sessionData coming back from the client
-					receiveSessionData(response);
+					self.base.receiveSessionData(response);
 										
 					$("#account_dialog").dialog("close");
 					infoDialog.show("You are now logged out.");
@@ -222,7 +223,7 @@ function AccountDialog() {
 	this.show = function() {
 		$("#account_dialog").dialog("open");
 	}
-	init();
+	init(base);
 	return this;
 }
 
@@ -281,10 +282,11 @@ function ChangePwDialog() {
 	return this;
 }
 
-function LoginDialog() {
+function LoginDialog(base) {
 	// Set up a modal asking about setting the nickname
 	var self = this;
-	function init() {
+	function init(base) {
+		self.base = base;
 		setup();
 	}
 
@@ -328,7 +330,7 @@ function LoginDialog() {
 					loginDialog.show();
 				}
 				if (!processError(response, handleClose)) { // success
-					receiveSessionData(response);
+					self.base.receiveSessionData(response);
 					$("#login_dialog").dialog("close");
 					infoDialog.show("You are now logged in.");
 				}
@@ -339,18 +341,14 @@ function LoginDialog() {
 	this.show = function(rename) {
 		$("#login_dialog").dialog("open");
 	}
-	init();
+	init(base);
 	return this;
 }
 
-function RegisterDialog() {
-
+function RegisterDialog(base) {
 	var self = this;
-	function init() {
-		setup();
-	}
-
-	function setup() {
+	this.init = function(base) {
+		self.base = base;
 		$("#register_dialog").dialog({
 			resizable: false,
 			// height: 582,
@@ -400,7 +398,7 @@ function RegisterDialog() {
 		renderCaptcha(self, "register_captcha");
 	}
 
-	init();
+	this.init(base);
 	return self;
 }
 
@@ -730,4 +728,16 @@ function SnapshotDialog(roomIDIn) {
 	}
 
 	init();
+}
+
+function dialogOpenSetup() {
+	$(".ui-widget-overlay").css({
+		"background-color": "#000",
+		"opacity": 0.5,
+		"z-index": 1000000020
+	});
+	$(".ui-dialog").css({
+		"z-index": 1000000021
+	})
+	$(".ui-dialog-titlebar-close").hide();
 }

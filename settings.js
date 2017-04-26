@@ -11,6 +11,7 @@ module.exports = {
 		"Base.js",
 		"GalleryUI.js",
 		"RoomUI.js",
+		"SnapshotUI.js",
 		"Dialog.js"
 	],
 

@@ -4,7 +4,8 @@
 // GLOBAL ///////////////////////////////////////////////////////////////////////////////
 
 function Base(conf) {
-	this.conf = conf;
+	var self = this;
+	self.conf = conf;
 
 	this.init = function() {
 		var snapID = (typeof(opts) !== "undefined") ? opts["snapshotID"] : null;
@@ -12,28 +13,20 @@ function Base(conf) {
 		errorDialog = new ErrorDialog();
 		infoDialog = new InfoDialog();
 		galleriesDialog = new GalleriesDialog();
-		loginDialog = new LoginDialog();
-		nickDialog = new NickDialog(this);
-		accountDialog = new AccountDialog();
+		loginDialog = new LoginDialog(self);
+		nickDialog = new NickDialog(self);
+		accountDialog = new AccountDialog(self);
 		changePwDialog = new ChangePwDialog();
-		registerDialog = new RegisterDialog();
+		registerDialog = new RegisterDialog(self);
 
 		initGlobalResizeHandler();
 
-		// activate the nickname button
 		$("#manage_account_btn").click(manageAccount);
-	}
-
-	function SnapshotUI() {
-		var modDialog = new ModDialog("snapshot", opts["snapshotID"]);
-		$("#mod_button").click(function() {
-			modDialog.show();
-		});
 	}
 
 	// either ask user for nickname, or give them the option of logging out
 	function manageAccount() {
-		if (this.conf["sessionData"]["type"] == "guest") {
+		if (self.conf["sessionData"]["type"] == "guest") {
 			nickDialog.show(); // this starts the login flow by asking for a nickname
 		} else {
 			accountDialog.show();
@@ -51,12 +44,12 @@ function Base(conf) {
 	}
 
 	this.receiveSessionData = function(sessionData) {
-		this.conf["sessionData"] = sessionData;
-		insertSessionName("nick_indicator", sessionData);
+		self.conf["sessionData"] = sessionData;
+		self.insertSessionName("nick_indicator", sessionData);
 	}
 
 	// Insert a session name with some styling
-	function insertSessionName(elementID, sessionData) {
+	this.insertSessionName = function(elementID, sessionData) {
 		$("#"+elementID).text(sessionData["name"]); // using .text() 	escapes html
 
 		// gotta be a nicer way of doing this...
@@ -74,44 +67,6 @@ function Base(conf) {
 			$("#"+elementID).removeClass("nick_indicator_user");
 			$("#"+elementID).addClass("nick_indicator_guest");
 		}
-	}
-
-	// Render captcha using a specific dom element id
-	function renderCaptcha(ctx, idIn) {
-		if (ctx.grWidgetID !== undefined) {
-			grecaptcha.reset(ctx.grWidgetID);
-		} else {
-			ctx.grWidgetID = grecaptcha.render(idIn, {"sitekey": this.conf["recaptchaSiteKey"]});	
-		}
-	}
-
-	function processError(response, okCallback) {
-		if (response["error"]) {
-			errorDialog.show(response["error"], okCallback);
-			return true;
-		}	
-		if (response["errors"]) {
-			var errors = response["errors"];
-			var buf = ""
-			for (var i = 0; i < errors.length; i++) {
-				buf += "<p class=\"modal_message\">"+errors[i]+"</p>"
-			}
-			errorDialog.show(buf, okCallback);
-			return true;
-		}
-		return false;
-	}
-
-	function modalOpenSetup() {
-		$(".ui-widget-overlay").css({
-			"background-color": "#000",
-			"opacity": 0.5,
-			"z-index": 1000000020
-		});
-		$(".ui-dialog").css({
-			"z-index": 1000000021
-		})
-		$(".ui-dialog-titlebar-close").hide();
 	}
 
 	this.init();
@@ -145,6 +100,32 @@ function getCookie(cname) {
 		}
 	}
 	return null;
+}
+
+// Render captcha using a specific dom element id
+function renderCaptcha(ctx, idIn) {
+	if (ctx.grWidgetID !== undefined) {
+		grecaptcha.reset(ctx.grWidgetID);
+	} else {
+		ctx.grWidgetID = grecaptcha.render(idIn, {"sitekey": base.conf["recaptchaSiteKey"]});	
+	}
+}
+
+function processError(response, okCallback) {
+	if (response["error"]) {
+		errorDialog.show(response["error"], okCallback);
+		return true;
+	}	
+	if (response["errors"]) {
+		var errors = response["errors"];
+		var buf = ""
+		for (var i = 0; i < errors.length; i++) {
+			buf += "<p class=\"modal_message\">"+errors[i]+"</p>"
+		}
+		errorDialog.show(buf, okCallback);
+		return true;
+	}
+	return false;
 }
 
 // For performance measurements

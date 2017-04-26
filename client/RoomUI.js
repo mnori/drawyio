@@ -96,7 +96,7 @@ function RoomUI() {
 					return;
 				}
 				regenLayerCode(); 
-				this.closeMenus();
+				self.closeMenus();
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
 
@@ -657,7 +657,7 @@ function RoomUI() {
 	}
 
 	function openColourPicker() {
-		this.closeMenus();
+		self.closeMenus();
 		positionColourPicker();
 	}
 
@@ -1058,7 +1058,7 @@ function RoomUI() {
 	}
 
 	function openTextInput() {
-		this.closeMenus();
+		self.closeMenus();
 		$("#text_input").show();
 		positionTextInput();
 
