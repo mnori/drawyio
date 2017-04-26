@@ -428,7 +428,10 @@ function GalleriesDialog() {
 		$("#galleries_ok").click(function() {
 			window.location.href = "/gallery/rooms";
 		});
-		$("#galleries_btn").click(self.show);
+		$("#galleries_btn").click(function(ev) {
+			ev.preventDefault();
+			self.show();
+		});
 	}
 
 	this.show = function() {
