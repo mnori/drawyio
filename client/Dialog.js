@@ -19,7 +19,7 @@ function ModDialog(entityType, entityID, processCallback) {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 				self.configureRadios();
 		    }
 		});
@@ -105,15 +105,16 @@ function getRadio(elClass) {
 	return idOut
 }
 
-function NickDialog() {
+function NickDialog(base) {
 	// Set up a modal asking about setting the nickname
-	var self = this;
-	function init() {
+	function init(base) {
 		setup();
+
+		this.base = base;
 
 		// the style changes based on the user type
 		// TODO put this in a function
-		receiveSessionData(conf["sessionData"]);
+		this.base.receiveSessionData(base.conf["sessionData"]);
 	}
 
 	// Set up modal dialogue for changing the nickname
@@ -127,7 +128,7 @@ function NickDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-		        modalOpenSetup();
+		        dialogOpenSetup();
 				$("#nick_input").select();
 				$("#nick_dialog").show();
 		    }
@@ -166,10 +167,10 @@ function NickDialog() {
 	}
 
 	this.show = function() {
-		$("#nick_input").val(conf["sessionData"]["name"]);
+		$("#nick_input").val(base.conf["sessionData"]["name"]);
 		$("#nick_dialog").dialog("open");
 	}
-	init();
+	init(base);
 	return this;
 }
 
@@ -189,8 +190,8 @@ function AccountDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				insertSessionName("account_dialog_name", conf["sessionData"]);
-				modalOpenSetup();
+				insertSessionName("account_dialog_name", base.conf["sessionData"]);
+				dialogOpenSetup();
 		    }
 		});
 		$("#account_change_pw").click(function() {
@@ -240,7 +241,7 @@ function ChangePwDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 		    }
 		});
 
@@ -298,7 +299,7 @@ function LoginDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 				$("#login_dialog").show();
 				$("#login_username").val("");
 				$("#login_password").val("");
@@ -359,7 +360,7 @@ function RegisterDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 		    }
 		});
 
@@ -419,7 +420,7 @@ function GalleriesDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 		    }
 		});
 		// Set up OK button event handler
@@ -454,7 +455,7 @@ function ErrorDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 		    }
 		});
 	}
@@ -500,7 +501,7 @@ function InfoDialog() {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 		    }
 		});
 	}
@@ -557,7 +558,7 @@ function RoomDialog(roomIDIn) {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 
 				// Set up radio buttons 
 				$(".room_visibility").checkboxradio();
@@ -667,7 +668,7 @@ function SnapshotDialog(roomIDIn) {
 			autoOpen: false,
 			closeOnEscape: false,
 			open: function(event, ui) {
-				modalOpenSetup();
+				dialogOpenSetup();
 
 				// Set up radio buttons 
 				$(".snapshot_visibility").checkboxradio();

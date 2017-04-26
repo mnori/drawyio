@@ -132,15 +132,12 @@
 			</div>
 		</div>
 	</div>
-{% endblock %}
-
-{% block js %}
 	<!-- for the drawing text -->
 	<div id="text_input" style="display:none;">
 		<input type="text" id="text_input_box" name="text_input_box" value="Enter text">
 	</div>
+
 	<script>
-		initGlobal(conf);
 		var opts = {
 			"roomID": "{{ room.id }}",
 			"width": {{ width }},
@@ -148,6 +145,12 @@
 			"isPrivate": {{ room.isPrivate }},
 			"isDeleted": {{ room.isDeleted }}
 		};
+	</script>
+
+{% endblock %}
+
+{% block js %}
+	<script>
 		drawUI();
 	</script>
 {% endblock %}

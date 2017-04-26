@@ -20,16 +20,16 @@
 			</a>
 		</div>
 	</div>
+	<script>
+		var opts = {
+			"snapshotID": "{{ snapshot.id }}",
+			"isPrivate": {{ snapshot.isPrivate }},
+			"isDeleted": {{ snapshot.isDeleted }},
+			"isStaffPick": {{ snapshot.isStaffPick }}
+		};
+	</script>
 {% endblock %}
 
 {% block js %}<script>
-	conf["snapshotID"] = "{{ snapshot.id }}"
-	var opts = {
-		"snapshotID": "{{ snapshot.id }}",
-		"isPrivate": {{ snapshot.isPrivate }},
-		"isDeleted": {{ snapshot.isDeleted }},
-		"isStaffPick": {{ snapshot.isStaffPick }}
-	};
-	initGlobal(conf);
 	SnapshotUI();
 </script>{% endblock %}

@@ -251,10 +251,11 @@
     </div></div>
 
     <script>
-        var conf = {
+        var baseConf = {
             "sessionData": {{ sessionData|safe }},
             "recaptchaSiteKey": "{{ settings.RECAPTCHA_SITE_KEY }}"
         }
+        var base = new Base(baseConf);
     </script>
     {% block js %}{% endblock %}
 
