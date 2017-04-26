@@ -66,6 +66,7 @@ module.exports = {
 	},
 	DB_NAME: "drawyio",
 	SQL_DEBUG: false, // (isLive) ? false : true,
+	DEBUG_FILEPATH: "/usr/src/app/code/debug.log",
 	ROOMS_DIR: "/usr/src/app/code/images/rooms",
 	SNAPSHOTS_DIR: "/usr/src/app/code/images/snapshots",
 	JSDEV_PATH: "/usr/src/app/code/client",

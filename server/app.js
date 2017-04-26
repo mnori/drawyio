@@ -809,7 +809,7 @@ function App() {
 	// Override console.log so it gets output to a nice file, easier to check
 	// The log files get emptied every restart
 	function setupDebug() {
-		var debugFilepath = __dirname+"/debug.log";
+		var debugFilepath = settings.DEBUG_FILEPATH;
 		var log_file = fs.createWriteStream(debugFilepath, {flags : "w"});
 		var log_stdout = process.stdout;
 		console.log = function(d) { //
