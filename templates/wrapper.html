@@ -27,6 +27,9 @@
     <script src="/js/spectrum.js"></script>
     <script src="/js/imagesloaded.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Our own front end code -->
+    <script src="{{ settings.CLIENT_LOCATION }}"></script>
 
     <!-- CSS -->
     <link href="/css/jquery-ui.css" rel="stylesheet" />
@@ -242,9 +245,6 @@
     <div id="content_wrapper"><div id="content" class="fixed_width">
         {% block content %}{% endblock %}
     </div></div>
-
-    <!-- Our own front end code -->
-    <script src="/js/{{ settings.CLIENT_FILE }}"></script>
 
     <script>
         var conf = {

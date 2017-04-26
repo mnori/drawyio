@@ -6,7 +6,7 @@ module.exports = {
 	DEFAULT_NICK: "Anonymous",
 	IS_LIVE: isLive,
 	VERSION_TXT: "v0.2.0",
-	CLIENT_FILE: (isLive) ? "client.js" : "client_welszhdxrvejjoyc.js",
+	CLIENT_LOCATION: (isLive) ? "/js/client.js" : "/jsdev/client.js",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world
 	ID_LEN: 16, // The length of the ID string for drawings
 	SESSION_ID_LEN: 64, // Length of session IDs
