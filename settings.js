@@ -8,7 +8,8 @@ module.exports = {
 	VERSION_TXT: "v0.2.0",
 	
 	CLIENT_JS: [ // names of the client source files before minification
-		"client.js"
+		"client.js",
+		"dialogs.js"
 	],
 
 	CLIENT_LOCATION: (isLive) ? "/js/client.js" : "/jsdev/client.js",
