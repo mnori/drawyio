@@ -426,9 +426,16 @@ function GalleriesDialog() {
 			$("#galleries_dialog").dialog("close");
 		});
 		$("#galleries_ok").click(function() {
-			console.log("checked: "+$("#hide_gallery_warning").is(":checked"));
-			// send ajax to update the preference
-			// window.location.href = "/gallery/rooms";
+			$.ajax({
+				url: "/ajax/prefs", 
+				data: {
+					hideGalleryWarning: $("#hide_gallery_warning").is(":checked")
+				}
+			}).done(function(response) {
+				console.log("RESPONSE: ");
+				console.log(response);
+				window.location.href = "/gallery/rooms";
+			});
 		});
 
 		// Set up hide checkbox

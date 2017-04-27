@@ -31,6 +31,7 @@ function App() {
 	const moderate = require("./moderate");
 	this.passwords = require("./passwords");
 	this.captcha = require("./captcha");
+	this.prefs = require("./prefs");
 
 	// Associative array containing [alphanumeric code] => [drawing object]
 	this.rooms = null;
@@ -60,11 +61,9 @@ function App() {
 
 		// Special serving of client js code in the development environment
 		expressApp.get("/jsdev/:filename", function(req, res) {
-			if (settings.IS_LIVE) {
-				send404(req, res);
-			} else {
-				res.sendFile(settings.JSDEV_PATH+"/"+req.params.filename)
-			}
+			settings.IS_LIVE 
+				? send404(req, res) 
+				: res.sendFile(settings.JSDEV_PATH+"/"+req.params.filename);
 		});
 
 		// Tell node to serve static files from the "public" subdirectory
@@ -90,6 +89,10 @@ function App() {
 
 		expressApp.get("/ajax/logout", function(req, res) {
 			logout.logout(req, res, app);
+		});
+
+		expressApp.get("/ajax/prefs", function(req, res) {
+			self.prefs.save(req, res, app);
 		});
 
 		expressApp.get("/ajax/set_session_name", setSessionName);
