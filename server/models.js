@@ -22,6 +22,7 @@ function Session(req, app) {
 		this.prefsID = null;
 		this.app = app;
 		this.user = null;
+		this.prefs = null;
 	}
 
 	// For returning session data to the client.
@@ -37,6 +38,31 @@ function Session(req, app) {
 
 	this.getClientDataJson = function() {
 		return JSON.stringify(this.getClientData());
+	}
+
+	this.fetchPrefs = function(callback) {
+		// it's up the register flow to transfer the prefs ID from the session to the user.
+		if (self.prefs) {
+			callback(self.prefs);
+		} else {
+			self.prefs = new Prefs(self.app);
+			var prefsID = (this.user) ? this.user.prefsID : self.prefsID;
+			if (prefsID == null) { // must create new prefs
+				console.log("Does not exist!");
+				self.prefs.save(function() {
+					self.prefsID = self.prefs.id; // new prefs are attached to session
+					self.save(function() {
+						callback(true);
+					});
+				});
+			} else { // prefs ID already exists, so load the prefs.
+				console.log("Exists!");
+				self.prefs.id = prefsID;
+				self.prefs.load(function() {
+					callback(true);
+				});
+			}	
+		}
 	}
 
 	this.isMod = function() {
@@ -95,7 +121,11 @@ function Session(req, app) {
 					self.addUser(row);
 
 					// save to update the last_active and ip address
-					self.save(callback);
+					self.save(function() {
+
+						// could make this more efficient using a join
+						self.fetchPrefs(callback);
+					});
 				}
 			}
 		);
@@ -115,9 +145,10 @@ function Session(req, app) {
 			") ON DUPLICATE KEY UPDATE",
 			"	name = "+db.esc(self.name)+",",
 			"	ip_address = "+db.esc(self.ipAddress)+",",
+			"	prefs_id = "+db.esc(self.prefsID)+",",
 			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
 		].join("\n"), function(results, fields, error) {
-			callback(self, error);
+			callback();
 		});
 	}
 
@@ -244,7 +275,8 @@ function Prefs(app) {
 	}
 
 	this.load = function(callback) {
-		// ...
+		// .. FILL ME
+		callback();
 	}
 
 	this.save = function(callback) {
@@ -253,12 +285,12 @@ function Prefs(app) {
 		// this inserts a row with default parameters and gets us an auto incremented id
 		db.query("INSERT INTO prefs () VALUES ()", function(results, fields, error) {
 			if (error) {
-				callback(error)
+				callback()
 			} else {
 				if (results["insertId"]) {
 					self.id = results["insertId"];
 				}
-				callback(self)
+				callback()
 			}
 		});
 	}

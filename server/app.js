@@ -221,7 +221,7 @@ function App() {
 		var session = new models.Session(req, app);
 		session.id = sessionID;
 		session.name = "Anonymous";
-		session.save(callback);
+		session.save(function() { callback(session); });
 	}
 
 	function setSessionName(req, res, callback) {
@@ -240,12 +240,8 @@ function App() {
 			} else {
 				self.getSession(req, res, function(session) {
 					session.name = nick;
-					session.save(function(session, error) {
-						if (error) {
-							res.send({"error": "Could not save name to DB."})
-						} else {
-							res.send(session.getClientData());	
-						}
+					session.save(function() {
+						res.send(session.getClientData());	
 					});
 				});
 			}
