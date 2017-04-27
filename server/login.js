@@ -40,10 +40,14 @@ function login(req, res, app) {
 				user.sessionID = sessionID;
 				user.save(function() {
 
-					// Load session and send data to the client
+					// Load session
 					app.getSession(req, res, function(session) {
+
+						// Save preferences into session object
 						session.prefsID = user.prefsID;
-						session.save(function() {
+						session.save(function() { 
+							
+							// Send session data to the client
 							res.send(session.getClientData());		
 						});
 					});

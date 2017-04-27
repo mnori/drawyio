@@ -60,9 +60,9 @@ module.exports = {
 		rgbaPixel: 0xFFFFFFFF
 	},
 	DB_CONNECT_PARAMS: {
-		host: "localhost",
+		host: "mysql",
 		user: "root",
-		password: (isLive) ? "CHANGEME" : ""
+		password: (isLive) ? "CHANGEME" : "password"
 	},
 	DB_NAME: "drawyio",
 	MIGRATE_START: "beginning", // "v0.2.1", 

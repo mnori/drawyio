@@ -14,14 +14,15 @@ WORKDIR /usr/src/app/code
 
 # Install MySQL inside this container
 # NOTE: This would be a lot better inside a seperate container.
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update \
-  && apt-get install -y mysql-server mysql-client libmysqlclient-dev \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# ENV DEBIAN_FRONTEND noninteractive
+# RUN apt-get update \
+#   && apt-get install -y mysql-server mysql-client libmysqlclient-dev \
+#   && apt-get clean \
+#   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 EXPOSE 8080
 
 # Start mysql and then run the node.js webserver
 # Use && since only one CMD line is allowed
-CMD /etc/init.d/mysql start && npm start
+# CMD /etc/init.d/mysql start && npm start
+CMD npm start
