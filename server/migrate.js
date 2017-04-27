@@ -119,13 +119,13 @@ var migrations = [
 
 			db.querySync([
 				"ALTER TABLE session",
-				"ADD COLUMN prefs_id BIGINT NOT NULL AFTER name,",
+				"ADD COLUMN prefs_id BIGINT AFTER name,",
 				"ADD CONSTRAINT FOREIGN KEY (prefs_id) REFERENCES prefs(id);"
 			].join("\n"));
 
 			db.querySync([
 				"ALTER TABLE user",
-				"ADD COLUMN prefs_id BIGINT NOT NULL AFTER session_id,",
+				"ADD COLUMN prefs_id BIGINT AFTER session_id,",
 				"ADD CONSTRAINT FOREIGN KEY (prefs_id) REFERENCES prefs(id);"
 			].join("\n"));
 		}

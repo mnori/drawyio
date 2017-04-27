@@ -386,7 +386,7 @@ function RegisterDialog(base) {
 					registerDialog.show();
 				}
 				if (!processError(response, handleClose)) { // success
-					receiveSessionData(JSON.parse(response));
+					self.base.receiveSessionData(JSON.parse(response));
 					infoDialog.show("Registration successful, you are now logged in.");
 				}
 			});

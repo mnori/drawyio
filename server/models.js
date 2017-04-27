@@ -102,18 +102,6 @@ function Session(req, app) {
 	}
 
 	this.save = function(callback) {
-		if (!self.prefsID) { // no preferences object - create
-			var prefs = new Prefs(self.app);
-			prefs.save(function() {
-				self.prefsID = prefs.id;
-				self.saveDB(callback);
-			});
-		} else { // Already have preferences object, so save the session object
-			self.saveDB(callback);
-		}
-	}
-
-	this.saveDB = function(callback) {
 		var db = self.app.db;
 		var nameStr = self.name ? db.esc(self.name) : "'Anonymous'";
 		db.query([
@@ -201,20 +189,9 @@ function User(app, id) {
 	}
 
 	this.save = function(callback) {
-		self.saveDB(callback);
-		// if (!self.prefsID) { // no preferences object - create
-		// 	var prefs = new Prefs(self.app);
-		// 	prefs.save(function() {
-		// 		self.prefsID = prefs.id;
-		// 		self.saveDB(callback);
-		// 	});
-		// } else { // Already have preferences object, so save the session object
-		// 	self.saveDB(callback);
-		// }
-	}
-
-	this.saveDB = function(callback) {
 		var db = self.app.db;
+
+		console.log("prefsID: "+self.prefsID);
 
 		// if the ID exists, the row is already in the DB, so update
 		// Otherwise, we're creating a brand new user
@@ -229,6 +206,8 @@ function User(app, id) {
 		} else {
 			updateSql = "";
 		}
+
+		app.settings.SQL_DEBUG = true;
 		db.query([
 			"INSERT INTO user (id, name, session_id, prefs_id, password, type, joined)",
 			"VALUES (",
