@@ -42,7 +42,10 @@ function login(req, res, app) {
 
 					// Load session and send data to the client
 					app.getSession(req, res, function(session) {
-						res.send(session.getClientData());	
+						session.prefsID = user.prefsID;
+						session.save(function() {
+							res.send(session.getClientData());		
+						});
 					});
 				});
 			}

@@ -50,7 +50,7 @@ function Session(req, app) {
 		if (row["user_id"] == null) { // no user
 			return;
 		}
-		var user = new models.User(app);
+		var user = new self.app.models.User(app);
 		user.populate(row);
 		self.user = user;
 	}
@@ -68,6 +68,7 @@ function Session(req, app) {
 			"	user.id 				as user_id,",
 			"	user.name 				as user_name,",
 			"	user.session_id 		as user_session_id,",
+			"	user.prefs_id			as user_prefs_id,",
 			"	user.password 			as user_password,",
 			"	user.type 				as user_type,",
 			"	user.joined	 			as user_joined",
@@ -91,8 +92,6 @@ function Session(req, app) {
 					self.id = row["session_id"];
 					self.name = row["session_name"];
 					self.prefsID = row["session_prefs_id"];
-
-					console.log("Loaded self.prefsID = "+self.prefsID);
 					self.addUser(row);
 
 					// save to update the last_active and ip address
@@ -143,6 +142,7 @@ function User(app, id) {
 	this.id = id ? id : null;
 	this.name = null;
 	this.sessionID = null;
+	this.prefsID = null;
 	this.password = null;
 	this.joined = null;
 	this.type = null;
@@ -185,6 +185,7 @@ function User(app, id) {
 		self.id = row["id"];
 		self.name = row["name"];
 		self.sessionID = row["session_id"];
+		self.prefsID = row["prefs_id"];
 		self.password = row["password"];
 		self.type = row["type"];
 		self.joined = new Date(row["joined"]);
@@ -200,6 +201,19 @@ function User(app, id) {
 	}
 
 	this.save = function(callback) {
+		self.saveDB(callback);
+		// if (!self.prefsID) { // no preferences object - create
+		// 	var prefs = new Prefs(self.app);
+		// 	prefs.save(function() {
+		// 		self.prefsID = prefs.id;
+		// 		self.saveDB(callback);
+		// 	});
+		// } else { // Already have preferences object, so save the session object
+		// 	self.saveDB(callback);
+		// }
+	}
+
+	this.saveDB = function(callback) {
 		var db = self.app.db;
 
 		// if the ID exists, the row is already in the DB, so update
@@ -216,11 +230,12 @@ function User(app, id) {
 			updateSql = "";
 		}
 		db.query([
-			"INSERT INTO user (id, name, session_id, password, type, joined)",
+			"INSERT INTO user (id, name, session_id, prefs_id, password, type, joined)",
 			"VALUES (",
 			"	"+db.esc(self.id)+",",
 			"	"+db.esc(self.name)+",",
 			"	"+db.esc(self.sessionID)+",",
+			"	"+db.esc(self.prefsID)+",",
 			"	"+db.esc(self.password)+",",
 			"	"+db.esc(self.type)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.joined)+")",

@@ -35,6 +35,7 @@ function createUser(req, res, app) {
 			var user = new app.models.User(app);
 			user.name = session.name;
 			user.sessionID = session.id;
+			user.prefsID = session.prefsID;
 			user.password = hash;
 			user.type = "user";
 			user.joined = new Date();
