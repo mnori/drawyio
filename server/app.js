@@ -178,7 +178,7 @@ function App() {
 		if (cookie === undefined || !self.validation.checkSessionID(cookie)) { 
 			// no/invalid cookie so create one
 			// {} means there is no user object
-			createSession({}, req, res, callback);
+			createSession(req, res, callback);
 
 		} else { 
 			// check for session in database. no session? create new cookie
@@ -187,65 +187,26 @@ function App() {
 		}
 	}
 
-	// Perhaps this method should be attached to the Session object?
 	this.loadSession = function(req, res, sessionID, callback) {
-		var sql = [
-			"SELECT ",
-			"	session.id 				as session_id,",
-			"	session.name 			as session_name,",
-			"	session.ip_address 		as session_ip_address,",
-			"	session.last_active 	as session_last_active,",
-
-			"	user.id 				as user_id,",
-			"	user.name 				as user_name,",
-			"	user.session_id 		as user_session_id,",
-			"	user.password 			as user_password,",
-			"	user.type 				as user_type,",
-			"	user.joined	 			as user_joined",
-
-			"FROM session",
-			"LEFT JOIN user ON",
-			"	session.id = user.session_id",
-			"WHERE",
-			"	session.id = "+db.esc(sessionID)
-		].join("\n");
-
-		db.query(
-			sql, 
-			function(results, fields, error) {
-				if (!results || results.length == 0) { // not in database
-					if (res) { // res is null when not an http request
-						createSession(null, req, res, callback); // create new session	
-					} else {
-						callback(null);
-					}
-					return;
+		var session = new models.Session(req, self);
+		session.id = sessionID;
+		session.load(function(success) {
+			if (!success) {
+				if (res) { // res is null when not an http request
+					createSession(req, res, callback); // create new session	
 				} else {
-					// session is in DB
-					var row = results[0];
-					var session = new models.Session(req, app);
-					session.id = row["session_id"];
-					session.name = row["session_name"];
-					addUserToSession(row, session);
-
-					// save to update the last_active and ip address
-					session.save(callback);
+					// nothing to do when non-HTTP request
+					callback(null); 
 				}
+				return;
+			} else {
+				callback(session);
 			}
-		);
-	}
-
-	function addUserToSession(row, session) {
-		if (row["user_id"] == null) { // no user
-			return;
-		}
-		var user = new models.User(app);
-		user.populate(row);
-		session.user = user;
+		});
 	}
 
 	// Create a session cookie in the database
-	function createSession(row, req, res, callback) {
+	function createSession(req, res, callback) {
 
 		// generate new session ID
 		var sessionID = utils.randomString(settings.SESSION_ID_LEN);
@@ -257,10 +218,6 @@ function App() {
 		var session = new models.Session(req, app);
 		session.id = sessionID;
 		session.name = "Anonymous";
-
-		if (row) {
-			addUserToSession(row, session);
-		}
 		session.save(callback);
 	}
 

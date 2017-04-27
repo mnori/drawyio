@@ -15,8 +15,11 @@ function Session(req, app) {
 	var self = this;
 
 	this.init = function(req, app) {
+		// Sometimes there is no request, which leads to empty IP address
+		// TODO fix this so it doesn't overwrite when IP is missing
 		this.ipAddress = (req) ? req.connection.remoteAddress : "0.0.0.0";
 		this.lastActive = new Date();
+		this.prefsID = null;
 		this.app = app;
 		this.user = null;
 	}
@@ -43,14 +46,79 @@ function Session(req, app) {
 		return true;
 	}
 
+	this.addUser = function(row) {
+		if (row["user_id"] == null) { // no user
+			return;
+		}
+		var user = new models.User(app);
+		user.populate(row);
+		self.user = user;
+	}
+
+	this.load = function(callback) {
+		var db = self.app.db;
+		var sql = [
+			"SELECT ",
+			"	session.id 				as session_id,",
+			"	session.name 			as session_name,",
+			"	session.ip_address 		as session_ip_address,",
+			"	session.last_active 	as session_last_active,",
+
+			"	user.id 				as user_id,",
+			"	user.name 				as user_name,",
+			"	user.session_id 		as user_session_id,",
+			"	user.password 			as user_password,",
+			"	user.type 				as user_type,",
+			"	user.joined	 			as user_joined",
+
+			"FROM session",
+			"LEFT JOIN user ON",
+			"	session.id = user.session_id",
+			"WHERE",
+			"	session.id = "+db.esc(self.id)
+		].join("\n");
+
+		db.query(
+			sql, 
+			function(results, fields, error) {
+				if (!results || results.length == 0) { // not in database
+					callback(false);
+				} else {
+					// session is in DB
+					var row = results[0];
+					self.id = row["session_id"];
+					self.name = row["session_name"];
+					self.prefsID = row["user_preferences_id"];
+					self.addUser(row);
+
+					// save to update the last_active and ip address
+					self.save(callback);
+				}
+			}
+		);
+	}
+
 	this.save = function(callback) {
+		if (!self.prefsID) { // no preferences object - create
+			var prefs = new Prefs(self.app);
+			prefs.save(function() {
+				self.prefsID = prefs.id;
+				self.saveDB(callback);
+			});
+		} else { // Already have preferences object, so save the session object
+			self.saveDB(callback);
+		}
+	}
+
+	this.saveDB = function(callback) {
 		var db = self.app.db;
 		var nameStr = self.name ? db.esc(self.name) : "'Anonymous'";
 		db.query([
-			"INSERT INTO session (id, name, ip_address, last_active)",
+			"INSERT INTO session (id, name, prefs_id, ip_address, last_active)",
 			"VALUES (",
 			"	"+db.esc(self.id)+",",
 			"	"+nameStr+",",
+			"	"+db.esc(self.prefsID)+",",
 			"	"+db.esc(self.ipAddress)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.lastActive)+")",
 			") ON DUPLICATE KEY UPDATE",
@@ -58,11 +126,7 @@ function Session(req, app) {
 			"	ip_address = "+db.esc(self.ipAddress)+",",
 			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
 		].join("\n"), function(results, fields, error) {
-			if (error) {
-				callback(self, error);
-			} else {
-				callback(self);
-			}
+			callback(self, error);
 		});
 	}
 
@@ -170,6 +234,37 @@ function User(app, id) {
 		});
 	}
 	this.init();
+}
+
+function Prefs(app) {
+	var self = this;
+
+	this.init = function(app) {
+		self.app = app;
+		self.hideGalleryWarning = false;
+	}
+
+	this.load = function(callback) {
+		// ...
+	}
+
+	this.save = function(callback) {
+		var db = self.app.db;
+
+		// this inserts a row with default parameters and gets us an auto incremented id
+		db.query("INSERT INTO prefs () VALUES ()", function(results, fields, error) {
+			if (error) {
+				callback(error)
+			} else {
+				if (results.insertId) {
+					self.id = results.insertId;
+				}
+				callback()
+			}
+		});
+	}
+
+	this.init(app);
 }
 
 // Stores the data for a room

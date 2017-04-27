@@ -108,9 +108,9 @@ var migrations = [
 		name: "v0.2.1",
 		run: function() {
 			db.querySync("USE "+settings.DB_NAME);
-			db.querySync("DROP TABLE IF EXISTS user_preferences");
+			db.querySync("DROP TABLE IF EXISTS prefs");
 			db.querySync([
-				"CREATE TABLE user_preferences (",
+				"CREATE TABLE prefs (",
 				"	id BIGINT NOT NULL AUTO_INCREMENT,",
 				"	hide_gallery_warning BOOLEAN NOT NULL DEFAULT '0',",
 				"	PRIMARY KEY (id)",
@@ -119,18 +119,17 @@ var migrations = [
 
 			db.querySync([
 				"ALTER TABLE session",
-				"ADD COLUMN user_preferences_id BIGINT NOT NULL AFTER name,",
-				"ADD CONSTRAINT FOREIGN KEY (user_preferences_id) REFERENCES user_preferences(id);"
+				"ADD COLUMN prefs_id BIGINT NOT NULL AFTER name,",
+				"ADD CONSTRAINT FOREIGN KEY (prefs_id) REFERENCES prefs(id);"
 			].join("\n"));
 
 			db.querySync([
 				"ALTER TABLE user",
-				"ADD COLUMN user_preferences_id BIGINT NOT NULL AFTER session_id,",
-				"ADD CONSTRAINT FOREIGN KEY (user_preferences_id) REFERENCES user_preferences(id);"
+				"ADD COLUMN prefs_id BIGINT NOT NULL AFTER session_id,",
+				"ADD CONSTRAINT FOREIGN KEY (prefs_id) REFERENCES prefs(id);"
 			].join("\n"));
 		}
 	}
-
 ]
 
 function migrate() {
