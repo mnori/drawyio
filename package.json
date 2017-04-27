@@ -19,6 +19,7 @@
     "synchronize": "*",
     "cookie-parser": "*",
     "express-recaptcha": "*",
-    "bcrypt": "*"
+    "bcrypt": "*",
+    "colors": "*"
   }
 }

@@ -1,5 +1,6 @@
 // Database migrations for drawy.io
 
+var colors = require('colors');
 const settings = require("./settings")
 var database = require("./database");
 var db = new database.DB(settings.DB_CONNECT_PARAMS);
@@ -103,7 +104,33 @@ var migrations = [
 				].join("\n"));
 			});
 		}
+	}, { 
+		name: "v0.2.1",
+		run: function() {
+			db.querySync("USE "+settings.DB_NAME);
+			db.querySync("DROP TABLE IF EXISTS user_preferences");
+			db.querySync([
+				"CREATE TABLE user_preferences (",
+				"	id BIGINT NOT NULL AUTO_INCREMENT,",
+				"	hide_gallery_warning BOOLEAN NOT NULL DEFAULT '0',",
+				"	PRIMARY KEY (id)",
+				")"
+			].join("\n"));
+
+			db.querySync([
+				"ALTER TABLE session",
+				"ADD COLUMN user_preferences_id BIGINT NOT NULL AFTER name,",
+				"ADD CONSTRAINT FOREIGN KEY (user_preferences_id) REFERENCES user_preferences(id);"
+			].join("\n"));
+
+			db.querySync([
+				"ALTER TABLE user",
+				"ADD COLUMN user_preferences_id BIGINT NOT NULL AFTER session_id,",
+				"ADD CONSTRAINT FOREIGN KEY (user_preferences_id) REFERENCES user_preferences(id);"
+			].join("\n"));
+		}
 	}
+
 ]
 
 function migrate() {
@@ -111,10 +138,18 @@ function migrate() {
 	db.sync.fiber(function() {
 		try {
 			console.log("Started migration.");
+			var migrating = false;
 			for (var i = 0; i < migrations.length; i++) {
 				migration = migrations[i];
-				migration.run();
-				console.log("["+(i + 1)+": "+migration.name+"] migrated");
+				if (migration["name"] == settings.MIGRATE_START){
+					migrating = true;	
+				}
+				if (!migrating) {
+					console.log("\t"+"skipped".grey+" "+migration.name);
+				} else {
+					migration.run();
+					console.log("\t"+"migrated".green+" "+migration.name);
+				}
 			}
 			console.log("Finished migration.");
 			process.exit(); 
