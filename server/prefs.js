@@ -1,7 +1,10 @@
 module.exports = {
 	save: function(req, res, app) {
-		console.log("prefs.save() invoked");
-		console.log(req.query);
-		res.send("ok");
+		app.getSession(req, res, function(session) {
+			session.prefs.hideGalleryWarning = req.query["hideGalleryWarning"] == "true" ? true : false;
+			session.prefs.save(function() {
+				res.send("ok");
+			});
+		});
 	}
 }

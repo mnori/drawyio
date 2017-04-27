@@ -48,7 +48,6 @@ function Session(req, app) {
 			self.prefs = new Prefs(self.app);
 			var prefsID = (this.user) ? this.user.prefsID : self.prefsID;
 			if (prefsID == null) { // must create new prefs
-				console.log("Does not exist!");
 				self.prefs.save(function() {
 					self.prefsID = self.prefs.id; // new prefs are attached to session
 					self.save(function() {
@@ -56,7 +55,6 @@ function Session(req, app) {
 					});
 				});
 			} else { // prefs ID already exists, so load the prefs.
-				console.log("Exists!");
 				self.prefs.id = prefsID;
 				self.prefs.load(function() {
 					callback(true);
@@ -282,16 +280,25 @@ function Prefs(app) {
 		var db = self.app.db;
 
 		// this inserts a row with default parameters and gets us an auto incremented id
-		db.query("INSERT INTO prefs () VALUES ()", function(results, fields, error) {
-			if (error) {
+		app.settings.SQL_DEBUG = true;
+
+		if (!self.id) { // new preferences object
+			db.query([
+				"INSERT INTO prefs ()",
+				"VALUES ()"
+			].join("\n"), function(results, fields, error) {
+				self.id = results["insertId"];
 				callback()
-			} else {
-				if (results["insertId"]) {
-					self.id = results["insertId"];
-				}
+			});
+		} else { // existing preferences object
+			db.query([
+				"UPDATE prefs SET",
+				"	hide_gallery_warning = "+(self.hideGalleryWarning ? "'1'" : "'0'"),
+				"WHERE id = "+db.esc(self.id)
+			].join("\n"), function(results, fields, error) {
 				callback()
-			}
-		});
+			});
+		}
 	}
 
 	this.init(app);
