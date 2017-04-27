@@ -238,7 +238,6 @@ function User(app, id) {
 			updateSql = "";
 		}
 
-		app.settings.SQL_DEBUG = true;
 		db.query([
 			"INSERT INTO user (id, name, session_id, prefs_id, password, type, joined)",
 			"VALUES (",

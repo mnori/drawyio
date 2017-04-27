@@ -50,8 +50,15 @@ function createUser(req, res, app) {
 				}
 				session.user = user;
 
-				// now update the session with the user ID
-				res.send(session.getClientDataJson())
+				// unlink the preferences from the session
+				session.prefsID = null;
+				session.save(function() {
+
+					// send session data to the client
+					res.send(session.getClientDataJson())	
+				});
+
+				
 			});
 		});
 	});
