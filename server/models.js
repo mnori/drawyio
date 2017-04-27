@@ -61,6 +61,7 @@ function Session(req, app) {
 			"SELECT ",
 			"	session.id 				as session_id,",
 			"	session.name 			as session_name,",
+			"	session.prefs_id 		as session_prefs_id,",
 			"	session.ip_address 		as session_ip_address,",
 			"	session.last_active 	as session_last_active,",
 
@@ -86,9 +87,12 @@ function Session(req, app) {
 				} else {
 					// session is in DB
 					var row = results[0];
+
 					self.id = row["session_id"];
 					self.name = row["session_name"];
-					self.prefsID = row["user_preferences_id"];
+					self.prefsID = row["session_prefs_id"];
+
+					console.log("Loaded self.prefsID = "+self.prefsID);
 					self.addUser(row);
 
 					// save to update the last_active and ip address
@@ -241,6 +245,7 @@ function Prefs(app) {
 
 	this.init = function(app) {
 		self.app = app;
+		self.id = null;
 		self.hideGalleryWarning = false;
 	}
 
@@ -256,10 +261,10 @@ function Prefs(app) {
 			if (error) {
 				callback(error)
 			} else {
-				if (results.insertId) {
-					self.id = results.insertId;
+				if (results["insertId"]) {
+					self.id = results["insertId"];
 				}
-				callback()
+				callback(self)
 			}
 		});
 	}
