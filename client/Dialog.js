@@ -426,11 +426,17 @@ function GalleriesDialog() {
 			$("#galleries_dialog").dialog("close");
 		});
 		$("#galleries_ok").click(function() {
-			window.location.href = "/gallery/rooms";
+			console.log("checked: "+$("#hide_gallery_warning").is(":checked"));
+			// send ajax to update the preference
+			// window.location.href = "/gallery/rooms";
 		});
 
 		// Set up hide checkbox
 		$("#hide_gallery_warning").checkboxradio();
+		// $("#hide_gallery_warning").change(function() {
+
+		// 	console.log("hide_gallery_warning clicked!");
+		// })
 
 		$("#galleries_btn").click(function(ev) {
 			ev.preventDefault();
