@@ -28,10 +28,15 @@ function Session(req, app) {
 	// For returning session data to the client.
 	// Obvs this should not include password or other sensitive fields
 	this.getClientData = function() {
+		console.log("self.prefs.hideGalleryWarning");
+		console.log(self.prefs.hideGalleryWarning);
 		var out = {
-			"id": this.id,
-			"name": (this.user) ? this.user.name : this.name,
-			"type": (this.user) ? this.user.type : "guest"
+			"id": self.id,
+			"name": (self.user) ? self.user.name : self.name,
+			"type": (self.user) ? self.user.type : "guest",
+			"prefs": {
+				"hideGalleryWarning": self.prefs.hideGalleryWarning
+			}
 		}
 		return out;
 	}
@@ -272,17 +277,31 @@ function Prefs(app) {
 	}
 
 	this.load = function(callback) {
-		// .. FILL ME
-		callback();
+		self.app.db.query(
+			"SELECT * FROM prefs WHERE id="+self.id, 
+			function(results, fields, error) {
+				if (!results || results.length == 0) {
+					callback(false);
+				} else {
+					var row = results[0];
+					self.populate(row);
+					callback(true);
+				}
+			}
+		);
+	}
+
+	this.populate = function(row) {
+		self.hideGalleryWarning = row["hide_gallery_warning"] == '1' ? true : false;
 	}
 
 	this.save = function(callback) {
 		var db = self.app.db;
 
-		// this inserts a row with default parameters and gets us an auto incremented id
-		app.settings.SQL_DEBUG = true;
+		// app.settings.SQL_DEBUG = true;
 
 		if (!self.id) { // new preferences object
+			// this inserts a row with default parameters and gets us an auto incremented id
 			db.query([
 				"INSERT INTO prefs ()",
 				"VALUES ()"
