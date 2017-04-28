@@ -10,16 +10,14 @@ function logout(req, res, app) {
 			res.send({"error": "User not found, cannot log out"});
 			return;
 		}
-		user.sessionID = null;
-		user.save(function() {
 
-			// Change the nickname back to the default
-			session.name = app.settings.DEFAULT_NICK;
-			session.user = null;
-			session.save(function() {
-				// send updated sessionData at the end		
-				res.send(session.getClientData());
-			});
+		// Change the nickname back to the default
+		session.name = app.settings.DEFAULT_NICK;
+		session.user = null;
+		session.userID = null; // we must unlink the user from this session
+		session.save(function() {
+			// send updated sessionData at the end		
+			res.send(session.getClientData());
 		});
 	});
 }

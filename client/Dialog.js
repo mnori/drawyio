@@ -330,6 +330,7 @@ function LoginDialog(base) {
 					loginDialog.show();
 				}
 				if (!processError(response, handleClose)) { // success
+					console.log(response);
 					self.base.receiveSessionData(response);
 					$("#login_dialog").dialog("close");
 					infoDialog.show("You are now logged in.");

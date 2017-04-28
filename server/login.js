@@ -39,6 +39,7 @@ function login(req, res, app) {
 
 				// Load session and attach the user by its ID
 				app.getSession(req, res, function(session) {
+					session.user = user;
 					session.userID = user.id;
 					session.save(function() { 
 						
