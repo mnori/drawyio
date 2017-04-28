@@ -402,8 +402,10 @@ function RegisterDialog(base) {
 	return self;
 }
 
-function GalleriesDialog() {
+function GalleriesDialog(base) {
 	var self = this;
+	self.base = base;
+
 	function init() {
 		setup();
 	}
@@ -432,22 +434,25 @@ function GalleriesDialog() {
 					hideGalleryWarning: $("#hide_gallery_warning").is(":checked")
 				}
 			}).done(function(response) {
-				console.log("RESPONSE: ");
-				console.log(response);
 				window.location.href = "/gallery/rooms";
 			});
 		});
 
 		// Set up hide checkbox
 		$("#hide_gallery_warning").checkboxradio();
+
 		// $("#hide_gallery_warning").change(function() {
 
 		// 	console.log("hide_gallery_warning clicked!");
 		// })
-
+	
+		// this is Galleries clickable button in the header
 		$("#galleries_btn").click(function(ev) {
-			ev.preventDefault();
-			self.show();
+			// if we are hiding gallery warning, this will simply follow the link
+			if (!self.base.conf.sessionData.prefs.hideGalleryWarning) {
+				ev.preventDefault();
+				self.show();	
+			}
 		});
 	}
 

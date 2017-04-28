@@ -1,4 +1,4 @@
-// The non-minified draw.io front end client
+// Contains JS that runs on all pages.
 // (C) 2017 drawy.io
 
 // GLOBAL ///////////////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@ function Base(conf) {
 		roomDialog = new RoomDialog(snapID);
 		errorDialog = new ErrorDialog();
 		infoDialog = new InfoDialog();
-		galleriesDialog = new GalleriesDialog();
+		galleriesDialog = new GalleriesDialog(self);
 		loginDialog = new LoginDialog(self);
 		nickDialog = new NickDialog(self);
 		accountDialog = new AccountDialog(self);
