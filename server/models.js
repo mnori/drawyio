@@ -51,7 +51,7 @@ function Session(req, app) {
 			callback(self.prefs);
 		} else {
 			self.prefs = new Prefs(self.app);
-			var prefsID = (this.user) ? this.user.prefsID : self.prefsID;
+			var prefsID = (self.user) ? self.user.prefsID : self.prefsID;
 			if (prefsID == null) { // must create new prefs
 				self.prefs.save(function() {
 					self.prefsID = self.prefs.id; // new prefs are attached to session
@@ -90,13 +90,13 @@ function Session(req, app) {
 			"SELECT ",
 			"	session.id 				as session_id,",
 			"	session.name 			as session_name,",
+			"	session.user_id 		as session_user_id,",
 			"	session.prefs_id 		as session_prefs_id,",
 			"	session.ip_address 		as session_ip_address,",
 			"	session.last_active 	as session_last_active,",
 
 			"	user.id 				as user_id,",
 			"	user.name 				as user_name,",
-			"	user.session_id 		as user_session_id,",
 			"	user.prefs_id			as user_prefs_id,",
 			"	user.password 			as user_password,",
 			"	user.type 				as user_type,",
@@ -104,7 +104,7 @@ function Session(req, app) {
 
 			"FROM session",
 			"LEFT JOIN user ON",
-			"	session.id = user.session_id",
+			"	session.user_id = user.id",
 			"WHERE",
 			"	session.id = "+db.esc(self.id)
 		].join("\n");
@@ -124,7 +124,9 @@ function Session(req, app) {
 					self.addUser(row);
 
 					// save to update the last_active and ip address
+					console.log("before save()")
 					self.save(function() {
+						console.log("after save()")
 
 						// could make this more efficient using a join
 						self.fetchPrefs(callback);
@@ -180,8 +182,6 @@ function User(app, id) {
 			whereStr = "id = "+db.esc(this.id);
 		} else if (this.name) {
 			whereStr = "name = "+db.esc(this.name);
-		} else if (this.sessionID) {
-			whereStr = "session_id = "+db.esc(this.sessionID);
 		} else {
 			console.log("Load with nothing!!!"); // should not happen
 		}
@@ -206,7 +206,6 @@ function User(app, id) {
 		row = self.stripPrefix(row);
 		self.id = row["id"];
 		self.name = row["name"];
-		self.sessionID = row["session_id"];
 		self.prefsID = row["prefs_id"];
 		self.password = row["password"];
 		self.type = row["type"];
@@ -230,10 +229,8 @@ function User(app, id) {
 		// if the ID exists, the row is already in the DB, so update
 		// Otherwise, we're creating a brand new user
 		if (self.id) {
-			var sessSql = self.sessionID ? db.esc(self.sessionID) : "NULL"
 			updateSql = [
 				"ON DUPLICATE KEY UPDATE ",
-				"	session_id = "+sessSql+",",
 				"	password = "+db.esc(self.password),
 			].join("\n");
 
@@ -242,11 +239,10 @@ function User(app, id) {
 		}
 
 		db.query([
-			"INSERT INTO user (id, name, session_id, prefs_id, password, type, joined)",
+			"INSERT INTO user (id, name, prefs_id, password, type, joined)",
 			"VALUES (",
 			"	"+db.esc(self.id)+",",
 			"	"+db.esc(self.name)+",",
-			"	"+db.esc(self.sessionID)+",",
 			"	"+db.esc(self.prefsID)+",",
 			"	"+db.esc(self.password)+",",
 			"	"+db.esc(self.type)+",",

@@ -208,8 +208,10 @@ function App() {
 		});
 	}
 
-	// Create a session cookie in the database
+	// Create a new session object in the database.
 	function createSession(req, res, callback) {
+
+		console.log("createSession() invoked");
 
 		// generate new session ID
 		var sessionID = utils.randomString(settings.SESSION_ID_LEN);
@@ -221,7 +223,9 @@ function App() {
 		var session = new models.Session(req, app);
 		session.id = sessionID;
 		session.name = "Anonymous";
-		session.save(function() { callback(session); });
+		session.fetchPrefs(function() { // create the preferences entity
+			session.save(function() { callback(session); });	
+		}); 
 	}
 
 	function setSessionName(req, res, callback) {
