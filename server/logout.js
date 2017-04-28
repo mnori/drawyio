@@ -11,13 +11,20 @@ function logout(req, res, app) {
 			return;
 		}
 
-		// Change the nickname back to the default
-		session.name = app.settings.DEFAULT_NICK;
-		session.user = null;
-		session.userID = null; // we must unlink the user from this session
-		session.save(function() {
-			// send updated sessionData at the end		
-			res.send(session.getClientData());
+		// When user logs out, we must create new prefs and save them to the object
+
+		session.prefs = new app.models.Prefs(session.app);
+		session.prefs.save(function() {
+			session.prefsID = session.prefs.id;
+
+			// Change the nickname back to the default
+			session.name = app.settings.DEFAULT_NICK;
+			session.user = null;
+			session.userID = null; // we must unlink the user from this session
+			session.save(function() {
+				// send updated sessionData at the end		
+				res.send(session.getClientData());
+			});
 		});
 	});
 }

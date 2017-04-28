@@ -49,16 +49,20 @@ function createUser(req, res, app) {
 					return;
 				}
 				session.user = user;
+				session.userID = user.id;
 
 				// unlink the preferences from the session
 				session.prefsID = null;
-				session.save(function() {
 
+				// save the session
+				session.save(function() {
+					// delete the prefs from the db
+					// No - prefs are now attached to the user object
+					// session.prefs.del(function() {});
 					// send session data to the client
 					res.send(session.getClientDataJson())	
+					
 				});
-
-				
 			});
 		});
 	});

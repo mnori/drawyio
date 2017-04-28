@@ -41,10 +41,13 @@ function login(req, res, app) {
 				app.getSession(req, res, function(session) {
 					session.user = user;
 					session.userID = user.id;
-					session.save(function() { 
-						
-						// Send session data to the client
-						res.send(session.getClientData());		
+					session.prefsID = null;
+
+					session.save(function() { // Update session in DB
+						session.prefs.del(function() { // Remove preferences when logging in
+							// Send session data to the client
+							res.send(session.getClientData());		
+						});
 					});
 				});
 			}

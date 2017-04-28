@@ -7,7 +7,8 @@ function init() {
 		Session: Session,
 		User: User,
 		Room: Room,
-		Snapshot: Snapshot
+		Snapshot: Snapshot,
+		Prefs, Prefs
 	};
 }
 
@@ -319,6 +320,15 @@ function Prefs(app) {
 				callback()
 			});
 		}
+	}
+
+	this.del = function(callback) {
+		var db = self.app.db;
+		db.query("DELETE FROM prefs WHERE id = "+db.esc(self.id),
+			function(results, fields, error) {
+				callback()
+			}
+		);
 	}
 
 	this.init(app);
