@@ -36,20 +36,14 @@ function login(req, res, app) {
 					res.send({"error": "Invalid session."})
 					return;
 				}
-				// Save the session_id in the User object
-				user.sessionID = sessionID;
-				user.save(function() {
 
-					// Load session
-					app.getSession(req, res, function(session) {
-
-						// Save preferences into session object
-						session.prefsID = user.prefsID;
-						session.save(function() { 
-							
-							// Send session data to the client
-							res.send(session.getClientData());		
-						});
+				// Load session and attach the user by its ID
+				app.getSession(req, res, function(session) {
+					session.userID = user.id;
+					session.save(function() { 
+						
+						// Send session data to the client
+						res.send(session.getClientData());		
 					});
 				});
 			}

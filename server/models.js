@@ -19,7 +19,9 @@ function Session(req, app) {
 		// TODO fix this so it doesn't overwrite when IP is missing
 		this.ipAddress = (req) ? req.connection.remoteAddress : "0.0.0.0";
 		this.lastActive = new Date();
+		this.userID = null;
 		this.prefsID = null;
+		
 		this.app = app;
 		this.user = null;
 		this.prefs = null;
@@ -120,6 +122,7 @@ function Session(req, app) {
 
 					self.id = row["session_id"];
 					self.name = row["session_name"];
+					self.userID = row["session_user_id"];
 					self.prefsID = row["session_prefs_id"];
 					self.addUser(row);
 
@@ -140,16 +143,18 @@ function Session(req, app) {
 		var db = self.app.db;
 		var nameStr = self.name ? db.esc(self.name) : "'Anonymous'";
 		db.query([
-			"INSERT INTO session (id, name, prefs_id, ip_address, last_active)",
+			"INSERT INTO session (id, name, user_id, prefs_id, ip_address, last_active)",
 			"VALUES (",
 			"	"+db.esc(self.id)+",",
 			"	"+nameStr+",",
+			"	"+db.esc(self.userID)+",",
 			"	"+db.esc(self.prefsID)+",",
 			"	"+db.esc(self.ipAddress)+",",
 			"	FROM_UNIXTIME("+getUnixtime(self.lastActive)+")",
 			") ON DUPLICATE KEY UPDATE",
 			"	name = "+db.esc(self.name)+",",
 			"	ip_address = "+db.esc(self.ipAddress)+",",
+			"	user_id = "+db.esc(self.userID)+",",
 			"	prefs_id = "+db.esc(self.prefsID)+",",
 			"	last_active = FROM_UNIXTIME("+getUnixtime(self.lastActive)+")"
 		].join("\n"), function(results, fields, error) {
