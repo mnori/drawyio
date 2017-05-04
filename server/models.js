@@ -57,7 +57,15 @@ function Session(req, app) {
 				self.prefs.save(function() {
 					self.prefsID = self.prefs.id; // new prefs are attached to session
 					self.save(function() {
-						callback(true);
+						// see whether we need to attach to user
+						if (!self.user) {
+							callback(true);
+						} else { // save prefs ID in user as well
+							self.user.prefsID = self.prefs.id
+							self.user.save(function() {
+								callback(true);
+							})
+						}
 					});
 				});
 			} else { // prefs ID already exists, so load the prefs.
@@ -226,14 +234,13 @@ function User(app, id) {
 	this.save = function(callback) {
 		var db = self.app.db;
 
-		console.log("prefsID: "+self.prefsID);
-
 		// if the ID exists, the row is already in the DB, so update
 		// Otherwise, we're creating a brand new user
 		if (self.id) {
 			updateSql = [
 				"ON DUPLICATE KEY UPDATE ",
-				"	password = "+db.esc(self.password),
+				"	password = "+db.esc(self.password)+",",
+				"	prefs_id = "+db.esc(self.prefsID)
 			].join("\n");
 
 		} else {
