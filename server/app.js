@@ -954,12 +954,14 @@ function App() {
 	}
 
 	function copyFile(source, target, cb) {
+		var tmpFilepath = target+".tmp";
+
 		var cbCalled = false;
 
 		var rd = fs.createReadStream(source);
 		rd.on("error", done);
 
-		var wr = fs.createWriteStream(target);
+		var wr = fs.createWriteStream(tmpFilepath);
 		wr.on("error", done);
 		wr.on("close", function(ex) {
 			done();
@@ -968,8 +970,10 @@ function App() {
 
 		function done(err) {
 			if (!cbCalled) {
-				cb(err);
 				cbCalled = true;
+				fs.rename(tmpFilepath, target, function() {
+					cb(err);
+				});
 			}
 		}
 	}
