@@ -1315,34 +1315,30 @@ function RoomUI() {
 
 		$("#drawing_layers").append(layersHtml);
 
-		// use imagesLoaded library to determine when it has definitely loaded
-		// this was an attempt to fix firefox flicker bug
-		$("#"+newLayerID).imagesLoaded().done(function() {
-			// If this is a flatten layer, removes the components
-			if (typeof(context.layer["components"]) !== "undefined") {
-				var codes = context.layer["components"]
-				for (var i = 0; i < codes.length; i++) {
+		// If this is a flatten layer, removes the components
+		if (typeof(context.layer["components"]) !== "undefined") {
+			var codes = context.layer["components"]
+			for (var i = 0; i < codes.length; i++) {
 
-					// Delete component layers
-					var layerCode = codes[i];
-					var layer = getLayerByCode(layerCode);
-					if (layer != null) {
-						layer.remove();
-					}
-					var previewLayer = getLayerByCode(codes[i]);
-					if (previewLayer != null) {
-						previewLayer.remove();
-					}
+				// Delete component layers
+				var layerCode = codes[i];
+				var layer = getLayerByCode(layerCode);
+				if (layer != null) {
+					layer.remove();
+				}
+				var previewLayer = getLayerByCode(codes[i]);
+				if (previewLayer != null) {
+					previewLayer.remove();
 				}
 			}
-			if (context.duplicate != null) {
-				// Delete duplicate layer
-				context.duplicate.remove();
-			}
-			if (context.previewDuplicate != null) {
-				context.previewDuplicate.remove();
-			}
-		});
+		}
+		if (context.duplicate != null) {
+			// Delete duplicate layer
+			context.duplicate.remove();
+		}
+		if (context.previewDuplicate != null) {
+			context.previewDuplicate.remove();
+		}
 
 		if (layerIDIn > highestLayerID) {
 			highestLayerID = layerIDIn;
