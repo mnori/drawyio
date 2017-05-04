@@ -5,7 +5,7 @@ var isLive = false;
 module.exports = {
 	IS_LIVE: isLive,
 	DEFAULT_NICK: "Anonymous",
-	VERSION_TXT: "v0.2.1",
+	VERSION_TXT: "v0.2.2",
 	
 	CLIENT_JS: [ // names of the client source files before minification
 		"Base.js",
