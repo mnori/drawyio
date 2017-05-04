@@ -603,7 +603,7 @@ function RoomUI() {
 			var menu = $("#"+id+"-menu").parent();
 			var options = menu.find(".ui-menu-item-wrapper")
 			options.each(function() {
-				var element = $(self);
+				var element = $(this);
 				element.css("font-family", getFontValue(element.html()));
 			});
 		}, function(htmlIn) { // getButtonHtml
