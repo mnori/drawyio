@@ -457,9 +457,7 @@ function RoomUI() {
 
 		// This decides whether to use a local or a remote canvas
 		var thisCtx = getDrawCtx(toolIn, emit); 
-		if (toolIn.state == "start") {
-			thisCtx.strokeData = makeStrokeData();
-		}
+		thisCtx.strokeData = makeStrokeData();
 
 		// Create a copy of the base data
 		// must create empty data first
