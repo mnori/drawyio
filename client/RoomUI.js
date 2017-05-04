@@ -361,6 +361,19 @@ function RoomUI() {
 		}
 	}
 
+	// Create an empty array of booleans which will store information about 
+	// the current stroke
+	function makeStrokeData() {
+		var out = new Array(width);
+		for (var x = 0; x < width; x++) {
+			out[x] = new Array(height);
+			for (var y = 0; y < height; y++) {
+				out[x][y] = false;
+			}
+		}
+		return out;
+	}
+
 	function checkTextBox(toolIn) {
 		// no text has been entered, open the text input to hint that it is required
 		if (toolIn.tool == "text" && toolIn.meta.text == "") { 
@@ -444,6 +457,9 @@ function RoomUI() {
 
 		// This decides whether to use a local or a remote canvas
 		var thisCtx = getDrawCtx(toolIn, emit); 
+		if (toolIn.state == "start") {
+			thisCtx.strokeData = makeStrokeData();
+		}
 
 		// Create a copy of the base data
 		// must create empty data first
@@ -468,7 +484,7 @@ function RoomUI() {
 		}
 
 		// Draw a line over the copied data
-		plotLine(previewData.data, toolIn, start.x, start.y, end.x, end.y);
+		plotLine(thisCtx.strokeData, previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
 		// Put the modified image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
@@ -481,6 +497,10 @@ function RoomUI() {
 			return;
 		}
 		var thisCtx = getDrawCtx(toolIn, emit);
+		if (toolIn.state == "start") {
+			thisCtx.strokeData = makeStrokeData();
+		}
+
 		var destData = thisCtx.getImageData(0, 0, width, height);
 
 		var entries = toolIn.meta.lineEntries;
@@ -489,7 +509,7 @@ function RoomUI() {
 		// draw a dot to start off
 		// this is where it breaks - coord is missing
 		// check for null and do nothing if empty
-		plotLine(destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+		plotLine(thisCtx.strokeData, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 
 		// now draw the rest of the line
 		for (var i = 1; i < entries.length; i++) {
@@ -499,7 +519,7 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			plotLine(destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			plotLine(thisCtx.strokeData, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
 
 		// Write data to canvas. Quite slow so should be done sparingly
@@ -753,7 +773,7 @@ function RoomUI() {
 
 	// Plot a line using non-antialiased circle
 	// TODO pass in coord obj instead of seperate xy
-	function plotLine(data, toolIn, x0, y0, x1, y1) {
+	function plotLine(strokeData, data, toolIn, x0, y0, x1, y1) {
 		var circleData = makeCircle(toolIn);
 		var colour = parseColour(toolIn.colourFg);
 		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
@@ -771,9 +791,13 @@ function RoomUI() {
 							xCirc >= 0 && xCirc < width && 
 							yCirc >= 0 && yCirc < height
 						) {
-							setColour(data, xCirc, yCirc, colour);	
+							// strokeData tells us which pixels have already been 
+							// painted for this stroke
+							if (!strokeData[xCirc][yCirc]) {
+								setColour(data, xCirc, yCirc, colour);	
+								strokeData[xCirc][yCirc] = true;
+							}
 						}
-						
 					}
 				}
 			}
