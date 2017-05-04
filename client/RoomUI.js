@@ -495,7 +495,7 @@ function RoomUI() {
 			return;
 		}
 		var thisCtx = getDrawCtx(toolIn, emit);
-		if (toolIn.state == "start") {
+		if (toolIn.state == "start" || typeof(thisCtx.strokeData) == "undefined") {
 			thisCtx.strokeData = makeStrokeData();
 		}
 
