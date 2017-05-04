@@ -71,6 +71,7 @@ module.exports = {
 	ROOMS_DIR: "/usr/src/app/code/images/rooms",
 	SNAPSHOTS_DIR: "/usr/src/app/code/images/snapshots",
 	JSDEV_PATH: "/usr/src/app/code/client",
+	MINIFIED_CLIENT_PATH: "/usr/src/app/code/public/js/client.js",
 	MIN_DRAWINGS_MEMORY: 16, // this is also the max number of images in the gallery
 
 	DEFAULT_ROOM_NAME: "An unnamed room",

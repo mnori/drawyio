@@ -1,12 +1,14 @@
 var minifier = require('minifier')
 var settings = require("./settings"); // Our settings
 
-settings.CLIENT_JS.forEach(val => {
-	console.log(val);
+input = []
+settings.CLIENT_JS.forEach(filename => {
+	input.push(settings.JSDEV_PATH+"/"+filename)
 })
 
-// var input = '/some/path'
-// minifier.on('error', function(err) {
-// 	// handle any potential error
-// })
-// minifier.minify(input, options)
+minifier.on('error', function(err) {
+	console.log("Error occurred");
+})
+minifier.minify(input, {
+	"output": settings.MINIFIED_CLIENT_PATH
+});
