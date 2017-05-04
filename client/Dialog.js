@@ -330,7 +330,6 @@ function LoginDialog(base) {
 					loginDialog.show();
 				}
 				if (!processError(response, handleClose)) { // success
-					console.log(response);
 					self.base.receiveSessionData(response);
 					$("#login_dialog").dialog("close");
 					infoDialog.show("You are now logged in.");
@@ -442,11 +441,6 @@ function GalleriesDialog(base) {
 		// Set up hide checkbox
 		$("#hide_gallery_warning").checkboxradio();
 
-		// $("#hide_gallery_warning").change(function() {
-
-		// 	console.log("hide_gallery_warning clicked!");
-		// })
-	
 		// this is Galleries clickable button in the header
 		$("#galleries_btn").click(function(ev) {
 			// if we are hiding gallery warning, this will simply follow the link
