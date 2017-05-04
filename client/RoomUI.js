@@ -276,7 +276,7 @@ function RoomUI() {
 
 			// get the line data from the canvas, set into baseData.
 			// this is the final line drawing
-			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);/**/
+			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 			finaliseEdit(tool, emit);
 			tool.state = "idle"; // pretty important to avoid issues
 		}
@@ -926,12 +926,35 @@ function RoomUI() {
 	}
 
 	// Set colour into the image data
-	function setColour(data, x, y, colour) {
+	// This involves RGBA blending
+	function setColour(data, x, y, newColour) {
 		var base = getXYBase(x, y);
-		data[base] = colour[0];
-		data[base + 1] = colour[1];
-		data[base + 2] = colour[2];
-		data[base + 3] = colour[3];
+
+		// Get the existing colour
+		var existingColour = data.slice(base, base + 4);
+
+		// Convert colours from 0-255 to 0-1
+		var red1 = existingColour[0] / 255;
+		var green1 = existingColour[1] / 255;
+		var blue1 = existingColour[2] / 255;
+		var alpha1 = existingColour[3] / 255;
+
+		var red2 = newColour[0] / 255;
+		var green2 = newColour[1] / 255;
+		var blue2 = newColour[2] / 255;
+		var alpha2 = newColour[3] / 255;
+
+		// Blend colours using the alpha
+		var alphaResult = alpha1 + alpha2 * ( 1 - alpha1 );
+		var redResult   = red1 * alpha1 + red2 * alpha2 * ( 1 - alpha1 ) / alphaResult;
+		var greenResult = green1 * alpha1 + green2 * alpha2 * ( 1 - alpha1 ) / alphaResult;
+		var blueResult  = blue1 * alpha1 + blue2 * alpha2 * ( 1 - alpha1 ) / alphaResult;
+
+		// Set new pixel value into the data
+		data[base] = Math.round(redResult * 255);
+		data[base + 1] = Math.round(greenResult * 255);
+		data[base + 2] = Math.round(blueResult * 255);
+		data[base + 3] = Math.round(alphaResult * 255);
 	}
 
 	function rgbaEqual(query, target, tolerance) {
