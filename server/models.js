@@ -31,8 +31,6 @@ function Session(req, app) {
 	// For returning session data to the client.
 	// Obvs this should not include password or other sensitive fields
 	this.getClientData = function() {
-		console.log("self.prefs.hideGalleryWarning");
-		console.log(self.prefs.hideGalleryWarning);
 		var out = {
 			"id": self.id,
 			"name": (self.user) ? self.user.name : self.name,
@@ -128,9 +126,7 @@ function Session(req, app) {
 					self.addUser(row);
 
 					// save to update the last_active and ip address
-					console.log("before save()")
 					self.save(function() {
-						console.log("after save()")
 
 						// could make this more efficient using a join
 						self.fetchPrefs(callback);

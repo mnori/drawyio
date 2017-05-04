@@ -1,4 +1,5 @@
-// Initialise the drawing image UI
+// This handles the room page, where the drawing happens.
+
 function RoomUI() {
 	var drawID = opts["roomID"];
 	var width = opts["width"];
@@ -36,7 +37,7 @@ function RoomUI() {
 	finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
 	Low values place moar load on the server, higher values mean a shitty user experience
 	*/
-	var finaliseTimeoutMs = 1000; 
+	var finaliseTimeoutMs = 100; 
 
 	// This timeout handles the pointer fading when inactive
 	var pointerTimeoutMs = 4000;
@@ -649,7 +650,7 @@ function RoomUI() {
 
 	function initColourPicker() {
 		colourPicker.spectrum({
-			showAlpha: false,
+			showAlpha: true,
 			cancelText: "Cancel",
 			chooseText: "OK",
 			show: openColourPicker
