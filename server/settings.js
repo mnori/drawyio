@@ -28,21 +28,11 @@ module.exports = {
 	PASSWORD_SALT_ROUNDS: 10,
 	LAYER_CODE_LEN: 32, // Length of layer codes
 	MAX_LAYERS: 5, // Max number of layers to store before flattening the image
-
-	// After n ms since last edit, flatten the image
-	// Too high will lead to layering problems
-	// To low and there will be a nasty issue during processCanvas
-	// ^ can't remember when I wrote that, but if it's true, there's a bug to fix,
-	// since the system should be able to handle any timeout. Might mean there is some
-	// unpleasant non-atomic stuff going down in the backend
-	FLATTEN_TIMEOUT: 1000,
-
-	// Rolling timeout for saving images to disk (5 seconds)
-	SAVE_TIMEOUT: 5000, 
+	FLATTEN_TIMEOUT: 1000, // After n ms since last edit, flatten the image
+	SAVE_TIMEOUT: 5000, // Rolling timeout for saving images to disk (5 seconds)
 
 	// at intervals, check memory and cleanup if needed (1 minutes)
 	CLEANUP_INTERVAL: 60000,
-	// CLEANUP_INTERVAL: 1000,
 
 	// after n ms, delete image from memory, providing there is enough stuff
 	// for the front page
