@@ -60,7 +60,7 @@ module.exports = {
 		rgbaPixel: 0xFFFFFFFF
 	},
 	DB_CONNECT_PARAMS: {
-		host: "mysql",
+		host: (isLive) ? "localhost" : "mysql",
 		user: "root",
 		password: (isLive) ? "CHANGEME" : "password"
 	},
