@@ -37,7 +37,7 @@ function RoomUI() {
 	finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
 	Low values place moar load on the server, higher values mean a shitty user experience
 	*/
-	var finaliseTimeoutMs = 100; 
+	var finaliseTimeoutMs = 1000; 
 
 	// This timeout handles the pointer fading when inactive
 	var pointerTimeoutMs = 4000;
