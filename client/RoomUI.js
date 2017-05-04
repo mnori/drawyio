@@ -507,7 +507,10 @@ function RoomUI() {
 		// draw a dot to start off
 		// this is where it breaks - coord is missing
 		// check for null and do nothing if empty
-		plotLine(thisCtx.strokeData, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+
+		if (firstCoord != null) {
+			plotLine(thisCtx.strokeData, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+		}
 
 		// now draw the rest of the line
 		for (var i = 1; i < entries.length; i++) {
