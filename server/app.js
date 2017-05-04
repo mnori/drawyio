@@ -840,7 +840,12 @@ function App() {
 	// Save a drawing to disk
 	this.saveImage = function(drawID, data, callback) {
 		var outFilepath = settings.ROOMS_DIR+"/"+drawID+".png"
-		fs.writeFile(outFilepath, data, callback);
+		var tmpFilepath = outFilepath+".tmp";
+
+		// write to temp file and rename so it's atomic
+		fs.writeFile(tmpFilepath, data, function() {
+			fs.rename(tmpFilepath, outFilepath, callback);
+		});
 	}
 
 	// For performance measurements
