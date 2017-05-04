@@ -14,6 +14,7 @@ module.exports = {
 		"SnapshotUI.js",
 		"Dialog.js"
 	],
+	IGNORE_CAPTCHA: true,
 
 	CLIENT_LOCATION: (isLive) ? "/js/client.js" : "/jsdev/client.js",
 	PORT: (isLive) ? 80 : 8080, // Which port to expose to the outside world

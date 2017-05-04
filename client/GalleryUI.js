@@ -63,8 +63,19 @@ function GalleryUI(type) {
 			var checkedID = $("input[type='radio']:checked.gallery_type").attr("id");
 			var type = (checkedID == "galleries_snapshots") ? "snapshot" : "room";
 			var oldest = findOldestUnixtime();
+
+			// Get visibility
+			var isPrivate = (getRadio("gallery_visibility") == "gallery_private")
+				? true : false;;
+
+			// Get deleted
+			var isDeleted = (getRadio("gallery_deleted") == "gallery_deleted")
+				? true : false;
+
 			var data = {
-				oldestTime: ""+oldest
+				"oldestTime": ""+oldest,
+				"isPrivate": isPrivate,
+				"isDeleted": isDeleted
 			}
 			$.ajax({
 				url: "/ajax/gallery/"+type+"s", 

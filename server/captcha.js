@@ -1,6 +1,12 @@
 // Check google captcha response
 
 function check(req, app, errors, callback) {
+
+	if (app.settings.IGNORE_CAPTCHA) {
+		callback(true);
+		return;
+	}
+
 	if (!req.query["g-recaptcha-response"]) { // user has not done the recaptcha
 		errors.push("Please respond to \"I'm not a robot\".");
 	}
