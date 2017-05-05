@@ -5,7 +5,8 @@ function RoomUI() {
 	var width = this.width = opts["width"];
 	var height = this.height = opts["height"];
 
-	var emitInterval = 33; // ~= 30FPS
+	// var emitInterval = 33; // ~= 30FPS
+	var emitInterval = 5; // ~= 30FPS
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
@@ -776,11 +777,11 @@ function RoomUI() {
 	// Plot a line using non-antialiased circle
 	// TODO pass in coord obj instead of seperate xy
 	function plotLine(ctx, data, toolIn, x0, y0, x1, y1) {
-		var tl = new Timeline();
+		// var tl = new Timeline();
 		// tl.log("a");
 		self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
 		// tl.log("b");
-		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
+		// plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
 		// tl.log("c");
 		// tl.dump();
 	}

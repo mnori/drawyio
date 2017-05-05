@@ -16,6 +16,7 @@ function DrawUI(roomUI) {
 			$(this.app.view).attr("id", targetID);
 			ctx.renderElement = this.app.view;
 			ctx.graphics = new PIXI.Graphics();
+			ctx.graphics.lineStyle(70, 0xffd900, 0.5);
 			this.app.stage.addChild(ctx.graphics);
 		}
 
@@ -23,14 +24,20 @@ function DrawUI(roomUI) {
 		// tl.log("a");
 
 	    // set a fill and line style
-	    // ctx.graphics.beginFill(0xFF3300);
-	    ctx.graphics.lineStyle(20, 0xffd900, 0.5);
+
 
 	    // tl.log("b");
 
 	    // draw a shape
-	    ctx.graphics.moveTo(x0, y0);
+
+
+		// ctx.graphics.beginFill(0xFF3300);
+	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
+
+
+	    // see https://pixijs.github.io/examples/#/basics/graphics.js
+	    // animated: https://pixijs.github.io/examples/#/demos/graphics-demo.js
 
 	    // tl.log("c");
 	    // tl.dump();
