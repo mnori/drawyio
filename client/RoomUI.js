@@ -782,6 +782,12 @@ function RoomUI() {
 		self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
 		tl.log("b");
 
+		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
+		tl.log("c");
+		tl.dump();
+	}
+
+	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
 		var circleData = makeCircle(toolIn);
 		var colour = parseColour(toolIn.colourFg);
 		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
@@ -815,8 +821,6 @@ function RoomUI() {
 			if (e2 >= dy) { err += dy; x0 += sx; }
 			if (e2 <= dx) { err += dx; y0 += sy; }
 		}
-		tl.log("c");
-		tl.dump();
 	}
 
 	function eyedropper(tool) {

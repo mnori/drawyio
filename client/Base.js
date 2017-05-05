@@ -132,7 +132,8 @@ function processError(response, okCallback) {
 function Timeline() {
 	this.entries = [];
 	this.log = function(name) {
-		var ts = Date.now(); // this is in milliseconds
+		var ts = window.performance.now();
+		// var ts = Date.now(); // this is in milliseconds
 		this.entries.push({
 			name: name,
 			ts: ts
