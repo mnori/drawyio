@@ -27,7 +27,10 @@ function DrawUI(roomUI) {
 
 	    // draw a shape
 	    graphics.moveTo(x0, y0);
-	    graphics.lineTo(x1 + 100, y1 + 100);
+	    graphics.lineTo(x1, y1);
+
+	    // console.log(x0, y0);
+	    // console.log(x1, y1);
 	    // graphics.lineTo(250, 50);
 	    // graphics.lineTo(100, 100);
 	    // graphics.lineTo(250, 220);
