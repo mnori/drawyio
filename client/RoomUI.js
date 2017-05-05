@@ -777,13 +777,11 @@ function RoomUI() {
 	// TODO pass in coord obj instead of seperate xy
 	function plotLine(ctx, data, toolIn, x0, y0, x1, y1) {
 		var tl = new Timeline();
-
-		tl.log("a");
+		// tl.log("a");
 		self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
-		tl.log("b");
-
+		// tl.log("b");
 		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
-		tl.log("c");
+		// tl.log("c");
 		// tl.dump();
 	}
 

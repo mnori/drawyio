@@ -19,12 +19,20 @@ function DrawUI(roomUI) {
 			this.app.stage.addChild(ctx.graphics);
 		}
 
+		// var tl = new Timeline();
+		// tl.log("a");
+
 	    // set a fill and line style
 	    // ctx.graphics.beginFill(0xFF3300);
-	    ctx.graphics.lineStyle(10, 0xffd900, 1);
+	    ctx.graphics.lineStyle(20, 0xffd900, 0.5);
+
+	    // tl.log("b");
 
 	    // draw a shape
 	    ctx.graphics.moveTo(x0, y0);
 	    ctx.graphics.lineTo(x1, y1);
+
+	    // tl.log("c");
+	    // tl.dump();
 	}
 }
