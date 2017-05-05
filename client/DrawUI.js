@@ -14,14 +14,17 @@ function DrawUI(roomUI) {
 		var tl = new Timeline();
 		tl.log("1");
 
-		var targetID = $(ctx.canvas).attr("id")+"_rendering";
-
-		tl.log("1.1");
-
-		if ($("#"+targetID).length == 0) { // must create new element
+		if (typeof(ctx.renderElement) === "undefined") {
+			var targetID = $(ctx.canvas).attr("id")+"_rendering";	
 			document.body.appendChild(this.app.view);
 			$(this.app.view).attr("id", targetID);
+			ctx.renderElement = this.app.view;
 		}
+
+		// This is slow
+		
+
+		tl.log("1.1");
 
 		tl.log("1.2");
 
