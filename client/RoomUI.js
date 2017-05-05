@@ -784,7 +784,7 @@ function RoomUI() {
 
 		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
 		tl.log("c");
-		tl.dump();
+		// tl.dump();
 	}
 
 	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
