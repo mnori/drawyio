@@ -2,8 +2,8 @@
 
 function RoomUI() {
 	var drawID = opts["roomID"];
-	var width = opts["width"];
-	var height = opts["height"];
+	var width = this.width = opts["width"];
+	var height = this.height = opts["height"];
 
 	var emitInterval = 33; // ~= 30FPS
 	var paintEmitInterval = emitInterval; 
@@ -48,6 +48,7 @@ function RoomUI() {
 	var fontSizeMenu = null; // initialised later
 	var fontFaceMenu = null
 	var toolInCanvas = false;
+	this.drawUI = new DrawUI(this);
 
 	var self = this; // scoping help
 
@@ -482,7 +483,7 @@ function RoomUI() {
 		}
 
 		// Draw a line over the copied data
-		plotLine(thisCtx.strokeData, previewData.data, toolIn, start.x, start.y, end.x, end.y);
+		plotLine(thisCtx, previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
 		// Put the modified image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
@@ -509,7 +510,7 @@ function RoomUI() {
 		// check for null and do nothing if empty
 
 		if (firstCoord != null) {
-			plotLine(thisCtx.strokeData, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+			plotLine(thisCtx, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 		}
 
 		// now draw the rest of the line
@@ -520,7 +521,7 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			plotLine(thisCtx.strokeData, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			plotLine(thisCtx, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
 
 		// Write data to canvas. Quite slow so should be done sparingly
@@ -774,7 +775,7 @@ function RoomUI() {
 
 	// Plot a line using non-antialiased circle
 	// TODO pass in coord obj instead of seperate xy
-	function plotLine(strokeData, data, toolIn, x0, y0, x1, y1) {
+	function plotLine(ctx, data, toolIn, x0, y0, x1, y1) {
 		var circleData = makeCircle(toolIn);
 		var colour = parseColour(toolIn.colourFg);
 		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
@@ -794,9 +795,9 @@ function RoomUI() {
 						) {
 							// strokeData tells us which pixels have already been 
 							// painted for this stroke
-							if (!strokeData[xCirc][yCirc]) {
+							if (!ctx.strokeData[xCirc][yCirc]) {
 								setColour(data, xCirc, yCirc, colour);	
-								strokeData[xCirc][yCirc] = true;
+								ctx.strokeData[xCirc][yCirc] = true;
 							}
 						}
 					}
@@ -808,6 +809,8 @@ function RoomUI() {
 			if (e2 >= dy) { err += dy; x0 += sx; }
 			if (e2 <= dx) { err += dx; y0 += sy; }
 		}
+
+		self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
 	}
 
 	function eyedropper(tool) {
