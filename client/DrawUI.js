@@ -5,41 +5,44 @@ function DrawUI(roomUI) {
 	console.log("DrawUI() invoked");
 
 	this.roomUI = roomUI;
+
+	// Create pixi app object, should only be called once
 	this.app = new PIXI.Application(this.roomUI.width, this.roomUI.height, { 
-		"antialias": true
+		"antialias": false,
+		"transparent": true
 	});
 
+	// Create the element to render into
+	var targetID = "renderer";
+	document.body.appendChild(this.app.view);
+	$(this.app.view).attr("id", targetID);
+
 	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
+		var width = 45;
+		var radius = parseInt(width / 2);
+		var colour = 0x000000;
+		var alpha = 0.2;
 		if (typeof(ctx.renderElement) === "undefined") {
-			var targetID = $(ctx.canvas).attr("id")+"_rendering";	
-			document.body.appendChild(this.app.view);
-			$(this.app.view).attr("id", targetID);
+			console.log("boom");
 			ctx.renderElement = this.app.view;
 			ctx.graphics = new PIXI.Graphics();
-			ctx.graphics.lineStyle(70, 0xffd900, 0.5);
-			this.app.stage.addChild(ctx.graphics);
+
+			ctx.container = new PIXI.Container();
+			ctx.container.alpha = alpha;
+			ctx.container.addChild(ctx.graphics)
+			this.app.stage.addChild(ctx.container);
 		}
 
-		// var tl = new Timeline();
-		// tl.log("a");
-
-	    // set a fill and line style
-
-
-	    // tl.log("b");
-
-	    // draw a shape
-
-
 		// ctx.graphics.beginFill(0xFF3300);
-	    ctx.graphics.moveTo(x0, y0); 
-	    ctx.graphics.lineTo(x1, y1);
+		// ctx.graphics.clear(); // this works
+		// ctx.graphics.lineStyle(width, colour, 1);
+	 //    ctx.graphics.moveTo(x0, y0); 
+	 //    ctx.graphics.lineTo(x1, y1);
 
-
-	    // see https://pixijs.github.io/examples/#/basics/graphics.js
-	    // animated: https://pixijs.github.io/examples/#/demos/graphics-demo.js
-
-	    // tl.log("c");
-	    // tl.dump();
+	    ctx.graphics.lineStyle(0);
+		ctx.graphics.beginFill(colour, 1);
+		ctx.graphics.drawCircle(x0, y0, radius);
+		ctx.graphics.drawCircle(x1, y1, radius);
+		ctx.graphics.endFill();
 	}
 }
