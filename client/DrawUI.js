@@ -18,6 +18,10 @@ function DrawUI(roomUI) {
 	$(this.app.view).attr("id", targetID);
 
 	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
+
+		var tl = new Timeline();
+		tl.log("1");
+
 		var width = 45;
 		var radius = parseInt(width / 2);
 		var colour = 0x000000;
@@ -30,23 +34,28 @@ function DrawUI(roomUI) {
 			// object for drawing shapes
 			ctx.graphics = new PIXI.Graphics();
 			ctx.container = new PIXI.Container();
-			// ctx.container.alpha = alpha;
+			ctx.container.alpha = alpha;
 			ctx.container.addChild(ctx.graphics)
 
 
-			var brt = new PIXI.BaseRenderTexture(this.roomUI.width, this.roomUI.height, PIXI.SCALE_MODES.LINEAR, 1);
+			var brt = new PIXI.BaseRenderTexture(
+				this.roomUI.width, this.roomUI.height, PIXI.SCALE_MODES.LINEAR, 1);
 			ctx.renderTexture = new PIXI.RenderTexture(brt);
 
 
 			 // = new PIXI.RenderTexture.create(ctx.container);
 			ctx.sprite = new PIXI.Sprite(ctx.renderTexture)
-			ctx.sprite.x = 50;
-			ctx.sprite.y = 50;
+			// ctx.container.mask = ctx.container;
+			// ctx.sprite.x = 50;
+			// ctx.sprite.y = 50;
+			ctx.sprite.alpha = 0.5;
 			this.app.stage.addChild(ctx.sprite);
 		}
 
-		ctx.graphics.beginFill(colour);
-		// ctx.graphics.clear(); // this works
+		tl.log("2");
+
+		// ctx.graphics.clear();
+		// ctx.graphics.beginFill(colour);
 		ctx.graphics.lineStyle(width, colour, 1);
 	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
@@ -57,12 +66,12 @@ function DrawUI(roomUI) {
 		ctx.graphics.drawCircle(x1, y1, radius);
 		ctx.graphics.endFill();
 
-		// Render the container to the rendertexture
+		tl.log("3");
 
-		var tl = new Timeline();
-		tl.log("1");
+		// Render the container to the rendertexture
+		// This is slow, unfortunately
 		this.app.renderer.render(ctx.container, ctx.renderTexture);
-		tl.log("2");
+		tl.log("4");
 		tl.dump();
 	}
 }
