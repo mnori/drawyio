@@ -9,7 +9,7 @@ function DrawUI(roomUI) {
 	// Create pixi app object, should only be called once
 	this.app = new PIXI.Application(this.roomUI.width, this.roomUI.height, { 
 		"antialias": false,
-		"transparent": true
+		"transparent": false
 	});
 
 	// Create the element to render into
@@ -24,7 +24,7 @@ function DrawUI(roomUI) {
 
 		var width = 45;
 		var radius = parseInt(width / 2);
-		var colour = 0x000000;
+		var colour = 0xffffff;
 		var alpha = 0.2;
 		if (typeof(ctx.renderTexture) === "undefined") {
 			console.log("boom");
@@ -33,8 +33,12 @@ function DrawUI(roomUI) {
 	
 			// object for drawing shapes
 			ctx.graphics = new PIXI.Graphics();
+			ctx.graphics.blendMode = PIXI.BLEND_MODES.NORMAL;
+			// ctx.graphics.blendMode = "wrong";
+
+			// console.log(PIXI.BLEND_MODES.LIGHTEN);
+
 			ctx.container = new PIXI.Container();
-			ctx.container.alpha = alpha;
 			ctx.container.addChild(ctx.graphics)
 
 
@@ -49,19 +53,19 @@ function DrawUI(roomUI) {
 			// ctx.sprite.x = 50;
 			// ctx.sprite.y = 50;
 			ctx.sprite.alpha = 0.5;
-			this.app.stage.addChild(ctx.sprite);
+			this.app.stage.addChild(ctx.container);
 		}
 
 		tl.log("2");
 
 		// ctx.graphics.clear();
 		// ctx.graphics.beginFill(colour);
-		ctx.graphics.lineStyle(width, colour, 1);
+		ctx.graphics.lineStyle(width, colour, alpha);
 	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
 
 	    ctx.graphics.lineStyle(0);
-		ctx.graphics.beginFill(colour, 1);
+		ctx.graphics.beginFill(colour, alpha);
 		ctx.graphics.drawCircle(x0, y0, radius);
 		ctx.graphics.drawCircle(x1, y1, radius);
 		ctx.graphics.endFill();
@@ -70,8 +74,8 @@ function DrawUI(roomUI) {
 
 		// Render the container to the rendertexture
 		// This is slow, unfortunately
-		this.app.renderer.render(ctx.container, ctx.renderTexture);
+		// this.app.renderer.render(ctx.container, ctx.renderTexture);
 		tl.log("4");
-		tl.dump();
+		// tl.dump();
 	}
 }
