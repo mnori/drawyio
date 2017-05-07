@@ -35,6 +35,9 @@ function DrawUI(roomUI) {
 			ctx.colourMatrix = new PIXI.filters.ColorMatrixFilter();
 			ctx.container.filters = [ctx.colourMatrix];
 
+			// render circle to sprite
+			
+
 			this.app.stage.addChild(ctx.container);
 		}
 
@@ -51,11 +54,13 @@ function DrawUI(roomUI) {
 	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
 
+	 	ctx.graphics.beginFill(colour, 1);
+
 	    ctx.graphics.lineStyle(0);
-		ctx.graphics.beginFill(colour, 1);
 		ctx.graphics.drawCircle(x0, y0, radius);
 		ctx.graphics.drawCircle(x1, y1, radius);
-		ctx.graphics.endFill();
+
+		ctx.graphics.endFill(colour, 1);
 
 		// The matrix
 		// Now we move back to the brush alpha again
