@@ -57,19 +57,19 @@ function DrawUI(roomUI) {
 		// The matrix
 		// this will multiply the alpha by a really high number
 		// so that it is no longer transparent
-		// ctx.colourMatrix.matrix = [
-		// 	1, 0, 0, 0, 0,
-		// 	0, 1, 0, 0, 0,
-		// 	0, 0, 1, 0, 0,
-		// 	0, 0, 0, 10000000, 0 
-		// ]
+		ctx.colourMatrix.matrix = [
+			1, 0, 0, 0, 0,
+			0, 1, 0, 0, 0,
+			0, 0, 1, 0, 0,
+			0, 0, 0, 10000000, 0 
+		]
 
 		// this is slow too
-		// ctx.graphics.beginFill(colour, 1);
-		// ctx.graphics.lineStyle(width, colour, 1);
-	 //    ctx.graphics.moveTo(x0, y0); 
-	 //    ctx.graphics.lineTo(x1, y1);
-	 //    ctx.graphics.endFill();
+		ctx.graphics.beginFill(colour, 1);
+		ctx.graphics.lineStyle(width, colour, 1);
+	    ctx.graphics.moveTo(x0, y0); 
+	    ctx.graphics.lineTo(x1, y1);
+	    ctx.graphics.endFill();
 
 	 	ctx.circleSprite.x = x0;
 	 	ctx.circleSprite.y = y0;
@@ -79,12 +79,12 @@ function DrawUI(roomUI) {
 
 		// The matrix
 		// Now we move back to the brush alpha again
-		// ctx.colourMatrix.matrix = [
-		// 	1, 0, 0, 0, 0,
-		// 	0, 1, 0, 0, 0,
-		// 	0, 0, 1, 0, 0,
-		// 	0, 0, 0, alpha, 0 
-		// ]
+		ctx.colourMatrix.matrix = [
+			1, 0, 0, 0, 0,
+			0, 1, 0, 0, 0,
+			0, 0, 1, 0, 0,
+			0, 0, 0, alpha, 0 
+		]
 
 		// this call slows things down
 		this.renderer.render(ctx.container);
