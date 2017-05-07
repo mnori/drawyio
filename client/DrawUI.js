@@ -65,6 +65,7 @@ function DrawUI(roomUI) {
 		]
 
 		// this is slow too
+		ctx.graphics.clear();
 		ctx.graphics.beginFill(colour, 1);
 		ctx.graphics.lineStyle(width, colour, 1);
 	    ctx.graphics.moveTo(x0, y0); 
