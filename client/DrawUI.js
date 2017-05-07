@@ -33,9 +33,10 @@ function DrawUI(roomUI) {
 
 	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
 		if (typeof(ctx.renderElement) === "undefined") {
+			console.log("Initialisation");
 
 			// Bind render element to context (might want to use container instead)
-			ctx.renderElement = renderer.view;
+			ctx.renderElement = this.renderer.view;
 
 			// Bind graphics to container
 			ctx.graphics = new PIXI.Graphics();
@@ -46,50 +47,46 @@ function DrawUI(roomUI) {
 			ctx.colourMatrix = new PIXI.filters.ColorMatrixFilter();
 			ctx.container.filters = [ctx.colourMatrix];
 
-			// Bind the container to the stage
-			// this.renderer.stage.addChild(ctx.container);
-
 			// CIRCLE SETUP
 			this.setupCircle(ctx, colour, radius);
 
-
+			// Bind the container to the stage
+			// this.renderer.stage.addChild(ctx.container);
 		}
 
 		// The matrix
 		// this will multiply the alpha by a really high number
 		// so that it is no longer transparent
-		ctx.colourMatrix.matrix = [
-			1, 0, 0, 0, 0,
-			0, 1, 0, 0, 0,
-			0, 0, 1, 0, 0,
-			0, 0, 0, 10000000, 0 
-		]
+		// ctx.colourMatrix.matrix = [
+		// 	1, 0, 0, 0, 0,
+		// 	0, 1, 0, 0, 0,
+		// 	0, 0, 1, 0, 0,
+		// 	0, 0, 0, 10000000, 0 
+		// ]
 
-		ctx.graphics.beginFill(colour, 1);
-		ctx.graphics.lineStyle(width, colour, 1);
-	    ctx.graphics.moveTo(x0, y0); 
-	    ctx.graphics.lineTo(x1, y1);
-	    ctx.graphics.endFill();
+		// this is slow too
+		// ctx.graphics.beginFill(colour, 1);
+		// ctx.graphics.lineStyle(width, colour, 1);
+	 //    ctx.graphics.moveTo(x0, y0); 
+	 //    ctx.graphics.lineTo(x1, y1);
+	 //    ctx.graphics.endFill();
 
 	 	ctx.circleSprite.x = x0;
 	 	ctx.circleSprite.y = y0;
-	 	// this.app.stage.addChild(ctx.circleSprite);
-	 	// this.app.renderer.render(ctx.circleSprite, ctx.container);
 
 	 	ctx.circleSprite.x = x1;
 	 	ctx.circleSprite.y = y1;
-	 	// this.app.stage.addChild(ctx.circleSprite);
-	 	// this.app.renderer.render(ctx.circleSprite, ctx.container);
 
 		// The matrix
 		// Now we move back to the brush alpha again
-		ctx.colourMatrix.matrix = [
-			1, 0, 0, 0, 0,
-			0, 1, 0, 0, 0,
-			0, 0, 1, 0, 0,
-			0, 0, 0, alpha, 0 
-		]
+		// ctx.colourMatrix.matrix = [
+		// 	1, 0, 0, 0, 0,
+		// 	0, 1, 0, 0, 0,
+		// 	0, 0, 1, 0, 0,
+		// 	0, 0, 0, alpha, 0 
+		// ]
 
+		// this call slows things down
 		this.renderer.render(ctx.container);
 	}
 
