@@ -35,10 +35,21 @@ function DrawUI(roomUI) {
 			ctx.colourMatrix = new PIXI.filters.ColorMatrixFilter();
 			ctx.container.filters = [ctx.colourMatrix];
 
-			// render circle to sprite
-			
+			// Render a circle into the circle graphics element
+			var circleGraphics = new PIXI.Graphics();
+			circleGraphics.beginFill(colour, 1);
+			circleGraphics.lineStyle(0);
+			circleGraphics.drawCircle(radius, radius, radius);
+			circleGraphics.endFill();
+
+			// Create a sprite from the graphics
+			var brt = new PIXI.BaseRenderTexture(width, width, PIXI.SCALE_MODES.LINEAR, 1);
+			ctx.renderTexture = new PIXI.RenderTexture(brt);
+			ctx.circleSprite = new PIXI.Sprite(ctx.renderTexture)
+			this.app.renderer.render(ctx.circleGraphics, ctx.renderTexture);
 
 			this.app.stage.addChild(ctx.container);
+
 		}
 
 		// The matrix
@@ -54,13 +65,13 @@ function DrawUI(roomUI) {
 	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
 
-	 	ctx.graphics.beginFill(colour, 1);
+	 	ctx.circleSprite.x = x0;
+	 	ctx.circleSprite.y = y0;
+	 	this.app.renderer.render(ctx.circleSprite, ctx.container);
 
-	    ctx.graphics.lineStyle(0);
-		ctx.graphics.drawCircle(x0, y0, radius);
-		ctx.graphics.drawCircle(x1, y1, radius);
-
-		ctx.graphics.endFill(colour, 1);
+	 	ctx.circleSprite.x = x1;
+	 	ctx.circleSprite.y = y1;
+	 	this.app.renderer.render(ctx.circleSprite, ctx.container);
 
 		// The matrix
 		// Now we move back to the brush alpha again
