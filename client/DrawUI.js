@@ -47,11 +47,6 @@ function DrawUI(roomUI) {
 			0, 0, 1, 0, 0,
 			0, 0, 0, 10000000, 0 
 		]
-		// ctx.colourMatrix.contrast(1);
-		// console.log(ctx.colourMatrix.matrix);
-
-		ctx.graphics.beginFill(colour);
-		// ctx.graphics.clear(); // this works
 		ctx.graphics.lineStyle(width, colour, 1);
 	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
