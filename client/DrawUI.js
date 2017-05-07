@@ -6,16 +6,25 @@ function DrawUI(roomUI) {
 
 	this.roomUI = roomUI;
 
-	// Create pixi app object, should only be called once
-	this.app = new PIXI.Application(this.roomUI.width, this.roomUI.height, { 
+	// Setup renderer
+	var targetID = "renderer";
+	this.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
 		"antialias": false,
-		"transparent": true
+		"transparent": true	
 	});
+	document.body.appendChild(this.renderer.view);
+	$(this.renderer.view).attr("id", targetID);
+
+	// Create pixi app object, should only be called once
+	// this.app = new PIXI.Application(this.roomUI.width, this.roomUI.height, { 
+	// 	"antialias": false,
+	// 	"transparent": true
+	// });
 
 	// Create the element to render into
-	var targetID = "renderer";
-	document.body.appendChild(this.app.view);
-	$(this.app.view).attr("id", targetID);
+	// var targetID = "renderer";
+	// document.body.appendChild(this.app.view);
+	// $(this.app.view).attr("id", targetID);
 
 	var width = 45;
 	var radius = parseInt(width / 2);
@@ -24,31 +33,26 @@ function DrawUI(roomUI) {
 
 	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
 		if (typeof(ctx.renderElement) === "undefined") {
-			ctx.renderElement = this.app.view;
-			ctx.graphics = new PIXI.Graphics();
 
+			// Bind render element to context (might want to use container instead)
+			ctx.renderElement = renderer.view;
+
+			// Bind graphics to container
+			ctx.graphics = new PIXI.Graphics();
 			ctx.container = new PIXI.Container();
-			// ctx.container.alpha = alpha;
 			ctx.container.addChild(ctx.graphics)
 
 			// set up colour matrix
 			ctx.colourMatrix = new PIXI.filters.ColorMatrixFilter();
 			ctx.container.filters = [ctx.colourMatrix];
 
-			// Render a circle into the circle graphics element
-			ctx.circleGraphics = new PIXI.Graphics();
-			ctx.circleGraphics.beginFill(colour, 1);
-			ctx.circleGraphics.lineStyle(0);
-			ctx.circleGraphics.drawCircle(radius, radius, radius);
-			ctx.circleGraphics.endFill();
+			// Bind the container to the stage
+			// this.renderer.stage.addChild(ctx.container);
 
-			// Create a sprite from the graphics
-			var brt = new PIXI.BaseRenderTexture(width, width, PIXI.SCALE_MODES.LINEAR, 1);
-			ctx.renderTexture = new PIXI.RenderTexture(brt);
-			ctx.circleSprite = new PIXI.Sprite(ctx.renderTexture)
-			this.app.renderer.render(ctx.circleGraphics, ctx.renderTexture);
-			this.app.stage.addChild(ctx.container);
-			this.app.stage.addChild(ctx.circleSprite);
+			// CIRCLE SETUP
+			this.setupCircle(ctx, colour, radius);
+
+
 		}
 
 		// The matrix
@@ -60,9 +64,12 @@ function DrawUI(roomUI) {
 			0, 0, 1, 0, 0,
 			0, 0, 0, 10000000, 0 
 		]
+
+		ctx.graphics.beginFill(colour, 1);
 		ctx.graphics.lineStyle(width, colour, 1);
 	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
+	    ctx.graphics.endFill();
 
 	 	ctx.circleSprite.x = x0;
 	 	ctx.circleSprite.y = y0;
@@ -82,5 +89,23 @@ function DrawUI(roomUI) {
 			0, 0, 1, 0, 0,
 			0, 0, 0, alpha, 0 
 		]
+
+		this.renderer.render(ctx.container);
+	}
+
+	this.setupCircle = function(ctx, colour, radius) {	
+		// Render a circle into the circle graphics element
+		ctx.circleGraphics = new PIXI.Graphics();
+		ctx.circleGraphics.beginFill(colour, 1);
+		ctx.circleGraphics.lineStyle(0);
+		ctx.circleGraphics.drawCircle(radius, radius, radius);
+		ctx.circleGraphics.endFill();
+
+		// Create a sprite from the graphics
+		var brt = new PIXI.BaseRenderTexture(width, width, PIXI.SCALE_MODES.LINEAR, 1);
+		ctx.renderTexture = new PIXI.RenderTexture(brt);
+		ctx.circleSprite = new PIXI.Sprite(ctx.renderTexture)
+		this.renderer.render(ctx.circleGraphics, ctx.renderTexture);
+		ctx.container.addChild(ctx.circleSprite);
 	}
 }
