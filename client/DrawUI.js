@@ -23,8 +23,6 @@ function DrawUI(roomUI) {
 	var alpha = 0.2;
 
 	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
-		var tl = new Timeline();
-		tl.log("a");
 		if (typeof(ctx.renderElement) === "undefined") {
 			ctx.renderElement = this.app.view;
 			ctx.graphics = new PIXI.Graphics();
@@ -39,7 +37,6 @@ function DrawUI(roomUI) {
 
 			this.app.stage.addChild(ctx.container);
 		}
-		tl.log("b");
 
 		// The matrix
 		// this will multiply the alpha by a really high number
@@ -51,8 +48,7 @@ function DrawUI(roomUI) {
 			0, 0, 0, 10000000, 0 
 		]
 		// ctx.colourMatrix.contrast(1);
-		tl.log("c");
-		console.log(ctx.colourMatrix.matrix);
+		// console.log(ctx.colourMatrix.matrix);
 
 		ctx.graphics.beginFill(colour);
 		// ctx.graphics.clear(); // this works
@@ -66,18 +62,13 @@ function DrawUI(roomUI) {
 		ctx.graphics.drawCircle(x1, y1, radius);
 		ctx.graphics.endFill();
 
-
 		// The matrix
-		// Now we move back to the brush alpha
+		// Now we move back to the brush alpha again
 		ctx.colourMatrix.matrix = [
 			1, 0, 0, 0, 0,
 			0, 1, 0, 0, 0,
 			0, 0, 1, 0, 0,
 			0, 0, 0, alpha, 0 
 		]
-
-
-		tl.log("d");
-		tl.dump();
 	}
 }
