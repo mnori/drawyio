@@ -492,6 +492,8 @@ function RoomUI() {
 
 	// Draw woblly line onto canvas
 	function drawPaint(toolIn, emit) {
+		return drawPaintOld(toolIn, emit);
+
 		var tl = new Timeline();
 		tl.log("1");
 		if (toolIn.meta == null) {
@@ -503,20 +505,14 @@ function RoomUI() {
 			thisCtx.strokeData = makeStrokeData();
 		}
 
-		tl.log("2");
-
-		var destData = thisCtx.getImageData(0, 0, width, height);
+		// var destData = thisCtx.getImageData(0, 0, width, height);
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
-		tl.log("3");
-
-		// draw a dot to start off
-		// this is where it breaks - coord is missing
-		// check for null and do nothing if empty
+		self.drawUI.start(thisCtx);
 
 		if (firstCoord != null) {
-			plotLine(thisCtx, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+			paintLine(thisCtx, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 		}
 
 		// now draw the rest of the line
@@ -527,22 +523,64 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			plotLine(thisCtx, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			paintLine(thisCtx, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
-
-		tl.log("4");
-
-		// Write data to canvas. Quite slow so should be done sparingly
-		// also this copies the whole image! Could it be done faster using a slice?
-		thisCtx.putImageData(destData, 0, 0);
-
-		tl.log("5");
+		self.drawUI.render(thisCtx);
 
 		// Reset the coordinates cache
 		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
 		toolIn.meta.lineEntries = [lastEntry]
 
-		tl.log("6");
+		tl.log("2");
+		tl.dump();
+	}
+
+
+	// Draw woblly line onto canvas
+	function drawPaintOld(toolIn, emit) {
+		var tl = new Timeline();
+		tl.log("1");
+		if (toolIn.meta == null) {
+			console.log("Warning -> drawPaint called without data!");
+			return;
+		}
+		var thisCtx = getDrawCtx(toolIn, emit);
+		if (toolIn.state == "start" || typeof(thisCtx.strokeData) == "undefined") {
+			thisCtx.strokeData = makeStrokeData();
+		}
+
+		var destData = thisCtx.getImageData(0, 0, width, height);
+		var entries = toolIn.meta.lineEntries;
+		var firstCoord = entries[0].coord;
+
+		// draw a dot to start off
+		// this is where it breaks - coord is missing
+		// check for null and do nothing if empty
+
+		if (firstCoord != null) {
+			plotLine(thisCtx, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+		}
+
+		// now draw the rest of the line
+		for (var i = 1; i < entries.length; i++) {
+			var prevCoord = entries[i - 1].coord;
+			var thisCoord = entries[i].coord;
+			if (prevCoord == null || thisCoord == null) {
+				// might happen if mouse is outside the boundaries
+				continue;
+			}
+			plotLine(thisCtx, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+		}
+
+		// Write data to canvas. Quite slow so should be done sparingly
+		// also this copies the whole image! Could it be done faster using a slice?
+		thisCtx.putImageData(destData, 0, 0);
+
+		// Reset the coordinates cache
+		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
+		toolIn.meta.lineEntries = [lastEntry]
+
+		tl.log("2");
 		tl.dump();
 	}
 
@@ -789,8 +827,12 @@ function RoomUI() {
 	// Plot a line using non-antialiased circle
 	// TODO pass in coord obj instead of seperate xy
 	function plotLine(ctx, data, toolIn, x0, y0, x1, y1) {
+		// self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
+		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
+	}
+
+	function paintLine(ctx, toolIn, x0, y0, x1, y1) {
 		self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
-		// plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
 	}
 
 	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
