@@ -492,7 +492,7 @@ function RoomUI() {
 
 	// Draw woblly line onto canvas
 	function drawPaint(toolIn, emit) {
-		return drawPaintOld(toolIn, emit);
+		// return drawPaintOld(toolIn, emit);
 
 		var tl = new Timeline();
 		tl.log("1");
@@ -537,9 +537,11 @@ function RoomUI() {
 
 
 	// Draw woblly line onto canvas
+	// Draw woblly line onto canvas
 	function drawPaintOld(toolIn, emit) {
 		var tl = new Timeline();
 		tl.log("1");
+
 		if (toolIn.meta == null) {
 			console.log("Warning -> drawPaint called without data!");
 			return;
@@ -550,6 +552,7 @@ function RoomUI() {
 		}
 
 		var destData = thisCtx.getImageData(0, 0, width, height);
+
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
@@ -558,7 +561,7 @@ function RoomUI() {
 		// check for null and do nothing if empty
 
 		if (firstCoord != null) {
-			plotLine(thisCtx, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+			plotLine(thisCtx, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 		}
 
 		// now draw the rest of the line
@@ -569,7 +572,7 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			plotLine(thisCtx, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			plotLine(thisCtx, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
 
 		// Write data to canvas. Quite slow so should be done sparingly
