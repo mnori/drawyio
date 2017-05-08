@@ -490,20 +490,26 @@ function RoomUI() {
 		thisCtx.putImageData(previewData, 0, 0);
 	}
 
-	// Draw woblly line onto canvas
 	function drawPaint(toolIn, emit) {
+		drawPaintOld(toolIn, emit);
+		drawPaintPixi(toolIn, emit);
+
+		// Reset the coordinates cache
+		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
+		toolIn.meta.lineEntries = [lastEntry]
+	}
+
+	// Draw woblly line onto canvas
+	function drawPaintPixi(toolIn, emit) {
 		// return drawPaintOld(toolIn, emit);
 
 		var tl = new Timeline();
-		tl.log("1");
+		tl.log("pixi 1");
 		if (toolIn.meta == null) {
 			console.log("Warning -> drawPaint called without data!");
 			return;
 		}
 		var thisCtx = getDrawCtx(toolIn, emit);
-		if (toolIn.state == "start" || typeof(thisCtx.strokeData) == "undefined") {
-			thisCtx.strokeData = makeStrokeData();
-		}
 
 		// var destData = thisCtx.getImageData(0, 0, width, height);
 		var entries = toolIn.meta.lineEntries;
@@ -527,11 +533,7 @@ function RoomUI() {
 		}
 		self.drawUI.render(thisCtx);
 
-		// Reset the coordinates cache
-		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
-		toolIn.meta.lineEntries = [lastEntry]
-
-		tl.log("2");
+		tl.log("pixi 2");
 		tl.dump();
 	}
 
@@ -540,7 +542,7 @@ function RoomUI() {
 	// Draw woblly line onto canvas
 	function drawPaintOld(toolIn, emit) {
 		var tl = new Timeline();
-		tl.log("1");
+		tl.log("old 1");
 
 		if (toolIn.meta == null) {
 			console.log("Warning -> drawPaint called without data!");
@@ -579,11 +581,7 @@ function RoomUI() {
 		// also this copies the whole image! Could it be done faster using a slice?
 		thisCtx.putImageData(destData, 0, 0);
 
-		// Reset the coordinates cache
-		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
-		toolIn.meta.lineEntries = [lastEntry]
-
-		tl.log("2");
+		tl.log("old 2");
 		tl.dump();
 	}
 

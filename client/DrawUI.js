@@ -3,6 +3,7 @@
 
 function DrawUI(roomUI) {
 	console.log("DrawUI() invoked");
+	var self = this;
 
 	this.roomUI = roomUI;
 
@@ -34,48 +35,30 @@ function DrawUI(roomUI) {
 	var alpha = 0.2;
 
 	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
-
-		// The matrix
-		// this will multiply the alpha by a really high number
-		// so that it is no longer transparent
-		// ctx.colourMatrix.matrix = [
-		// 	1, 0, 0, 0, 0,
-		// 	0, 1, 0, 0, 0,
-		// 	0, 0, 1, 0, 0,
-		// 	0, 0, 0, 10000000, 0 
-		// ]
-
 		ctx.graphics.beginFill(colour, 1);
 		ctx.graphics.lineStyle(width, colour, 1);
 	    ctx.graphics.moveTo(x0, y0); 
 	    ctx.graphics.lineTo(x1, y1);
 	    ctx.graphics.endFill();
 
-	    // we just need to duplicate the sprite somehow here
-	 	ctx.circleSprite.x = x0 - (radius + 1);
-	 	ctx.circleSprite.y = y0 - (radius + 1);
-	 	// this.renderer.render(ctx.container);
+	 	self.placeCircleSprite(ctx, x0, y0, radius);
+	 	self.placeCircleSprite(ctx, x1, y1, radius);
+	}
 
-	 	// ctx.graphics.clear();
-	 	ctx.circleSprite.x = x1 - radius;
-	 	ctx.circleSprite.y = y1 - radius;
-	 	
-
-		// The matrix
-		// Now we move back to the brush alpha again
-		// ctx.colourMatrix.matrix = [
-		// 	1, 0, 0, 0, 0,
-		// 	0, 1, 0, 0, 0,
-		// 	0, 0, 1, 0, 0,
-		// 	0, 0, 0, alpha, 0 
-		// ]
-
-		// this call slows things down
-		
+	this.placeCircleSprite = function(ctx, x, y, radius) {
+		var circleSprite = new PIXI.Sprite(ctx.renderTexture)
+	 	circleSprite.x = x - (radius);
+	 	circleSprite.y = y - (radius);
+	 	ctx.container.addChild(circleSprite);
 	}
 
 	this.render = function(ctx) {
+		// Render the container
 		this.renderer.render(ctx.container);
+
+		// Remove sprites from container
+		ctx.container.removeChildren();
+		ctx.container.addChild(ctx.graphics);
 	}
 
 	this.start = function(ctx) {
@@ -114,8 +97,6 @@ function DrawUI(roomUI) {
 		// Create a sprite from the graphics
 		var brt = new PIXI.BaseRenderTexture(width, width, PIXI.SCALE_MODES.LINEAR, 1);
 		ctx.renderTexture = new PIXI.RenderTexture(brt);
-		ctx.circleSprite = new PIXI.Sprite(ctx.renderTexture)
 		this.renderer.render(ctx.circleGraphics, ctx.renderTexture);
-		ctx.container.addChild(ctx.circleSprite);
 	}
 }
