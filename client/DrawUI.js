@@ -10,7 +10,9 @@ function DrawUI(roomUI) {
 	var targetID = "renderer";
 	this.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
 		"antialias": false,
-		"transparent": true	
+		"transparent": true,
+		"clearBeforeRender": false,
+		"preserveDrawingBuffer": true
 	});
 	document.body.appendChild(this.renderer.view);
 	$(this.renderer.view).attr("id", targetID);
