@@ -46,8 +46,8 @@ function DrawUI(roomUI) {
 			ctx.container.addChild(ctx.graphics)
 
 			// set up colour matrix
-			ctx.colourMatrix = new PIXI.filters.ColorMatrixFilter();
-			ctx.container.filters = [ctx.colourMatrix];
+			// ctx.colourMatrix = new PIXI.filters.ColorMatrixFilter();
+			// ctx.container.filters = [ctx.colourMatrix];
 
 			// CIRCLE SETUP
 			this.setupCircle(ctx, colour, radius);
@@ -59,12 +59,12 @@ function DrawUI(roomUI) {
 		// The matrix
 		// this will multiply the alpha by a really high number
 		// so that it is no longer transparent
-		ctx.colourMatrix.matrix = [
-			1, 0, 0, 0, 0,
-			0, 1, 0, 0, 0,
-			0, 0, 1, 0, 0,
-			0, 0, 0, 10000000, 0 
-		]
+		// ctx.colourMatrix.matrix = [
+		// 	1, 0, 0, 0, 0,
+		// 	0, 1, 0, 0, 0,
+		// 	0, 0, 1, 0, 0,
+		// 	0, 0, 0, 10000000, 0 
+		// ]
 
 		// this is slow too
 		ctx.graphics.clear();
@@ -74,23 +74,26 @@ function DrawUI(roomUI) {
 	    ctx.graphics.lineTo(x1, y1);
 	    ctx.graphics.endFill();
 
-	 	ctx.circleSprite.x = x0;
-	 	ctx.circleSprite.y = y0;
+	 	ctx.circleSprite.x = x0 - (radius + 1);
+	 	ctx.circleSprite.y = y0 - (radius + 1);
+	 	// this.renderer.render(ctx.container);
 
-	 	ctx.circleSprite.x = x1;
-	 	ctx.circleSprite.y = y1;
+	 	// ctx.graphics.clear();
+	 	ctx.circleSprite.x = x1 - radius;
+	 	ctx.circleSprite.y = y1 - radius;
+	 	this.renderer.render(ctx.container);
 
 		// The matrix
 		// Now we move back to the brush alpha again
-		ctx.colourMatrix.matrix = [
-			1, 0, 0, 0, 0,
-			0, 1, 0, 0, 0,
-			0, 0, 1, 0, 0,
-			0, 0, 0, alpha, 0 
-		]
+		// ctx.colourMatrix.matrix = [
+		// 	1, 0, 0, 0, 0,
+		// 	0, 1, 0, 0, 0,
+		// 	0, 0, 1, 0, 0,
+		// 	0, 0, 0, alpha, 0 
+		// ]
 
 		// this call slows things down
-		this.renderer.render(ctx.container);
+		
 	}
 
 	this.setupCircle = function(ctx, colour, radius) {	

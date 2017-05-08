@@ -6,7 +6,7 @@ function RoomUI() {
 	var height = this.height = opts["height"];
 
 	// var emitInterval = 33; // ~= 30FPS
-	var emitInterval = 5; // ~= 30FPS
+	var emitInterval = 33; // ~= 30FPS
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
@@ -492,6 +492,8 @@ function RoomUI() {
 
 	// Draw woblly line onto canvas
 	function drawPaint(toolIn, emit) {
+		var tl = new Timeline();
+		tl.log("1");
 		if (toolIn.meta == null) {
 			console.log("Warning -> drawPaint called without data!");
 			return;
@@ -501,10 +503,13 @@ function RoomUI() {
 			thisCtx.strokeData = makeStrokeData();
 		}
 
-		var destData = thisCtx.getImageData(0, 0, width, height);
+		tl.log("2");
 
+		var destData = thisCtx.getImageData(0, 0, width, height);
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
+
+		tl.log("3");
 
 		// draw a dot to start off
 		// this is where it breaks - coord is missing
@@ -525,13 +530,20 @@ function RoomUI() {
 			plotLine(thisCtx, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
 
+		tl.log("4");
+
 		// Write data to canvas. Quite slow so should be done sparingly
 		// also this copies the whole image! Could it be done faster using a slice?
 		thisCtx.putImageData(destData, 0, 0);
 
+		tl.log("5");
+
 		// Reset the coordinates cache
 		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
 		toolIn.meta.lineEntries = [lastEntry]
+
+		tl.log("6");
+		tl.dump();
 	}
 
 	function clearFinalise() {
@@ -777,13 +789,8 @@ function RoomUI() {
 	// Plot a line using non-antialiased circle
 	// TODO pass in coord obj instead of seperate xy
 	function plotLine(ctx, data, toolIn, x0, y0, x1, y1) {
-		// var tl = new Timeline();
-		// tl.log("a");
 		self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
-		// tl.log("b");
 		// plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
-		// tl.log("c");
-		// tl.dump();
 	}
 
 	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
