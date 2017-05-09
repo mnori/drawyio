@@ -491,7 +491,7 @@ function RoomUI() {
 	}
 
 	function drawPaint(toolIn, emit) {
-		drawPaintOld(toolIn, emit);
+		// drawPaintOld(toolIn, emit);
 		drawPaintPixi(toolIn, emit);
 
 		// Reset the coordinates cache

@@ -4,7 +4,6 @@
 function DrawUI(roomUI) {
 	console.log("DrawUI() invoked");
 	var self = this;
-
 	this.roomUI = roomUI;
 
 	// Setup renderer
@@ -18,22 +17,36 @@ function DrawUI(roomUI) {
 	document.body.appendChild(this.renderer.view);
 	$(this.renderer.view).attr("id", targetID);
 
-	// Create pixi app object, should only be called once
-	// this.app = new PIXI.Application(this.roomUI.width, this.roomUI.height, { 
-	// 	"antialias": false,
-	// 	"transparent": true
-	// });
+	this.stroke = new Stroke(this);
+	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
+		this.stroke.plotLine(ctx, toolIn, x0, y0, x1, y1);
+	}
 
-	// Create the element to render into
-	// var targetID = "renderer";
-	// document.body.appendChild(this.app.view);
-	// $(this.app.view).attr("id", targetID);
+	this.start = function(ctx) {
+		this.stroke.start(ctx);
+	}
 
+	this.render = function(ctx) {
+		this.stroke.render(ctx);
+	}
+}
+
+// Represents a layer which is linked to a particular user/socket
+// Can consist of a number of Strokes
+function Layer() {
+
+}
+
+// Represents a single stroke drawing
+function Stroke(drawUI) {
+	var self = this;
+	this.drawUI = drawUI;
+
+	// TODO read from tool
 	var width = 45;
 	var radius = parseInt(width / 2);
 	var colour = 0xff0000;
 	var alpha = 0.2;
-
 	this.plotLine = function(ctx, toolIn, x0, y0, x1, y1) {
 		ctx.graphics.beginFill(colour, 1);
 		ctx.graphics.lineStyle(width, colour, 1);
@@ -54,9 +67,10 @@ function DrawUI(roomUI) {
 
 	this.render = function(ctx) {
 		// Render the container
-		this.renderer.render(ctx.container);
+		this.drawUI.renderer.render(ctx.container);
 
 		// Remove sprites from container
+		// Otherwise the container fills with old sprites
 		ctx.container.removeChildren();
 		ctx.container.addChild(ctx.graphics);
 	}
@@ -66,27 +80,20 @@ function DrawUI(roomUI) {
 			console.log("Initialisation");
 
 			// Bind render element to context (might want to use container instead)
-			ctx.renderElement = this.renderer.view;
+			ctx.renderElement = this.drawUI.renderer.view;
 
 			// Bind graphics to container
 			ctx.graphics = new PIXI.Graphics();
 			ctx.container = new PIXI.Container();
 			ctx.container.addChild(ctx.graphics)
 
-			// set up colour matrix
-			// ctx.colourMatrix = new PIXI.filters.ColorMatrixFilter();
-			// ctx.container.filters = [ctx.colourMatrix];
-
-			// CIRCLE SETUP
-			this.setupCircle(ctx, colour, radius);
-
-			// Bind the container to the stage
-			// this.renderer.stage.addChild(ctx.container);
+			// Circle setup
+			this.createCircleSprite(ctx, colour, radius);
 		}
 		ctx.graphics.clear();
 	}
 
-	this.setupCircle = function(ctx, colour, radius) {	
+	this.createCircleSprite = function(ctx, colour, radius) {	
 		// Render a circle into the circle graphics element
 		ctx.circleGraphics = new PIXI.Graphics();
 		ctx.circleGraphics.beginFill(colour, 1);
@@ -97,6 +104,6 @@ function DrawUI(roomUI) {
 		// Create a sprite from the graphics
 		var brt = new PIXI.BaseRenderTexture(width, width, PIXI.SCALE_MODES.LINEAR, 1);
 		ctx.renderTexture = new PIXI.RenderTexture(brt);
-		this.renderer.render(ctx.circleGraphics, ctx.renderTexture);
+		this.drawUI.renderer.render(ctx.circleGraphics, ctx.renderTexture);
 	}
 }
