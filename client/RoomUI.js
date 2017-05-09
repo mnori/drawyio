@@ -509,16 +509,15 @@ function RoomUI() {
 			console.log("Warning -> drawPaint called without data!");
 			return;
 		}
-		var thisCtx = getDrawCtx(toolIn, emit);
 
 		// var destData = thisCtx.getImageData(0, 0, width, height);
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
-		self.drawUI.start(thisCtx);
+		self.drawUI.start();
 
 		if (firstCoord != null) {
-			paintLine(thisCtx, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+			paintLine(toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 		}
 
 		// now draw the rest of the line
@@ -529,9 +528,9 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			paintLine(thisCtx, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			paintLine(toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
-		self.drawUI.render(thisCtx);
+		self.drawUI.render();
 
 		tl.log("pixi 2");
 		tl.dump();
