@@ -514,10 +514,10 @@ function RoomUI() {
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
-		self.drawUI.start();
+		self.drawUI.start(toolIn);
 
 		if (firstCoord != null) {
-			paintLine(toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+			paintLine(firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 		}
 
 		// now draw the rest of the line
@@ -528,7 +528,7 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			paintLine(toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			paintLine(prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
 		self.drawUI.render();
 
@@ -706,7 +706,7 @@ function RoomUI() {
 	}
 
 	function readBrushSize(tool) {
-		tool.meta.brushSize = (parseInt($("#brush_size").val()) - 1) / 2;	
+		tool.meta.brushSize = parseInt($("#brush_size").val());
 	}
 
 	function readFontSize(tool) {
@@ -831,8 +831,8 @@ function RoomUI() {
 		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
 	}
 
-	function paintLine(ctx, toolIn, x0, y0, x1, y1) {
-		self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
+	function paintLine(x0, y0, x1, y1) {
+		self.drawUI.plotLine(x0, y0, x1, y1);
 	}
 
 	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {

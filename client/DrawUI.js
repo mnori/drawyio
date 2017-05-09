@@ -23,20 +23,18 @@ function DrawUI(roomUI) {
 	$(this.renderer.view).attr("id", targetID);
 
 	this.layer = new Layer(this);
-	this.plotLine = function(toolIn, x0, y0, x1, y1) {
-		this.layer.stroke.plotLine(toolIn, x0, y0, x1, y1);
+	this.plotLine = function(x0, y0, x1, y1) {
+		this.layer.stroke.plotLine(x0, y0, x1, y1);
 	}
 
-	this.start = function() {
-		this.layer.stroke.start();
+	this.start = function(toolIn) {
+		this.layer.stroke.start(toolIn);
 	}
 
 	// Render the main container
 	this.render = function() {
 		// Render stroke data onto its sprite
 		self.layer.stroke.render();
-
-		self.layer.stroke.renderSprite.alpha = 0.2;
 
 		// we're clearing before render, so it's set true here.
 		this.renderer.render(self.container, null, true);
@@ -53,19 +51,6 @@ function Layer(drawUI) {
 	this.init = function() {
 		createRenderSprite(self);
 	}
-
-	this.plotLine = function(toolIn, x0, y0, x1, y1) {
-		this.stroke.plotLine(toolIn, x0, y0, x1, y1);
-	}
-
-	this.start = function() {
-		this.stroke.start();
-	}
-
-	this.render = function() {
-		this.stroke.render();
-	}
-
 	// this.finishStroke = function() {
 	// 	this.stroke.
 	// }
@@ -75,40 +60,35 @@ function Layer(drawUI) {
 function Stroke(layer) {
 	var self = this;
 	this.layer = layer;
+	this.tool = null;
 
-	// TODO read from tool
-	var width = 45;
-	var radius = parseInt(width / 2);
 	var colour = 0xff0000;
-	var alpha = 0.2;
 
 	this.init = function() {
 		createRenderSprite(self);
 
 		// Bind the sprite onto the main container
 	 	self.layer.drawUI.container.addChild(self.renderSprite);
-
-		// Create circle texture
-		self.createCircleSprite(colour, radius);
 	}
 
 	// Might need a destroy method as well
 
-	this.plotLine = function(toolIn, x0, y0, x1, y1) {
+	this.plotLine = function(x0, y0, x1, y1) {
+		var width = self.tool.meta.brushSize;
 		self.graphics.beginFill(colour, 1);
 		self.graphics.lineStyle(width, colour, 1);
 	    self.graphics.moveTo(x0, y0); 
 	    self.graphics.lineTo(x1, y1);
 	    self.graphics.endFill();
 
-	 	self.placeCircleSprite(x0, y0, radius);
-	 	self.placeCircleSprite(x1, y1, radius);
+	 	self.placeCircleSprite(x0, y0, self.radius);
+	 	self.placeCircleSprite(x1, y1, self.radius);
 	}
 
 	this.placeCircleSprite = function(x, y, radius) {
 		var circleSprite = new PIXI.Sprite(self.circleTexture)
-	 	circleSprite.x = x - (radius);
-	 	circleSprite.y = y - (radius);
+	 	circleSprite.x = x - (self.radius);
+	 	circleSprite.y = y - (self.radius);
 	 	self.container.addChild(circleSprite);
 	}
 
@@ -116,21 +96,35 @@ function Stroke(layer) {
 		// Render stroke stuff onto the render texture
 		self.container.addChild(self.graphics);
 		self.layer.drawUI.renderer.render(self.container, self.renderTexture);
+
+		// clear for next iteration
 		self.container.removeChildren();
 	}
 
 	// this is not necessarily the beginning! It can also be in between batches
 	// of data
-	this.start = function() {
-		self.graphics.clear();
+	this.start = function(toolIn) {
+		self.tool = toolIn;
+		self.width = self.tool.meta.brushSize;
+		self.radius = parseInt(self.tool.meta.brushSize / 2);
+
+		console.log(self.tool.meta.brushSize);
+
+		// Create circle sprite texture - faster than drawing
+		self.createCircleSprite(colour);
+
+		// Removes all the line elements that got drawn previously
+		self.graphics.clear(); 
 	}
 
-	this.createCircleSprite = function(colour, radius) {	
+	this.createCircleSprite = function(colour) {
+		var width = self.tool.meta.brushSize;
+
 		// Render a circle into the circle graphics element
 		var circleGraphics = new PIXI.Graphics();
 		circleGraphics.beginFill(colour, 1);
 		circleGraphics.lineStyle(0);
-		circleGraphics.drawCircle(radius, radius, radius);
+		circleGraphics.drawCircle(self.radius, self.radius, self.radius);
 		circleGraphics.endFill();
 
 		// Create a sprite from the graphics
