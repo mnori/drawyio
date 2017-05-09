@@ -31,8 +31,8 @@ function DrawUI(roomUI) {
 		this.layer.stroke.startStroke(toolIn);
 	}
 
-	this.start = function() {
-		this.layer.stroke.start();
+	this.startBatch = function() {
+		this.layer.stroke.startBatch();
 	}
 
 	// Render the main container
@@ -117,7 +117,7 @@ function Stroke(layer) {
 
 	// this is not necessarily the beginning! It can also be in between batches
 	// of data
-	this.start = function(toolIn) {
+	this.startBatch = function(toolIn) {
 		self.toolIn = toolIn;
 
 		// Removes all the line elements that got drawn previously

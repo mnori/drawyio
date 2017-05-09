@@ -516,7 +516,7 @@ function RoomUI() {
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
-		self.drawUI.start(toolIn);
+		self.drawUI.startBatch(toolIn);
 
 		if (firstCoord != null) {
 			paintLine(firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
