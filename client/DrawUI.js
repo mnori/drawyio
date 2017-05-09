@@ -24,15 +24,19 @@ function DrawUI(roomUI) {
 
 	this.layer = new Layer(this);
 	this.plotLine = function(toolIn, x0, y0, x1, y1) {
-		this.layer.plotLine(toolIn, x0, y0, x1, y1);
+		this.layer.stroke.plotLine(toolIn, x0, y0, x1, y1);
 	}
 
 	this.start = function() {
-		this.layer.start();
+		this.layer.stroke.start();
 	}
 
+	// Render the main container
 	this.render = function() {
-		this.layer.render();
+		// Render stroke data onto its sprite
+		self.layer.stroke.render();
+
+		self.layer.stroke.renderSprite.alpha = 0.2;
 
 		// we're clearing before render, so it's set true here.
 		this.renderer.render(self.container, null, true);
@@ -46,6 +50,10 @@ function Layer(drawUI) {
 	this.drawUI = drawUI;
 	this.stroke = new Stroke(this);
 
+	this.init = function() {
+		createRenderSprite(self);
+	}
+
 	this.plotLine = function(toolIn, x0, y0, x1, y1) {
 		this.stroke.plotLine(toolIn, x0, y0, x1, y1);
 	}
@@ -58,6 +66,9 @@ function Layer(drawUI) {
 		this.stroke.render();
 	}
 
+	// this.finishStroke = function() {
+	// 	this.stroke.
+	// }
 }
 
 // Represents a single stroke drawing
@@ -72,20 +83,7 @@ function Stroke(layer) {
 	var alpha = 0.2;
 
 	this.init = function() {
-		// Bind graphics to container
-		self.graphics = new PIXI.Graphics();
-		self.container = new PIXI.Container();
-		self.container.addChild(self.graphics)
-
-		// Create render texture for drawing onto
-		var brt = new PIXI.BaseRenderTexture(
-			self.layer.drawUI.roomUI.width, 
-			self.layer.drawUI.roomUI.height, 
-			PIXI.SCALE_MODES.LINEAR, 1);
-		self.renderTexture = new PIXI.RenderTexture(brt);
-
-		// Create sprite from render texture
-		self.renderSprite = new PIXI.Sprite(self.renderTexture)
+		createRenderSprite(self);
 
 		// Bind the sprite onto the main container
 	 	self.layer.drawUI.container.addChild(self.renderSprite);
@@ -116,13 +114,9 @@ function Stroke(layer) {
 
 	this.render = function() {
 		// Render stroke stuff onto the render texture
-		self.layer.drawUI.renderer.render(self.container, self.renderTexture);
-
-		// Remove sprites from container
-		// Otherwise the container fills with old sprites
-		self.container.removeChildren();
 		self.container.addChild(self.graphics);
-		self.renderSprite.alpha = alpha;
+		self.layer.drawUI.renderer.render(self.container, self.renderTexture);
+		self.container.removeChildren();
 	}
 
 	// this is not necessarily the beginning! It can also be in between batches
@@ -147,3 +141,21 @@ function Stroke(layer) {
 
 	self.init();
 }
+
+// Generic render sprite creation
+function createRenderSprite(self) {
+	self.graphics = new PIXI.Graphics();
+	self.container = new PIXI.Container();
+	self.container.addChild(self.graphics)
+
+	// Create render texture for drawing onto
+	var brt = new PIXI.BaseRenderTexture(
+		self.layer.drawUI.roomUI.width, 
+		self.layer.drawUI.roomUI.height, 
+		PIXI.SCALE_MODES.LINEAR, 1);
+	self.renderTexture = new PIXI.RenderTexture(brt);
+
+	// Create sprite from render texture
+	self.renderSprite = new PIXI.Sprite(self.renderTexture)
+}
+		
