@@ -27,8 +27,12 @@ function DrawUI(roomUI) {
 		this.layer.stroke.plotLine(x0, y0, x1, y1);
 	}
 
-	this.start = function(toolIn) {
-		this.layer.stroke.start(toolIn);
+	this.startStroke = function(toolIn) {
+		this.layer.stroke.startStroke(toolIn);
+	}
+
+	this.start = function() {
+		this.layer.stroke.start();
 	}
 
 	// Render the main container
@@ -62,8 +66,6 @@ function Stroke(layer) {
 	this.layer = layer;
 	this.tool = null;
 
-	var colour = 0xff0000;
-
 	this.init = function() {
 		createRenderSprite(self);
 
@@ -73,10 +75,22 @@ function Stroke(layer) {
 
 	// Might need a destroy method as well
 
+	this.startStroke = function(toolIn) {
+		// Create circle sprite texture - faster than drawing
+		// Shoudl actually be at the beginning of the stroke along with the tool settings
+
+		self.tool = toolIn;
+		self.width = self.tool.meta.brushSize;
+		self.radius = parseInt(self.tool.meta.brushSize / 2);
+		self.colour = rgbaToHex(self.tool.colour);
+		self.renderSprite.alpha = rgbaToAlpha(self.tool.colour);
+		self.createCircleSprite();
+	}
+
 	this.plotLine = function(x0, y0, x1, y1) {
 		var width = self.tool.meta.brushSize;
-		self.graphics.beginFill(colour, 1);
-		self.graphics.lineStyle(width, colour, 1);
+		self.graphics.beginFill(self.colour, 1);
+		self.graphics.lineStyle(width, self.colour, 1);
 	    self.graphics.moveTo(x0, y0); 
 	    self.graphics.lineTo(x1, y1);
 	    self.graphics.endFill();
@@ -104,25 +118,21 @@ function Stroke(layer) {
 	// this is not necessarily the beginning! It can also be in between batches
 	// of data
 	this.start = function(toolIn) {
-		self.tool = toolIn;
-		self.width = self.tool.meta.brushSize;
-		self.radius = parseInt(self.tool.meta.brushSize / 2);
-
-		console.log(self.tool.meta.brushSize);
-
-		// Create circle sprite texture - faster than drawing
-		self.createCircleSprite(colour);
+		self.toolIn = toolIn;
 
 		// Removes all the line elements that got drawn previously
 		self.graphics.clear(); 
 	}
 
-	this.createCircleSprite = function(colour) {
+	this.createCircleSprite = function() {
 		var width = self.tool.meta.brushSize;
+
+		console.log(self.tool);
+		console.log("width: "+width);
 
 		// Render a circle into the circle graphics element
 		var circleGraphics = new PIXI.Graphics();
-		circleGraphics.beginFill(colour, 1);
+		circleGraphics.beginFill(self.colour, 1);
 		circleGraphics.lineStyle(0);
 		circleGraphics.drawCircle(self.radius, self.radius, self.radius);
 		circleGraphics.endFill();
@@ -152,4 +162,31 @@ function createRenderSprite(self) {
 	// Create sprite from render texture
 	self.renderSprite = new PIXI.Sprite(self.renderTexture)
 }
-		
+
+
+function rgbaToAlpha(strIn) {
+	if (strIn.search("rgba") == -1) { // no alpha
+		return 1;
+	}
+
+	// fetch the alpha value from the string
+	var strBit = strIn.split(",").pop().slice(0, -1);
+	var floatOut = parseFloat(strBit);
+	return floatOut; // return it
+
+}
+
+function rgbaToHex(rgba) {
+    var parts = rgba.substring(rgba.indexOf("(")).split(","),
+        r = parseInt(rgbaTrim(parts[0].substring(1)), 10),
+        g = parseInt(rgbaTrim(parts[1]), 10),
+        b = parseInt(rgbaTrim(parts[2]), 10);
+        // a = parseFloat(rgbaTrim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
+
+    var str = "0x" + r.toString(16) + g.toString(16) + b.toString(16);
+    return parseInt(str);
+}
+
+function rgbaTrim(str) {
+  return str.replace(/^\s+|\s+$/gm,'');
+}

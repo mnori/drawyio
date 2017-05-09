@@ -288,12 +288,14 @@ function RoomUI() {
 	function handlePaint(toolIn, emit) {
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
-				readBrushSize(toolIn);
+				readBrushSize(tool);
 				clearFinalise(); // prevent line drawings getting cut off by finaliser
 				var toolOut = JSON.parse(JSON.stringify(toolIn));
 
 				// ensures that starting creates a dot on mousedown
 				if (toolIn.state == "start") {
+					console.log(toolIn);
+					self.drawUI.startStroke(toolIn); // initialise the stroke
 					drawPaint(toolIn, emit);
 					emitTool(toolOut);
 				}
@@ -442,7 +444,7 @@ function RoomUI() {
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
 		// thisCtx.globalAlpha = 1; // just for testing
 		thisCtx.font = toolIn.meta.fontSize+"px "+toolIn.meta.fontFace;
-		thisCtx.fillStyle = toolIn.colourFg;
+		thisCtx.fillStyle = toolIn.colour;
 		thisCtx.textAlign = "right";
 
 		// Position the text next to the cursor
@@ -744,7 +746,7 @@ function RoomUI() {
 	}
 
 	function pickerToToolColour() {
-		tool.colourFg = colourPicker.spectrum("get").toRgbString();
+		tool.colour = colourPicker.spectrum("get").toRgbString();
 	}
 
 	// Start drawing using the local tool
@@ -837,7 +839,7 @@ function RoomUI() {
 
 	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
 		var circleData = makeCircle(toolIn);
-		var colour = parseColour(toolIn.colourFg);
+		var colour = parseColour(toolIn.colour);
 		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
 		var dy = -Math.abs(y1-y0), sy = y0<y1 ? 1 : -1;
 		var err = dx+dy, e2;
@@ -878,8 +880,8 @@ function RoomUI() {
 		// get the colour from the scratch canvas at the given coordinate
 		var scratchCtx = drawScratchCanvas();
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-		tool.colourFg = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
-		colourPicker.spectrum("set", tool.colourFg);
+		tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+		colourPicker.spectrum("set", tool.colour);
 	}
 
 	// commented out since we don't want flood fill anymore
@@ -889,7 +891,7 @@ function RoomUI() {
 
 	// 	// Get the colours from the background image and tool
 	// 	var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-	// 	var newColour = parseColour(tool.colourFg);
+	// 	var newColour = parseColour(tool.colour);
 	// 	floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
 	// }
 
