@@ -22,7 +22,30 @@ function DrawUI(roomUI) {
 	document.body.appendChild(this.renderer.view);
 	$(this.renderer.view).attr("id", targetID);
 
+	this.layer = new Layer(this);
+	this.plotLine = function(toolIn, x0, y0, x1, y1) {
+		this.layer.plotLine(toolIn, x0, y0, x1, y1);
+	}
+
+	this.start = function() {
+		this.layer.start();
+	}
+
+	this.render = function() {
+		this.layer.render();
+
+		// we're clearing before render, so it's set true here.
+		this.renderer.render(self.container, null, true);
+	}
+}
+
+// Represents a layer which is linked to a particular user/socket
+// Consists of a render texture which 
+function Layer(drawUI) {
+	var self = this;
+	this.drawUI = drawUI;
 	this.stroke = new Stroke(this);
+
 	this.plotLine = function(toolIn, x0, y0, x1, y1) {
 		this.stroke.plotLine(toolIn, x0, y0, x1, y1);
 	}
@@ -33,20 +56,14 @@ function DrawUI(roomUI) {
 
 	this.render = function() {
 		this.stroke.render();
-		this.renderer.render(self.container);
 	}
-}
-
-// Represents a layer which is linked to a particular user/socket
-// Can consist of a number of Strokes
-function Layer() {
 
 }
 
 // Represents a single stroke drawing
-function Stroke(drawUI) {
+function Stroke(layer) {
 	var self = this;
-	this.drawUI = drawUI;
+	this.layer = layer;
 
 	// TODO read from tool
 	var width = 45;
@@ -62,8 +79,8 @@ function Stroke(drawUI) {
 
 		// Create render texture for drawing onto
 		var brt = new PIXI.BaseRenderTexture(
-			self.drawUI.roomUI.width, 
-			self.drawUI.roomUI.height, 
+			self.layer.drawUI.roomUI.width, 
+			self.layer.drawUI.roomUI.height, 
 			PIXI.SCALE_MODES.LINEAR, 1);
 		self.renderTexture = new PIXI.RenderTexture(brt);
 
@@ -71,7 +88,7 @@ function Stroke(drawUI) {
 		self.renderSprite = new PIXI.Sprite(self.renderTexture)
 
 		// Bind the sprite onto the main container
-	 	drawUI.container.addChild(self.renderSprite);
+	 	self.layer.drawUI.container.addChild(self.renderSprite);
 
 		// Create circle texture
 		self.createCircleSprite(colour, radius);
@@ -99,15 +116,17 @@ function Stroke(drawUI) {
 
 	this.render = function() {
 		// Render stroke stuff onto the render texture
-		self.drawUI.renderer.render(self.container, self.renderTexture);
+		self.layer.drawUI.renderer.render(self.container, self.renderTexture);
 
 		// Remove sprites from container
 		// Otherwise the container fills with old sprites
 		self.container.removeChildren();
 		self.container.addChild(self.graphics);
+		self.renderSprite.alpha = alpha;
 	}
 
-	// this is not necessarily the beginning! It can also be 
+	// this is not necessarily the beginning! It can also be in between batches
+	// of data
 	this.start = function() {
 		self.graphics.clear();
 	}
@@ -123,7 +142,7 @@ function Stroke(drawUI) {
 		// Create a sprite from the graphics
 		var brt = new PIXI.BaseRenderTexture(width, width, PIXI.SCALE_MODES.LINEAR, 1);
 		self.circleTexture = new PIXI.RenderTexture(brt);
-		this.drawUI.renderer.render(circleGraphics, self.circleTexture);
+		self.layer.drawUI.renderer.render(circleGraphics, self.circleTexture);
 	}
 
 	self.init();
