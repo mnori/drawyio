@@ -72,6 +72,21 @@ function Layer(drawUI) {
 		createRenderSprite(self);
 	}
 
+	this.renderStroke = function() {
+		// Move the stroke sprite to the layer container
+		self.container.addChild(self.stroke.renderSprite); 
+
+		// render
+		self.drawUI.renderer.render(self.container, self.renderTexture);
+
+		// cleanup
+		self.container.removeChildren();	
+		self.drawUI.renderer.clearRenderTexture(self.stroke.renderTexture, 0x00000000);
+
+		// Put the stroke render sprite back in the main container
+		self.drawUI.container.addChild(self.stroke.renderSprite);
+	}
+
 	self.init();
 }
 
@@ -106,20 +121,7 @@ function Stroke(layer) {
 
 	// Render the stroke data onto the layer render sprite
 	this.endStroke = function(toolIn) {
-		console.log("endStroke() invoked");
-
-		// Move the stroke sprite to the layer container
-		self.layer.container.addChild(self.renderSprite); 
-
-		// render
-		self.layer.drawUI.renderer.render(self.layer.container, self.layer.renderTexture);
-
-		// cleanup
-		self.layer.container.removeChildren();	
-		self.layer.drawUI.renderer.clearRenderTexture(self.renderTexture, 0x00000000);
-
-		// Put the stroke render sprite back in the main container
-		self.drawUI.container.addChild(self.renderSprite);
+		self.layer.renderStroke(toolIn);
 	}
 
 	// Render part of a stroke in a single batch
