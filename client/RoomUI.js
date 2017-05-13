@@ -317,7 +317,6 @@ function RoomUI() {
 			} 
 
 		} else if (toolIn.state == "end") { // mouseup or other line end event
-			console.log("END REACHED");
 			if (emit) emitTool(toolIn); // be sure to emit the end event
 			toolIn.state = "idle"; // pretty important to avoid issues
 			drawPaint(toolIn, emit);
@@ -419,10 +418,6 @@ function RoomUI() {
 			// Copy the tool so we can modify it before sending to client
 			var toolOut = JSON.parse(JSON.stringify(toolIn));
 			toolOut.state = "end";
-			emitTool(toolOut);
-			if (toolOut.tool == "paint" && toolOut.meta != null && toolOut.meta.lineEntries != null) {
-				// drawPaint(toolOut, true); // close the line last edit - resets line array	
-			}
 			if (finaliseTimeout != null) {
 				// ah but what if finaliseTimeout is already running?
 				// you'll get two timeouts overlapping each other
