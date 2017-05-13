@@ -208,8 +208,6 @@ function RoomUI() {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
-		console.log("handleAction() invoked");
-		console.log(tool.layerCode);
 		if (emit) pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
 			tool.tool == "flood" && 
@@ -289,7 +287,6 @@ function RoomUI() {
 	// free form drawing
 	function handlePaint(toolIn, emit) {
 		var renderID = getLayerRenderID(toolIn, emit);
-		console.log("handlePaint(): "+renderID);
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
 				readBrushSize(tool);

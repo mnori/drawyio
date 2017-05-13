@@ -40,7 +40,6 @@ function DrawUI(roomUI) {
 	}
 
 	this.endStroke = function(layerID, toolIn) {
-		console.log("endStroke "+layerID);
 		self.getLayer(layerID).stroke.endStroke();
 	}
 
