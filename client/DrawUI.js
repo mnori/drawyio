@@ -88,7 +88,11 @@ function DrawUI(roomUI) {
 	}
 
 	this.renderStrokes = function() {
-		self.getLayer("local").stroke.render();
+		var entries = self.layers.getValues();
+		for (var i = 0; i < entries.length; i++) {
+			var layer = entries[i];
+			layer.stroke.render(); // won't render unless active
+		}
 	}
 
 	this.getLayer = function(layerID) {
@@ -141,24 +145,17 @@ function Stroke(layer) {
 	this.layer = layer;
 	this.drawUI = this.layer.drawUI;
 	this.tool = null;
+	this.stroking = false;
 
 	this.init = function() {
 		self.graphics = new PIXI.Graphics();
 		self.container = new PIXI.Container();
-		// self.container.addChild(self.graphics);
-
 		createRenderSprite(self);
 	}
 
 	// Might need a destroy method as well
 
 	this.startStroke = function(toolIn) {
-
-		console.log(toolIn);
-
-		// Create circle sprite texture - faster than drawing
-		// Shoudl actually be at the beginning of the stroke along with the tool settings
-
 		self.tool = toolIn;
 		self.width = self.tool.meta.brushSize;
 		self.radius = parseInt(self.tool.meta.brushSize / 2);
@@ -181,6 +178,7 @@ function Stroke(layer) {
 	}
 
 	this.plotLine = function(x0, y0, x1, y1) {
+		self.stroking = true;
 		var width = self.tool.meta.brushSize;
 		self.graphics.beginFill(self.colour, 1);
 		self.graphics.lineStyle(width, self.colour, 1);
@@ -200,12 +198,16 @@ function Stroke(layer) {
 	}
 
 	this.render = function() {
+		if (!self.stroking) { // don't render if there is nothing to do
+			return;
+		}
 		// Render stroke stuff onto the render texture
 		self.container.addChild(self.graphics);
 		self.layer.drawUI.renderer.render(self.container, self.renderTexture);
 
 		// clear for next iteration
 		self.container.removeChildren();
+		self.stroking = false;
 	}
 
 	this.createCircleSprite = function() {
