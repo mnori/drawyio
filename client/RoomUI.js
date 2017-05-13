@@ -315,10 +315,11 @@ function RoomUI() {
 
 		} else if (toolIn.state == "end") { // mouseup or other line end event
 			if (emit) emitTool(toolIn); // be sure to emit the end event
+			toolIn.state = "idle"; // pretty important to avoid issues
 			drawPaint(toolIn, emit);
 			self.drawUI.endStroke(toolIn);
 			finaliseEdit(toolIn, emit);
-			toolIn.state = "idle"; // pretty important to avoid issues
+			
 
 		} else { // Tool state is idle - just send coords
 			if (emit) emitToolInterval(toolIn);
@@ -417,7 +418,7 @@ function RoomUI() {
 			toolOut.state = "end";
 			emitTool(toolOut);
 			if (toolOut.tool == "paint" && toolOut.meta != null && toolOut.meta.lineEntries != null) {
-				drawPaint(toolOut, true); // close the line last edit - resets line array	
+				// drawPaint(toolOut, true); // close the line last edit - resets line array	
 			}
 			if (finaliseTimeout != null) {
 				// ah but what if finaliseTimeout is already running?
