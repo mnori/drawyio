@@ -6,7 +6,6 @@ function DrawUI(roomUI) {
 
 	this.n = 0;
 	this.roomUI = roomUI;
-	this.layers = new AssocArray();
 
 	// set up the main container
 	this.init = function() {
@@ -24,6 +23,7 @@ function DrawUI(roomUI) {
 		$(this.renderer.view).attr("id", targetID);
 
 		// there is always a local layer
+		self.layers = new AssocArray();
 		self.layers.set("local", new Layer(self));
 	}
 
@@ -40,6 +40,7 @@ function DrawUI(roomUI) {
 	}
 
 	this.endStroke = function(layerID, toolIn) {
+		console.log("endStroke "+layerID);
 		self.getLayer(layerID).stroke.endStroke();
 	}
 
@@ -53,38 +54,34 @@ function DrawUI(roomUI) {
 		// Empty the container
 		self.container.removeChildren();		
 
-		self.container.addChild(self.layers.get("local").renderSprite);
-		self.container.addChild(self.layers.get("local").stroke.renderSprite);	
+		// Sort the layers, most recent at the bottom - these will render on top
+		var entries = self.layers.getValues();
+		entries.sort(function(a, b) {
+			if (b.order < a.order) {
+				return -1;
+			}
+			if (b.order > a.order) {
+				return 1;
+			}
+			return 0;
+		});
 
-		// // Sort the layers, most recent at the bottom - these will render on top
-		// var entries = self.layers.getValues();
-		// entries.sort(function(a, b) {
-		// 	if (b.order < a.order) {
-		// 		return -1;
-		// 	}
-		// 	if (b.order > a.order) {
-		// 		return 1;
-		// 	}
-		// 	return 0;
-		// });
-
-		// // Add layers to container in the correct order
-		// for (var i = 0; i < entries.length; i++) {
-		// 	var layer = entries[i];
-		// 	self.container.addChild(layer.renderSprite);
-		// 	self.container.addChild(layer.stroke.renderSprite);	
-		// }
+		// Add layers to container in the correct order
+		for (var i = 0; i < entries.length; i++) {
+			var layer = entries[i];
+			self.container.addChild(layer.renderSprite);
+			self.container.addChild(layer.stroke.renderSprite);	
+		}
 	}
 
 	// Render the main container
 	// Should only be called once per frame - WIP
 	this.render = function() {
+		// Render stroke data onto each sprite
+		self.renderStrokes();
 
 		// Attach the sprites to the main container
 		self.bindSprites();
-
-		// Render stroke data onto each sprite
-		self.renderStrokes();
 
 		// true means we're clearing before render
 		self.renderer.render(self.container, null, true);

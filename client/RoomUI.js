@@ -286,8 +286,8 @@ function RoomUI() {
 
 	// free form drawing
 	function handlePaint(toolIn, emit) {
+		var renderID = getLayerRenderID(toolIn, emit);
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
-			var renderID = getLayerRenderID(toolIn, emit);
 			if (emit) { // local user
 				readBrushSize(tool);
 				clearFinalise(); // prevent line drawings getting cut off by finaliser
@@ -604,7 +604,7 @@ function RoomUI() {
 
 	// Get layer identifier, for use when drawing using pixi
 	function getLayerRenderID(toolIn, emit) {
-		if ("emit") {
+		if (emit) {
 			return "local";
 		} else {
 			return tool.layerCode;
