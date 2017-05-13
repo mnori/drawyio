@@ -208,6 +208,8 @@ function RoomUI() {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	function handleAction(tool, emit) {
+		console.log("handleAction() invoked");
+		console.log(tool.layerCode);
 		if (emit) pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
 			tool.tool == "flood" && 
@@ -287,6 +289,7 @@ function RoomUI() {
 	// free form drawing
 	function handlePaint(toolIn, emit) {
 		var renderID = getLayerRenderID(toolIn, emit);
+		console.log("handlePaint(): "+renderID);
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
 				readBrushSize(tool);
@@ -295,7 +298,6 @@ function RoomUI() {
 
 				// ensures that starting creates a dot on mousedown
 				if (toolIn.state == "start") {
-					console.log(toolIn);
 					self.drawUI.startStroke(renderID, toolIn); // initialise the stroke
 					drawPaint(toolIn, emit);
 					emitTool(toolOut);
@@ -318,12 +320,12 @@ function RoomUI() {
 			} 
 
 		} else if (toolIn.state == "end") { // mouseup or other line end event
+			console.log("END REACHED");
 			if (emit) emitTool(toolIn); // be sure to emit the end event
 			toolIn.state = "idle"; // pretty important to avoid issues
 			drawPaint(toolIn, emit);
 			self.drawUI.endStroke(renderID, toolIn);
 			finaliseEdit(toolIn, emit);
-			
 
 		} else { // Tool state is idle - just send coords
 			if (emit) emitToolInterval(toolIn);
@@ -607,7 +609,7 @@ function RoomUI() {
 		if (emit) {
 			return "local";
 		} else {
-			return tool.layerCode;
+			return toolIn.layerCode;
 		}
 	}
 
