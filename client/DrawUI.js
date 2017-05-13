@@ -5,6 +5,7 @@ function DrawUI(roomUI) {
 	var self = this;
 
 	this.roomUI = roomUI;
+	this.layers = new AssocArray();
 
 	// set up the main container
 	this.init = function() {
@@ -20,41 +21,50 @@ function DrawUI(roomUI) {
 		});
 		document.body.appendChild(this.renderer.view);
 		$(this.renderer.view).attr("id", targetID);
-		this.layer = new Layer(this);
 
-		// bind sprites to container
-		self.container.addChild(this.layer.renderSprite);
-		self.container.addChild(this.layer.stroke.renderSprite);
-
+		self.layers.set("local", new Layer(this));
 	}
 
 	this.plotLine = function(x0, y0, x1, y1) {
-		this.layer.stroke.plotLine(x0, y0, x1, y1);
+		self.layers.get("local").stroke.plotLine(x0, y0, x1, y1);
 	}
 
 	this.startStroke = function(toolIn) {
-		this.layer.stroke.startStroke(toolIn);
+		self.layers.get("local").stroke.startStroke(toolIn);
 	}
 
 	this.endStroke = function(toolIn) {
-		this.layer.stroke.endStroke();
+		self.layers.get("local").stroke.endStroke();
 	}
 
 	this.startBatch = function() {
-		this.layer.stroke.startBatch();
+		self.layers.get("local").stroke.startBatch();
+	}
+
+	// Gets all the ducks in a row
+	this.bindSprites = function() {
+		self.container.removeChildren();
+		self.container.addChild(self.layers.get("local").renderSprite);
+		self.container.addChild(self.layers.get("local").stroke.renderSprite);
 	}
 
 	// Render the main container
 	this.render = function() {
-		// Render stroke data onto its sprite
-		self.layer.stroke.render();
 
-		// Remember that layer data is only rendered onto its sprite when stroke 
-		// is finished
+		// Render stroke data onto each sprite
+		self.renderStrokes();
 
-		// we're clearing before render, so it's set true here.
-		this.renderer.render(self.container, null, true);
+		// Attach the sprites to the main container
+		self.bindSprites();
+
+		// true means we're clearing before render
+		self.renderer.render(self.container, null, true);
 	}
+
+	this.renderStrokes = function() {
+		self.layers.get("local").stroke.render();
+	}
+
 	this.init();
 }
 
