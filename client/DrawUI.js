@@ -8,9 +8,7 @@ function DrawUI(roomUI) {
 
 	// set up the main container
 	this.init = function() {
-		this.graphics = new PIXI.Graphics();
 		this.container = new PIXI.Container();
-		this.container.addChild(self.graphics)
 
 		// Setup renderer
 		var targetID = "renderer";
@@ -26,7 +24,7 @@ function DrawUI(roomUI) {
 
 		// bind sprites to container
 		self.container.addChild(this.layer.renderSprite);
-		// self.container.addChild(this.layer.stroke.renderSprite);
+		self.container.addChild(this.layer.stroke.renderSprite);
 
 	}
 
@@ -72,13 +70,6 @@ function Layer(drawUI) {
 		self.container = new PIXI.Container();
 		
 		createRenderSprite(self);
-
-		// no - this is just a sprite
-		// self.container.addChild(self.renderSprite);
-	}
-
-	this.render = function() {
-
 	}
 
 	self.init();
@@ -94,7 +85,7 @@ function Stroke(layer) {
 	this.init = function() {
 		self.graphics = new PIXI.Graphics();
 		self.container = new PIXI.Container();
-		self.container.addChild(self.graphics);
+		// self.container.addChild(self.graphics);
 
 		createRenderSprite(self);
 	}
@@ -117,9 +108,18 @@ function Stroke(layer) {
 	this.endStroke = function(toolIn) {
 		console.log("endStroke() invoked");
 
-		self.layer.container.addChild(self.renderSprite);
+		// Move the stroke sprite to the layer container
+		self.layer.container.addChild(self.renderSprite); 
+
+		// render
 		self.layer.drawUI.renderer.render(self.layer.container, self.layer.renderTexture);
-		self.layer.container.removeChildren();
+
+		// cleanup
+		self.layer.container.removeChildren();	
+		self.layer.drawUI.renderer.clearRenderTexture(self.renderTexture, 0x00000000);
+
+		// Put the stroke render sprite back in the main container
+		self.drawUI.container.addChild(self.renderSprite);
 	}
 
 	// Render part of a stroke in a single batch
