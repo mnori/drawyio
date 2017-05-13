@@ -7,22 +7,29 @@ function DrawUI(roomUI) {
 	this.roomUI = roomUI;
 
 	// set up the main container
-	this.graphics = new PIXI.Graphics();
-	this.container = new PIXI.Container();
-	this.container.addChild(self.graphics)
+	this.init = function() {
+		this.graphics = new PIXI.Graphics();
+		this.container = new PIXI.Container();
+		this.container.addChild(self.graphics)
 
-	// Setup renderer
-	var targetID = "renderer";
-	this.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
-		"antialias": false,
-		"transparent": true,
-		"clearBeforeRender": false,
-		"preserveDrawingBuffer": true
-	});
-	document.body.appendChild(this.renderer.view);
-	$(this.renderer.view).attr("id", targetID);
+		// Setup renderer
+		var targetID = "renderer";
+		this.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
+			"antialias": false,
+			"transparent": true,
+			"clearBeforeRender": false,
+			"preserveDrawingBuffer": true
+		});
+		document.body.appendChild(this.renderer.view);
+		$(this.renderer.view).attr("id", targetID);
+		this.layer = new Layer(this);
 
-	this.layer = new Layer(this);
+		// bind sprites to container
+		self.container.addChild(this.layer.renderSprite);
+		// self.container.addChild(this.layer.stroke.renderSprite);
+
+	}
+
 	this.plotLine = function(x0, y0, x1, y1) {
 		this.layer.stroke.plotLine(x0, y0, x1, y1);
 	}
@@ -44,9 +51,13 @@ function DrawUI(roomUI) {
 		// Render stroke data onto its sprite
 		self.layer.stroke.render();
 
+		// Remember that layer data is only rendered onto its sprite when stroke 
+		// is finished
+
 		// we're clearing before render, so it's set true here.
 		this.renderer.render(self.container, null, true);
 	}
+	this.init();
 }
 
 // Represents a layer which is linked to a particular user/socket
@@ -54,12 +65,20 @@ function DrawUI(roomUI) {
 // In future, will add other types of drawing element
 function Layer(drawUI) {
 	var self = this;
-	this.drawUI = drawUI;
-	this.stroke = new Stroke(this);
 
 	this.init = function() {
+		self.drawUI = drawUI;
+		self.stroke = new Stroke(this);
 		self.container = new PIXI.Container();
+		
 		createRenderSprite(self);
+
+		// no - this is just a sprite
+		// self.container.addChild(self.renderSprite);
+	}
+
+	this.render = function() {
+
 	}
 
 	self.init();
@@ -78,9 +97,6 @@ function Stroke(layer) {
 		self.container.addChild(self.graphics);
 
 		createRenderSprite(self);
-
-		// Bind the sprite onto the main container
-	 	self.layer.drawUI.container.addChild(self.renderSprite);
 	}
 
 	// Might need a destroy method as well
@@ -100,9 +116,10 @@ function Stroke(layer) {
 	// Render the stroke data onto the layer render sprite
 	this.endStroke = function(toolIn) {
 		console.log("endStroke() invoked");
-		layer.container.addChild(self.renderSprite);
-		layer.drawUI.renderer.render(self.container, self.renderTexture);
-		layer.container.removeChildren();
+
+		self.layer.container.addChild(self.renderSprite);
+		self.layer.drawUI.renderer.render(self.layer.container, self.layer.renderTexture);
+		self.layer.container.removeChildren();
 	}
 
 	// Render part of a stroke in a single batch
