@@ -287,6 +287,7 @@ function RoomUI() {
 	// free form drawing
 	function handlePaint(toolIn, emit) {
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
+			var renderID = getLayerRenderID(toolIn, emit);
 			if (emit) { // local user
 				readBrushSize(tool);
 				clearFinalise(); // prevent line drawings getting cut off by finaliser
@@ -295,7 +296,7 @@ function RoomUI() {
 				// ensures that starting creates a dot on mousedown
 				if (toolIn.state == "start") {
 					console.log(toolIn);
-					self.drawUI.startStroke(toolIn); // initialise the stroke
+					self.drawUI.startStroke(renderID, toolIn); // initialise the stroke
 					drawPaint(toolIn, emit);
 					emitTool(toolOut);
 				}
@@ -310,6 +311,9 @@ function RoomUI() {
 				}
 			} else if (toolIn.meta.lineEntries != null) {
 				// remote user - draw the line using the data
+				if (toolIn.state == "start") {
+					self.drawUI.startStroke(renderID, toolIn);
+				}
 				drawPaint(toolIn, emit);
 			} 
 
@@ -317,7 +321,7 @@ function RoomUI() {
 			if (emit) emitTool(toolIn); // be sure to emit the end event
 			toolIn.state = "idle"; // pretty important to avoid issues
 			drawPaint(toolIn, emit);
-			self.drawUI.endStroke(toolIn);
+			self.drawUI.endStroke(renderID, toolIn);
 			finaliseEdit(toolIn, emit);
 			
 
@@ -514,14 +518,16 @@ function RoomUI() {
 			return;
 		}
 
+		var renderID = getLayerRenderID(toolIn, emit)
+
 		// var destData = thisCtx.getImageData(0, 0, width, height);
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
-		self.drawUI.startBatch(toolIn);
+		self.drawUI.startBatch(renderID, toolIn);
 
 		if (firstCoord != null) {
-			paintLine(firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+			self.drawUI.plotLine(renderID, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 		}
 
 		// now draw the rest of the line
@@ -532,9 +538,9 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			paintLine(prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			self.drawUI.plotLine(renderID, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
-		self.drawUI.render();
+		self.drawUI.render(renderID);
 
 		tl.log("pixi 2");
 		tl.dump();
@@ -596,6 +602,16 @@ function RoomUI() {
 		}
 	}
 
+	// Get layer identifier, for use when drawing using pixi
+	function getLayerRenderID(toolIn, emit) {
+		if ("emit") {
+			return "local";
+		} else {
+			return tool.layerCode;
+		}
+	}
+
+	// @deprecated
 	function getDrawCtx(toolIn, emit, suffix) {
 		if (typeof(suffix) == "undefined") {
 			suffix = "";
@@ -830,15 +846,12 @@ function RoomUI() {
 
 	// Plot a line using non-antialiased circle
 	// TODO pass in coord obj instead of seperate xy
+	// @deprecated
 	function plotLine(ctx, data, toolIn, x0, y0, x1, y1) {
-		// self.drawUI.plotLine(ctx, toolIn, x0, y0, x1, y1);
 		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
 	}
 
-	function paintLine(x0, y0, x1, y1) {
-		self.drawUI.plotLine(x0, y0, x1, y1);
-	}
-
+	// @deprecated
 	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
 		var circleData = makeCircle(toolIn);
 		var colour = parseColour(toolIn.colour);

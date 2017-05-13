@@ -4,6 +4,7 @@
 function DrawUI(roomUI) {
 	var self = this;
 
+	this.n = 0;
 	this.roomUI = roomUI;
 	this.layers = new AssocArray();
 
@@ -19,50 +20,87 @@ function DrawUI(roomUI) {
 			"clearBeforeRender": false,
 			"preserveDrawingBuffer": true
 		});
-		document.body.appendChild(this.renderer.view);
+		document.body.appendChild(self.renderer.view);
 		$(this.renderer.view).attr("id", targetID);
 
-		self.layers.set("local", new Layer(this));
+		// there is always a local layer
+		self.layers.set("local", new Layer(self));
 	}
 
-	this.plotLine = function(x0, y0, x1, y1) {
-		self.layers.get("local").stroke.plotLine(x0, y0, x1, y1);
+	this.getNLayers = function() {
+		return ++this.n;
 	}
 
-	this.startStroke = function(toolIn) {
-		self.layers.get("local").stroke.startStroke(toolIn);
+	this.plotLine = function(layerID, x0, y0, x1, y1) {
+		self.getLayer(layerID).stroke.plotLine(x0, y0, x1, y1);
 	}
 
-	this.endStroke = function(toolIn) {
-		self.layers.get("local").stroke.endStroke();
+	this.startStroke = function(layerID, toolIn) {
+		self.getLayer(layerID).stroke.startStroke(toolIn);
 	}
 
-	this.startBatch = function() {
-		self.layers.get("local").stroke.startBatch();
+	this.endStroke = function(layerID, toolIn) {
+		self.getLayer(layerID).stroke.endStroke();
+	}
+
+	this.startBatch = function(layerID) {
+		self.getLayer(layerID).stroke.startBatch();
 	}
 
 	// Gets all the ducks in a row
 	this.bindSprites = function() {
-		self.container.removeChildren();
+
+		// Empty the container
+		self.container.removeChildren();		
+
 		self.container.addChild(self.layers.get("local").renderSprite);
-		self.container.addChild(self.layers.get("local").stroke.renderSprite);
+		self.container.addChild(self.layers.get("local").stroke.renderSprite);	
+
+		// // Sort the layers, most recent at the bottom - these will render on top
+		// var entries = self.layers.getValues();
+		// entries.sort(function(a, b) {
+		// 	if (b.order < a.order) {
+		// 		return -1;
+		// 	}
+		// 	if (b.order > a.order) {
+		// 		return 1;
+		// 	}
+		// 	return 0;
+		// });
+
+		// // Add layers to container in the correct order
+		// for (var i = 0; i < entries.length; i++) {
+		// 	var layer = entries[i];
+		// 	self.container.addChild(layer.renderSprite);
+		// 	self.container.addChild(layer.stroke.renderSprite);	
+		// }
 	}
 
 	// Render the main container
+	// Should only be called once per frame - WIP
 	this.render = function() {
-
-		// Render stroke data onto each sprite
-		self.renderStrokes();
 
 		// Attach the sprites to the main container
 		self.bindSprites();
+
+		// Render stroke data onto each sprite
+		self.renderStrokes();
 
 		// true means we're clearing before render
 		self.renderer.render(self.container, null, true);
 	}
 
 	this.renderStrokes = function() {
-		self.layers.get("local").stroke.render();
+		self.getLayer("local").stroke.render();
+	}
+
+	this.getLayer = function(layerID) {
+		var layer = self.layers.get(layerID);
+		if (!layer) {
+			layer = new Layer(self);
+			self.layers.set(layerID, layer);
+		}
+		return layer;
 	}
 
 	this.init();
@@ -73,8 +111,8 @@ function DrawUI(roomUI) {
 // In future, will add other types of drawing element
 function Layer(drawUI) {
 	var self = this;
-
 	this.init = function() {
+		self.order = drawUI.getNLayers();
 		self.drawUI = drawUI;
 		self.stroke = new Stroke(this);
 		self.container = new PIXI.Container();
@@ -118,6 +156,9 @@ function Stroke(layer) {
 	// Might need a destroy method as well
 
 	this.startStroke = function(toolIn) {
+
+		console.log(toolIn);
+
 		// Create circle sprite texture - faster than drawing
 		// Shoudl actually be at the beginning of the stroke along with the tool settings
 
