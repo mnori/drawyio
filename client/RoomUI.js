@@ -1412,6 +1412,20 @@ function RoomUI() {
 	// add layer data to the dom
 	// isTemp: whether this is a temporary layer created by the client
 	function renderLayerHtml(layerIDIn, layerIn, isTemp) {
+
+		// Delete component layers, if there are any
+		if (layerIn["components"]) {
+			var codes = layerIn["components"]
+			for (var i = 0; i < codes.length; i++) {
+				self.drawUI.destroyLayer(codes[i]);
+			}
+		}
+
+		// Delete the layer with the ID
+		self.drawUI.destroyLayer(layerIn.code);
+		self.drawUI.render();
+		return;
+
 		var context = {}
 		context.layer = layerIn; // for scope
 
@@ -1468,6 +1482,7 @@ function RoomUI() {
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(toolIn) {
+		console.log("processCanvas()");
 
 		// var tl = new Timeline()
 		// tl.log("a");

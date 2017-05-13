@@ -47,6 +47,12 @@ function DrawUI(roomUI) {
 		self.getLayer(layerID).stroke.startBatch();
 	}
 
+	// happens when new layer data comes from the server
+	this.destroyLayer = function(layerID) {
+		self.getLayer(layerID).destroy();
+		self.layers.remove(layerID);
+	}
+
 	// Gets all the ducks in a row
 	this.bindSprites = function() {
 
@@ -64,14 +70,11 @@ function DrawUI(roomUI) {
 			}
 			return 0;
 		});
-
 		console.log("N LAYERS: "+self.layers.getLength());
 
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
 			var layer = entries[i];
-
-			// console.log("ORDER: "+layer.order);
 			if (layer.id == "local") {
 				continue;
 			}
@@ -94,6 +97,7 @@ function DrawUI(roomUI) {
 		self.bindSprites();
 
 		// true means we're clearing before render
+		// - must specify since we set clear to false in the initialiser
 		self.renderer.render(self.container, null, true);
 	}
 
@@ -147,6 +151,11 @@ function Layer(drawUI, layerID) {
 		self.drawUI.container.addChild(self.stroke.renderSprite);
 	}
 
+	this.destroy = function() {
+		// need to delete all the render stuff properly, otherwise memory will leak
+		console.log("layer.destroy() GOES HERE");
+	}
+
 	self.init();
 }
 
@@ -190,9 +199,8 @@ function Stroke(layer) {
 
 	this.plotLine = function(x0, y0, x1, y1) {
 		self.stroking = true;
-		var width = self.tool.meta.brushSize;
 		self.graphics.beginFill(self.colour, 1);
-		self.graphics.lineStyle(width, self.colour, 1);
+		self.graphics.lineStyle(self.tool.meta.brushSize, self.colour, 1);
 	    self.graphics.moveTo(x0, y0); 
 	    self.graphics.lineTo(x1, y1);
 	    self.graphics.endFill();
@@ -240,7 +248,7 @@ function Stroke(layer) {
 	self.init();
 }
 
-// Generic render sprite creation
+// Generic RenderTexture and Sprite creation
 function createRenderSprite(self) {
 
 	// Create render texture for drawing onto
