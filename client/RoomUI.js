@@ -6,11 +6,11 @@ function RoomUI() {
 	var height = this.height = opts["height"];
 
 	// var emitInterval = 33; // ~= 30FPS
-	var emitInterval = 33; // ~= 30FPS
+	var emitInterval = 16; // ~= 30FPS
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
-	var mouseEmitInterval = 20; // throttle all misc mouse output
+	var mouseEmitInterval = 16; // throttle all misc mouse output
 	var drawingCanvas = $("#drawing_canvas");
 	var previewCanvas = $("#drawing_canvas_preview");
 	var croppingCanvas = $("#crop_canvas");

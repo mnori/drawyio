@@ -24,7 +24,7 @@ function DrawUI(roomUI) {
 
 		// there is always a local layer
 		self.layers = new AssocArray();
-		self.layers.set("local", new Layer(self));
+		self.layers.set("local", new Layer(self, "local"));
 	}
 
 	this.getNLayers = function() {
@@ -56,21 +56,32 @@ function DrawUI(roomUI) {
 		// Sort the layers, most recent at the bottom - these will render on top
 		var entries = self.layers.getValues();
 		entries.sort(function(a, b) {
-			if (b.order < a.order) {
+			if (a.order < b.order) {
 				return -1;
 			}
-			if (b.order > a.order) {
+			if (a.order > b.order) {
 				return 1;
 			}
 			return 0;
 		});
 
+		console.log("N LAYERS: "+self.layers.getLength());
+
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
 			var layer = entries[i];
+
+			// console.log("ORDER: "+layer.order);
+			if (layer.id == "local") {
+				continue;
+			}
 			self.container.addChild(layer.renderSprite);
-			self.container.addChild(layer.stroke.renderSprite);	
+			self.container.addChild(layer.stroke.renderSprite);
 		}
+		// add the local layer last - so user's scribbles always appear on top
+		var localLayer = self.layers.get("local");
+		self.container.addChild(localLayer.renderSprite)
+		self.container.addChild(localLayer.stroke.renderSprite);
 	}
 
 	// Render the main container
@@ -97,7 +108,7 @@ function DrawUI(roomUI) {
 	this.getLayer = function(layerID) {
 		var layer = self.layers.get(layerID);
 		if (!layer) {
-			layer = new Layer(self);
+			layer = new Layer(self, layerID);
 			self.layers.set(layerID, layer);
 		}
 		return layer;
@@ -109,9 +120,10 @@ function DrawUI(roomUI) {
 // Represents a layer which is linked to a particular user/socket
 // Consists of a render texture which has various Strokes superimposed over the top of it
 // In future, will add other types of drawing element
-function Layer(drawUI) {
+function Layer(drawUI, layerID) {
 	var self = this;
 	this.init = function() {
+		self.id = layerID;
 		self.order = drawUI.getNLayers();
 		self.drawUI = drawUI;
 		self.stroke = new Stroke(this);
