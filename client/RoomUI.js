@@ -316,6 +316,7 @@ function RoomUI() {
 		} else if (toolIn.state == "end") { // mouseup or other line end event
 			if (emit) emitTool(toolIn); // be sure to emit the end event
 			drawPaint(toolIn, emit);
+			self.drawUI.endStroke(toolIn);
 			finaliseEdit(toolIn, emit);
 			toolIn.state = "idle"; // pretty important to avoid issues
 

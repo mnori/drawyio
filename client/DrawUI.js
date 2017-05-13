@@ -31,6 +31,10 @@ function DrawUI(roomUI) {
 		this.layer.stroke.startStroke(toolIn);
 	}
 
+	this.endStroke = function(toolIn) {
+		this.layer.stroke.endStroke();
+	}
+
 	this.startBatch = function() {
 		this.layer.stroke.startBatch();
 	}
@@ -46,27 +50,33 @@ function DrawUI(roomUI) {
 }
 
 // Represents a layer which is linked to a particular user/socket
-// Consists of a render texture which 
+// Consists of a render texture which has various Strokes superimposed over the top of it
+// In future, will add other types of drawing element
 function Layer(drawUI) {
 	var self = this;
 	this.drawUI = drawUI;
 	this.stroke = new Stroke(this);
 
 	this.init = function() {
+		self.container = new PIXI.Container();
 		createRenderSprite(self);
 	}
-	// this.finishStroke = function() {
-	// 	this.stroke.
-	// }
+
+	self.init();
 }
 
 // Represents a single stroke drawing
 function Stroke(layer) {
 	var self = this;
 	this.layer = layer;
+	this.drawUI = this.layer.drawUI;
 	this.tool = null;
 
 	this.init = function() {
+		self.graphics = new PIXI.Graphics();
+		self.container = new PIXI.Container();
+		self.container.addChild(self.graphics);
+
 		createRenderSprite(self);
 
 		// Bind the sprite onto the main container
@@ -85,6 +95,22 @@ function Stroke(layer) {
 		self.colour = rgbaToHex(self.tool.colour);
 		self.renderSprite.alpha = rgbaToAlpha(self.tool.colour);
 		self.createCircleSprite();
+	}
+
+	// Render the stroke data onto the layer render sprite
+	this.endStroke = function(toolIn) {
+		console.log("endStroke() invoked");
+		layer.container.addChild(self.renderSprite);
+		layer.drawUI.renderer.render(self.container, self.renderTexture);
+		layer.container.removeChildren();
+	}
+
+	// Render part of a stroke in a single batch
+	this.startBatch = function(toolIn) {
+		self.toolIn = toolIn;
+
+		// Removes all the line elements that got drawn previously
+		self.graphics.clear(); 
 	}
 
 	this.plotLine = function(x0, y0, x1, y1) {
@@ -115,20 +141,8 @@ function Stroke(layer) {
 		self.container.removeChildren();
 	}
 
-	// this is not necessarily the beginning! It can also be in between batches
-	// of data
-	this.startBatch = function(toolIn) {
-		self.toolIn = toolIn;
-
-		// Removes all the line elements that got drawn previously
-		self.graphics.clear(); 
-	}
-
 	this.createCircleSprite = function() {
 		var width = self.tool.meta.brushSize;
-
-		console.log(self.tool);
-		console.log("width: "+width);
 
 		// Render a circle into the circle graphics element
 		var circleGraphics = new PIXI.Graphics();
@@ -148,14 +162,11 @@ function Stroke(layer) {
 
 // Generic render sprite creation
 function createRenderSprite(self) {
-	self.graphics = new PIXI.Graphics();
-	self.container = new PIXI.Container();
-	self.container.addChild(self.graphics)
 
 	// Create render texture for drawing onto
 	var brt = new PIXI.BaseRenderTexture(
-		self.layer.drawUI.roomUI.width, 
-		self.layer.drawUI.roomUI.height, 
+		self.drawUI.roomUI.width, 
+		self.drawUI.roomUI.height, 
 		PIXI.SCALE_MODES.LINEAR, 1);
 	self.renderTexture = new PIXI.RenderTexture(brt);
 
@@ -163,7 +174,7 @@ function createRenderSprite(self) {
 	self.renderSprite = new PIXI.Sprite(self.renderTexture)
 }
 
-
+// Extract alpha value from rgba() string
 function rgbaToAlpha(strIn) {
 	if (strIn.search("rgba") == -1) { // no alpha
 		return 1;
@@ -176,6 +187,7 @@ function rgbaToAlpha(strIn) {
 
 }
 
+// Extract hex colour code string from rgba() string
 function rgbaToHex(rgba) {
     var parts = rgba.substring(rgba.indexOf("(")).split(","),
         r = parseInt(rgbaTrim(parts[0].substring(1)), 10),
