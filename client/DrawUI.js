@@ -16,6 +16,7 @@ function DrawUI(roomUI) {
 		self.layers = new AssocArray();
 		this.localID = null;
 		self.localLayer = null;
+		self.stagingContainer = new PIXI.Container();
 	}
 
 	this.createRenderers = function() {
@@ -29,36 +30,32 @@ function DrawUI(roomUI) {
 		var view = $(self.renderer.view);
 		$("#drawing_layers").append(view);
 		view.attr("id", "renderer");
-
-		// Create staging render element
-		self.stagingRenderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
-			"antialias": true,
-			"transparent": true,
-			"clearBeforeRender": true
-		});
-		var stagingView = $(self.stagingRenderer.view);
-		$("body").append(stagingView);
-		stagingView.attr("id", "staging_renderer");
 	}
 
 	// Create new local layer, setting the old one to being a normal layer
+	// Returns pixel buffer of the old layer
 	this.newLocal = function(layerID) {
-		var oldLayerID = null;
+		var oldLayer = null;
 		if (self.localLayer) {
 			self.localLayer.local = false;
-			oldLayerID = self.localLayer.id;
+			oldLayer = self.localLayer;
 		}
 		self.localID = layerID;
 		self.localLayer = null; // will get created automatically when drawing begins
 
 		// now we generate a png image from the old local
-		if (oldLayerID) {
-			self.createPng(oldLayerID);
+		if (oldLayer) {
+			return self.getLocalPixels(oldLayer);
 		}
+		return null;
 	}
 
-	this.createPng = function(oldLayerID) {
-		console.log("createPng() "+oldLayerID);
+	this.getLocalPixels = function(oldLayer) {
+		// Extract pixels from render sprite
+		self.stagingContainer.removeChildren();
+		self.stagingContainer.addChild(oldLayer.renderSprite);
+		var pixels = self.renderer.extract.pixels(self.stagingContainer);
+		return pixels;		
 	}
 
 	this.getNLayers = function() {
@@ -97,7 +94,7 @@ function DrawUI(roomUI) {
 	this.bindSprites = function() {
 
 		// Empty the container
-		self.container.removeChildren();		
+		self.container.removeChildren();
 
 		// Sort the layers, most recent at the bottom - these will render on top
 		var entries = self.layers.getValues();
@@ -179,7 +176,7 @@ function Layer(drawUI, layerID, local) {
 		self.drawUI = drawUI;
 		self.stroke = new Stroke(this);
 		self.container = new PIXI.Container();
-		self.local = local ? local : false;
+		self.local = local ? local : false; // whether currently the local target
 		self.createdLocal = self.local; // debugging
 		createRenderSprite(self);
 	}
@@ -200,13 +197,6 @@ function Layer(drawUI, layerID, local) {
 
 		// Put the stroke render sprite back in the main container
 		self.drawUI.container.addChild(self.stroke.renderSprite);
-	}
-
-	// Clear layer - happens when local user finishes drawing but we don't
-	// actually want to delete the layer from memory
-	this.clear = function() {
-		self.container.removeChildren();
-		self.drawUI.renderer.clearRenderTexture(self.renderTexture, 0x00000000);
 	}
 
 	this.destroy = function() {

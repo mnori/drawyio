@@ -173,8 +173,8 @@ h1 {
 	left: 0px;
 }
 
-#crop_canvas {
-	border: 1px solid #000;
+#scratch_canvas, #crop_canvas {
+	border: 2px solid #f00;
 }
 
 .drawing_layer {

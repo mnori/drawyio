@@ -183,7 +183,8 @@ function RoomUI() {
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	function newLocal() {
 		tool.layerCode = randomString(layerCodeLen);
-		self.drawUI.newLocal(tool.layerCode);
+		var oldData = self.drawUI.newLocal(tool.layerCode);
+		return oldData;
 	}
 
 	function randomString(length) {
@@ -1476,29 +1477,20 @@ function RoomUI() {
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(toolIn) {
+		var oldPixels = newLocal();
 
-		// this creates a new local canvas element (render texture);
-		newLocal();
-
-
-
-		console.log("processCanvas()");
-
-		return;
+		console.log(oldPixels);
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
-		// Create a copy of the drawing canvas - we'll use this for processing
-		// Placed before the drawing canvas element, so it's still visible
-		// We need this to avoid different processCanvas() calls from interfering
-		// with each other.
-		var canvasCopy = duplicateDrawingCanvas(layerCode);
-
-		// Clear the drawing canvas, user can now draw more stuff during processing
-		ctx.clearRect(0, 0, width, height)
-
+		// Put the image data in a canvas element
+		var scratchCtx = scratchCanvas[0].getContext("2d");
+		var scratchData = scratchCtx.getImageData(0, 0, width, height);
+		scratchData.data = oldPixels;
+		scratchCanvas[0].getContext("2d").putImageData(scratchData, 0, 0);
+		
 		// Crop the canvas to save resources (this is pretty slow, around 20ms)
-		var cropCoords = cropCanvas(canvasCopy[0], croppingCanvas[0], toolIn);
+		var cropCoords = cropCanvas(scratchCanvas[0], croppingCanvas[0], toolIn);
 
 		// First generate a png blob (async)
 		var blob = croppingCanvas[0].toBlob(function(blob) {
@@ -1517,8 +1509,8 @@ function RoomUI() {
 				// Render the layer image - this replaces the canvas
 				renderLayerHtml(highestLayerID + 1, layer, true);
 
-				// Remove the canvas copy
-				canvasCopy.remove();
+				// // Remove the canvas copy
+				// canvasCopy.remove();
 
 				// Now convert to base64 - this will be send back to the server
 				var fr = new window.FileReader();
