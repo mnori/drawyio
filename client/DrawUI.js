@@ -26,6 +26,7 @@ function DrawUI(roomUI) {
 
 		// Set up layer storage
 		self.layers = new AssocArray();
+		this.localID = null;
 		self.localLayer = null;
 	}
 
@@ -34,8 +35,11 @@ function DrawUI(roomUI) {
 		if (self.localLayer) {
 			self.localLayer.local = false;
 		}
-		self.localLayer = new Layer(self, layerID, true); // true means local
-		self.layers.set(layerID, self.localLayer); 
+		self.localID = layerID;
+		self.localLayer = null; // will get created automatically when drawing begins
+
+		// self.localLayer = new Layer(self, layerID, true); // true means local
+		// self.layers.set(layerID, self.localLayer); 
 	}
 
 	this.getNLayers = function() {
@@ -87,8 +91,6 @@ function DrawUI(roomUI) {
 			}
 			return 0;
 		});
-		console.log("N LAYERS: "+self.layers.getLength());
-
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
 			var layer = entries[i];
@@ -97,10 +99,14 @@ function DrawUI(roomUI) {
 			}
 			self.container.addChild(layer.renderSprite);
 			self.container.addChild(layer.stroke.renderSprite);
+			// console.log(layer.order+" "+layer.createdLocal);
 		}
 		// add the local layer last - so user's scribbles always appear on top
-		self.container.addChild(self.localLayer.renderSprite)
-		self.container.addChild(self.localLayer.stroke.renderSprite);
+		if (self.localLayer) {
+			self.container.addChild(self.localLayer.renderSprite)
+			self.container.addChild(self.localLayer.stroke.renderSprite);
+			// console.log(layer.order+" "+self.localLayer.createdLocal);
+		}
 	}
 
 	// Render the main container
@@ -125,11 +131,17 @@ function DrawUI(roomUI) {
 		}
 	}
 
+	// Get a layer by its layer code.
+	// Generates a new layer if it doesn't exist.
 	this.getLayer = function(layerID) {
 		var layer = self.layers.get(layerID);
 		if (!layer) {
-			layer = new Layer(self, layerID);
+			var local = (layerID == self.localID) ? true : false; 
+			layer = new Layer(self, layerID, local);
 			self.layers.set(layerID, layer);
+			if (local) {
+				self.localLayer = layer;
+			}
 		}
 		return layer;
 	}
@@ -149,6 +161,7 @@ function Layer(drawUI, layerID, local) {
 		self.stroke = new Stroke(this);
 		self.container = new PIXI.Container();
 		self.local = local ? local : false;
+		self.createdLocal = self.local; // debugging
 		createRenderSprite(self);
 	}
 

@@ -1478,7 +1478,6 @@ function RoomUI() {
 
 		// this creates a new local canvas element (render texture);
 		newLocal();
-
 		console.log("processCanvas()");
 
 		return;
