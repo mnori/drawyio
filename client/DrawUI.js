@@ -24,9 +24,18 @@ function DrawUI(roomUI) {
 		$("#drawing_layers").append(view);
 		view.attr("id", "renderer");
 
-		// Create the local layer
+		// Set up layer storage
 		self.layers = new AssocArray();
-		self.layers.set("local", new Layer(self, "local"));
+		self.localLayer = null;
+	}
+
+	// Create new local layer, setting the old one to being a normal layer
+	this.newLocal = function(layerID) {
+		if (self.localLayer) {
+			self.localLayer.local = false;
+		}
+		self.localLayer = new Layer(self, layerID, true); // true means local
+		self.layers.set(layerID, self.localLayer); 
 	}
 
 	this.getNLayers = function() {
@@ -38,7 +47,6 @@ function DrawUI(roomUI) {
 	}
 
 	this.startStroke = function(layerID, toolIn) {
-		console.log("LAYERCODE: "+toolIn.layerCode);
 		self.getLayer(layerID).stroke.startStroke(toolIn);
 	}
 
@@ -50,11 +58,11 @@ function DrawUI(roomUI) {
 		self.getLayer(layerID).stroke.startBatch();
 	}
 
-	// Local layer clear - we don't want to delete the layer, 
-	// just remove all the graphics, since that just came back from the server
-	this.clearLocal = function() {
-		self.getLayer("local").clear();
-	}
+	// // Local layer clear - we don't want to delete the layer, 
+	// // just remove all the graphics, since that just came back from the server
+	// this.clearLocal = function() {
+	// 	self.getLayer("local").clear();
+	// }
 
 	// happens when new layer data comes from the server - ditch the old layers
 	this.destroyLayer = function(layerID) {
@@ -84,16 +92,15 @@ function DrawUI(roomUI) {
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
 			var layer = entries[i];
-			if (layer.id == "local") {
+			if (layer.local) {
 				continue;
 			}
 			self.container.addChild(layer.renderSprite);
 			self.container.addChild(layer.stroke.renderSprite);
 		}
 		// add the local layer last - so user's scribbles always appear on top
-		var localLayer = self.layers.get("local");
-		self.container.addChild(localLayer.renderSprite)
-		self.container.addChild(localLayer.stroke.renderSprite);
+		self.container.addChild(self.localLayer.renderSprite)
+		self.container.addChild(self.localLayer.stroke.renderSprite);
 	}
 
 	// Render the main container
@@ -133,7 +140,7 @@ function DrawUI(roomUI) {
 // Represents a layer which is linked to a particular user/socket
 // Consists of a render texture which has various Strokes superimposed over the top of it
 // In future, will add other types of drawing element
-function Layer(drawUI, layerID) {
+function Layer(drawUI, layerID, local) {
 	var self = this;
 	this.init = function() {
 		self.id = layerID;
@@ -141,7 +148,7 @@ function Layer(drawUI, layerID) {
 		self.drawUI = drawUI;
 		self.stroke = new Stroke(this);
 		self.container = new PIXI.Container();
-		
+		self.local = local ? local : false;
 		createRenderSprite(self);
 	}
 

@@ -49,9 +49,6 @@ function RoomUI() {
 	var fontSizeMenu = null; // initialised later
 	var fontFaceMenu = null
 	var toolInCanvas = false;
-	this.drawUI = new DrawUI(this);
-	var renderCanvas = $("#renderer");
-
 	var self = this; // scoping help
 
 	// Metadata about the action being performed
@@ -60,7 +57,9 @@ function RoomUI() {
 		tool: "paint",
 		meta: null
 	};
-	regenLayerCode(); // create the new layer code
+	this.drawUI = new DrawUI(this);
+	newLocal(); // create the new layer code
+	var renderCanvas = $("#renderer");
 
 	this.init = function() { 
 		setupControls();
@@ -182,8 +181,9 @@ function RoomUI() {
 	}
 
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
-	function regenLayerCode() {
+	function newLocal() {
 		tool.layerCode = randomString(layerCodeLen);
+		self.drawUI.newLocal(tool.layerCode);
 	}
 
 	function randomString(length) {
@@ -281,7 +281,7 @@ function RoomUI() {
 
 	// free form drawing
 	function handlePaint(toolIn, emit) {
-		var renderID = getLayerRenderID(toolIn, emit);
+		var renderID = toolIn.layerCode;
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
 				readBrushSize(tool);
@@ -505,7 +505,7 @@ function RoomUI() {
 			return;
 		}
 
-		var renderID = getLayerRenderID(toolIn, emit)
+		var renderID = toolIn.layerCode;
 
 		// var destData = thisCtx.getImageData(0, 0, width, height);
 		var entries = toolIn.meta.lineEntries;
@@ -586,15 +586,6 @@ function RoomUI() {
 			// prevent stuff getting overwritten
 			clearTimeout(finaliseTimeout);
 			finaliseTimeout = null;
-		}
-	}
-
-	// Get layer identifier, for use when drawing using pixi
-	function getLayerRenderID(toolIn, emit) {
-		if (emit) {
-			return "local";
-		} else {
-			return toolIn.layerCode;
 		}
 	}
 
@@ -1419,7 +1410,7 @@ function RoomUI() {
 		self.drawUI.destroyLayer(layerIn.code);
 
 		// Clear local layer. TODO put this in the right place
-		self.drawUI.clearLocal();
+		// self.drawUI.clearLocal();
 
 		// Call render() so the changes are displayed
 		self.drawUI.render();
@@ -1484,7 +1475,13 @@ function RoomUI() {
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(toolIn) {
+
+		// this creates a new local canvas element (render texture);
+		newLocal();
+
 		console.log("processCanvas()");
+
+		return;
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
@@ -1493,8 +1490,6 @@ function RoomUI() {
 		// We need this to avoid different processCanvas() calls from interfering
 		// with each other.
 		var canvasCopy = duplicateDrawingCanvas(layerCode);
-
-		regenLayerCode();
 
 		// Clear the drawing canvas, user can now draw more stuff during processing
 		ctx.clearRect(0, 0, width, height)

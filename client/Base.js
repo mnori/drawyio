@@ -7,6 +7,9 @@ function Base(conf) {
 	var self = this;
 	self.conf = conf;
 
+	var roomDialog, errorDialog, infoDialog, galleriesDialog, loginDialog, nickDialog, 
+		accountDialog, changePwDialog, registerDialog;
+		
 	this.init = function() {
 		var snapID = (typeof(opts) !== "undefined") ? opts["snapshotID"] : null;
 		roomDialog = new RoomDialog(snapID);
