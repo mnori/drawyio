@@ -4,30 +4,41 @@
 function DrawUI(roomUI) {
 	var self = this;
 
-	this.n = 0;
-	this.roomUI = roomUI;
-
 	// set up the main container
 	this.init = function() {
+		// Define some vars
+		this.n = 0;
+		this.roomUI = roomUI;
 		this.container = new PIXI.Container();
+		this.createRenderers();
 
-		// Setup renderer
-		this.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
-			"antialias": false,
+		// Set up layer storage stuff
+		self.layers = new AssocArray();
+		this.localID = null;
+		self.localLayer = null;
+	}
+
+	this.createRenderers = function() {
+		// Setup main renderer
+		self.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
+			"antialias": true,
 			"transparent": true,
 			"clearBeforeRender": false,
 			"preserveDrawingBuffer": true
 		});
-
-		// Attach renderer canvas element to the dom
 		var view = $(self.renderer.view);
 		$("#drawing_layers").append(view);
 		view.attr("id", "renderer");
 
-		// Set up layer storage
-		self.layers = new AssocArray();
-		this.localID = null;
-		self.localLayer = null;
+		// Create staging render element
+		self.stagingRenderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
+			"antialias": true,
+			"transparent": true,
+			"clearBeforeRender": true
+		});
+		var stagingView = $(self.stagingRenderer.view);
+		$("body").append(stagingView);
+		stagingView.attr("id", "staging_renderer");
 	}
 
 	// Create new local layer, setting the old one to being a normal layer
