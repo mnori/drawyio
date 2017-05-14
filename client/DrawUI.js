@@ -12,17 +12,19 @@ function DrawUI(roomUI) {
 		this.container = new PIXI.Container();
 
 		// Setup renderer
-		var targetID = "renderer";
 		this.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
 			"antialias": false,
 			"transparent": true,
 			"clearBeforeRender": false,
 			"preserveDrawingBuffer": true
 		});
-		document.body.appendChild(self.renderer.view);
-		$(this.renderer.view).attr("id", targetID);
 
-		// there is always a local layer
+		// Attach renderer canvas element to the dom
+		var view = $(self.renderer.view);
+		$("#drawing_layers").append(view);
+		view.attr("id", "renderer");
+
+		// Create the local layer
 		self.layers = new AssocArray();
 		self.layers.set("local", new Layer(self, "local"));
 	}
@@ -36,6 +38,7 @@ function DrawUI(roomUI) {
 	}
 
 	this.startStroke = function(layerID, toolIn) {
+		console.log("LAYERCODE: "+toolIn.layerCode);
 		self.getLayer(layerID).stroke.startStroke(toolIn);
 	}
 
@@ -47,7 +50,13 @@ function DrawUI(roomUI) {
 		self.getLayer(layerID).stroke.startBatch();
 	}
 
-	// happens when new layer data comes from the server
+	// Local layer clear - we don't want to delete the layer, 
+	// just remove all the graphics, since that just came back from the server
+	this.clearLocal = function() {
+		self.getLayer("local").clear();
+	}
+
+	// happens when new layer data comes from the server - ditch the old layers
 	this.destroyLayer = function(layerID) {
 		self.getLayer(layerID).destroy();
 		self.layers.remove(layerID);
@@ -136,6 +145,7 @@ function Layer(drawUI, layerID) {
 		createRenderSprite(self);
 	}
 
+	// Renders finished Stroke render texture to the layer's render texture
 	this.renderStroke = function() {
 		// Move the stroke sprite to the layer container
 		self.container.addChild(self.stroke.renderSprite); 
@@ -143,12 +153,21 @@ function Layer(drawUI, layerID) {
 		// render
 		self.drawUI.renderer.render(self.container, self.renderTexture);
 
-		// cleanup
+		// Remove the stroke from the container
 		self.container.removeChildren();	
+
+		// Clear the stroke render texture
 		self.drawUI.renderer.clearRenderTexture(self.stroke.renderTexture, 0x00000000);
 
 		// Put the stroke render sprite back in the main container
 		self.drawUI.container.addChild(self.stroke.renderSprite);
+	}
+
+	// Clear layer - happens when local user finishes drawing but we don't
+	// actually want to delete the layer from memory
+	this.clear = function() {
+		self.container.removeChildren();
+		self.drawUI.renderer.clearRenderTexture(self.renderTexture, 0x00000000);
 	}
 
 	this.destroy = function() {

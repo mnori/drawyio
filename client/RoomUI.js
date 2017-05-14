@@ -1413,6 +1413,7 @@ function RoomUI() {
 	// isTemp: whether this is a temporary layer created by the client
 	function renderLayerHtml(layerIDIn, layerIn, isTemp) {
 
+		// If "components" is set, it means it's a flattened image
 		// Delete component layers, if there are any
 		if (layerIn["components"]) {
 			var codes = layerIn["components"]
@@ -1423,8 +1424,16 @@ function RoomUI() {
 
 		// Delete the layer with the ID
 		self.drawUI.destroyLayer(layerIn.code);
+
+		// Clear local layer. TODO put this in the right place
+		self.drawUI.clearLocal();
+
+		// Call render() so the changes are displayed
 		self.drawUI.render();
+
 		return;
+
+		// Everything after this point is old and will be removed
 
 		var context = {}
 		context.layer = layerIn; // for scope
