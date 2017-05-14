@@ -530,7 +530,7 @@ function RoomUI() {
 		self.drawUI.render(renderID);
 
 		tl.log("pixi 2");
-		tl.dump();
+		// tl.dump();
 	}
 
 

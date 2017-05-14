@@ -327,8 +327,18 @@ function rgbaToHex(rgba) {
         b = parseInt(rgbaTrim(parts[2]), 10);
         // a = parseFloat(rgbaTrim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
 
-    var str = "0x" + r.toString(16) + g.toString(16) + b.toString(16);
+    var str = "0x" + extractHex(r) + extractHex(g) + extractHex(b);
+    // console.log(r, g, b);
+    // console.log(str);
     return parseInt(str);
+}
+
+function extractHex(intVal) {
+	var str = intVal.toString(16);
+	if (str.length == 1) {
+		str = "0"+str;
+	}
+	return str;
 }
 
 function rgbaTrim(str) {
