@@ -11,12 +11,12 @@ function RoomUI() {
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
 	var mouseEmitInterval = 16; // throttle all misc mouse output
-	var drawingCanvas = $("#drawing_canvas");
-	var previewCanvas = $("#drawing_canvas_preview");
+	// var drawingCanvas = $("#drawing_canvas");
+	// var renderCanvas = $("#drawing_canvas_preview");
 	var croppingCanvas = $("#crop_canvas");
 	var scratchCanvas = $("#scratch_canvas"); // used by flood
-	var ctx = drawingCanvas[0].getContext('2d'); // the user editable element
-	var previewCtx = previewCanvas[0].getContext('2d'); // the user editable element
+	// var ctx = drawingCanvas[0].getContext('2d'); // the user editable element
+	// var previewCtx = renderCanvas[0].getContext('2d'); // the user editable element
 	var doc = $(document);
 	var socket = io.connect("/drawing_socket_"+drawID);
 	var layerCodeLen = 32;
@@ -50,6 +50,7 @@ function RoomUI() {
 	var fontFaceMenu = null
 	var toolInCanvas = false;
 	this.drawUI = new DrawUI(this);
+	var renderCanvas = $("#renderer");
 
 	var self = this; // scoping help
 
@@ -66,7 +67,7 @@ function RoomUI() {
 		var body = $("body");
 
 		// Handle mouse down.
-		previewCanvas.mousedown($.proxy(function(ev) {
+		renderCanvas.mousedown($.proxy(function(ev) {
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
 				if (menusOpen()) {
@@ -78,7 +79,7 @@ function RoomUI() {
 			return false;
 		}, this));
 
-		previewCanvas.mouseenter(function(ev) {
+		renderCanvas.mouseenter(function(ev) {
 			toolInCanvas = true;
 			if (pickerVisible()) { // no mouse enter when colour picker is visible
 				return;
@@ -89,7 +90,7 @@ function RoomUI() {
 		})
 
 		// Right click activates the eye dropper - not the contex menu
-		previewCanvas.contextmenu(function(ev) { return false; });
+		renderCanvas.contextmenu(function(ev) { return false; });
 
 		// key bindings
 		body.keydown($.proxy(function(ev) {
@@ -151,7 +152,7 @@ function RoomUI() {
 		doc.mouseup(stopTool);
 
 		// if mouse leaves preview canvas or window, set newCoord to null and stop the tool
-		previewCanvas.mouseleave(mouseOut);
+		renderCanvas.mouseleave(mouseOut);
 		doc.mouseleave(mouseOut);
 
 		// Listen for new drawing data from the server
@@ -1320,7 +1321,7 @@ function RoomUI() {
 	// get the mouse position inside the canvas
 	// returns null if the mouse is outside the canvas
 	function getMousePos(ev) {
-		var rect = drawingCanvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
+		var rect = renderCanvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
 
 		if (ev.clientX == undefined || ev.clientY == undefined) {
 			return null;
