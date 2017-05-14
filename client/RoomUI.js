@@ -59,6 +59,7 @@ function RoomUI() {
 		tool: "paint",
 		meta: null
 	};
+	regenLayerCode(); // create the new layer code
 
 	this.init = function() { 
 		setupControls();
@@ -66,7 +67,6 @@ function RoomUI() {
 
 		// Handle mouse down.
 		previewCanvas.mousedown($.proxy(function(ev) {
-			regenLayerCode();
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
 				if (menusOpen()) {
@@ -84,7 +84,6 @@ function RoomUI() {
 				return;
 			}
 			if (event.which == 1) { // left mouse button is pressed
-				regenLayerCode();
 				startTool(getMousePos(ev));
 			}
 		})
@@ -98,7 +97,6 @@ function RoomUI() {
 				if (menusOpen()) {
 					return;
 				}
-				regenLayerCode(); 
 				self.closeMenus();
 				activateDropperToggle();
 				startTool(tool.newCoord); // use the old coord, since there is no mouse data
@@ -120,7 +118,6 @@ function RoomUI() {
 				if (menusOpen()) {
 					return;
 				}
-				regenLayerCode();
 				resetDropperToggle(ev); 
 				stopTool();
 			}
@@ -131,7 +128,6 @@ function RoomUI() {
 			// create new layer code if required
 			// note this should be in mousemove, since we need to generate a new layer code
 			// for idle previews, like with the text
-			regenLayerCode();
 
 			// Sync with the tick so coords send are the same used for drawing
 			tool.newCoord = getMousePos(ev);
@@ -186,9 +182,7 @@ function RoomUI() {
 
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	function regenLayerCode() {
-		if (tool.layerCode == null) { 
-			tool.layerCode = randomString(layerCodeLen);
-		}
+		tool.layerCode = randomString(layerCodeLen);
 	}
 
 	function randomString(length) {
@@ -428,8 +422,6 @@ function RoomUI() {
 				// Convert canvas to png and send to the server
 				processCanvas(toolOut);
 
-				// this will be executed after the synchronous bit of the processCanvas
-				toolIn.layerCode = null;
 			}, finaliseTimeoutMs);
 		}
 	}
@@ -1493,9 +1485,6 @@ function RoomUI() {
 	function processCanvas(toolIn) {
 		console.log("processCanvas()");
 
-		// var tl = new Timeline()
-		// tl.log("a");
-
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
 		// Create a copy of the drawing canvas - we'll use this for processing
@@ -1504,18 +1493,13 @@ function RoomUI() {
 		// with each other.
 		var canvasCopy = duplicateDrawingCanvas(layerCode);
 
-		// tl.log("b");
+		regenLayerCode();
 
 		// Clear the drawing canvas, user can now draw more stuff during processing
 		ctx.clearRect(0, 0, width, height)
 
-		// tl.log("c");
-
 		// Crop the canvas to save resources (this is pretty slow, around 20ms)
 		var cropCoords = cropCanvas(canvasCopy[0], croppingCanvas[0], toolIn);
-
-		// tl.log("d");
-		// tl.dump();
 
 		// First generate a png blob (async)
 		var blob = croppingCanvas[0].toBlob(function(blob) {
