@@ -172,7 +172,8 @@ function Layer(drawUI, layerID) {
 
 	this.destroy = function() {
 		// need to delete all the render stuff properly, otherwise memory will leak
-		console.log("layer.destroy() GOES HERE");
+		self.stroke.destroy();
+		self.renderTexture.destroy(true);
 	}
 
 	self.init();
@@ -192,6 +193,10 @@ function Stroke(layer) {
 		createRenderSprite(self);
 	}
 
+	this.destroy = function() { 
+		self.renderTexture.destroy(true); 
+	}
+
 	// Might need a destroy method as well
 
 	this.startStroke = function(toolIn) {
@@ -204,8 +209,8 @@ function Stroke(layer) {
 	}
 
 	// Render the stroke data onto the layer render sprite
-	this.endStroke = function(toolIn) {
-		self.layer.renderStroke(toolIn);
+	this.endStroke = function(toolIn) { 
+		self.layer.renderStroke(toolIn); 
 	}
 
 	// Render part of a stroke in a single batch
