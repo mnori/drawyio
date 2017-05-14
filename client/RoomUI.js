@@ -14,7 +14,6 @@ function RoomUI() {
 	// var drawingCanvas = $("#drawing_canvas");
 	// var renderCanvas = $("#drawing_canvas_preview");
 	var croppingCanvas = $("#crop_canvas");
-	var scratchCanvas = $("#scratch_canvas"); // used by flood
 	// var ctx = drawingCanvas[0].getContext('2d'); // the user editable element
 	// var previewCtx = renderCanvas[0].getContext('2d'); // the user editable element
 	var doc = $(document);
@@ -1477,20 +1476,11 @@ function RoomUI() {
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(toolIn) {
-		var oldPixels = newLocal();
-
-		console.log(oldPixels);
-
+		var sourceCanvas = newLocal();
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
-		// Put the image data in a canvas element
-		var scratchCtx = scratchCanvas[0].getContext("2d");
-		var scratchData = scratchCtx.getImageData(0, 0, width, height);
-		scratchData.data = oldPixels;
-		scratchCanvas[0].getContext("2d").putImageData(scratchData, 0, 0);
-		
 		// Crop the canvas to save resources (this is pretty slow, around 20ms)
-		var cropCoords = cropCanvas(scratchCanvas[0], croppingCanvas[0], toolIn);
+		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas[0], toolIn);
 
 		// First generate a png blob (async)
 		var blob = croppingCanvas[0].toBlob(function(blob) {

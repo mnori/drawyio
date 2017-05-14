@@ -54,7 +54,7 @@ function DrawUI(roomUI) {
 		// Extract pixels from render sprite
 		self.stagingContainer.removeChildren();
 		self.stagingContainer.addChild(oldLayer.renderSprite);
-		var pixels = self.renderer.extract.pixels(self.stagingContainer);
+		var pixels = self.renderer.extract.canvas(self.stagingContainer);
 		return pixels;		
 	}
 
