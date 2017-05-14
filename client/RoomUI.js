@@ -1472,12 +1472,16 @@ function RoomUI() {
 		}
 	}
 
+	// Happens when the user times out from not being active for n milliseconds
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(toolIn) {
 
 		// this creates a new local canvas element (render texture);
 		newLocal();
+
+
+
 		console.log("processCanvas()");
 
 		return;

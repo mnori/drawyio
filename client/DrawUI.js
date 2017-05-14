@@ -32,14 +32,22 @@ function DrawUI(roomUI) {
 
 	// Create new local layer, setting the old one to being a normal layer
 	this.newLocal = function(layerID) {
+		var oldLayerID = null;
 		if (self.localLayer) {
 			self.localLayer.local = false;
+			oldLayerID = self.localLayer.id;
 		}
 		self.localID = layerID;
 		self.localLayer = null; // will get created automatically when drawing begins
 
-		// self.localLayer = new Layer(self, layerID, true); // true means local
-		// self.layers.set(layerID, self.localLayer); 
+		// now we generate a png image from the old local
+		if (oldLayerID) {
+			self.createPng(oldLayerID);
+		}
+	}
+
+	this.createPng = function(oldLayerID) {
+		console.log("createPng() "+oldLayerID);
 	}
 
 	this.getNLayers = function() {
