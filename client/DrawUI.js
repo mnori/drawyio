@@ -96,26 +96,34 @@ function DrawUI(roomUI) {
 		}
 	}
 
-	// Gets all the ducks in a row
-	this.bindSprites = function() {
-
-		console.log("bindSprites() invoked");
-
+	// Render the main container
+	// Should only be called once per frame - WIP
+	this.render = function() {
+		console.log("render() called");
 		// Empty the container
 		self.container.removeChildren();
 
+		// Render stroke data onto each sprite
+		self.renderStrokes();
+
+		// Bind the layer sets
 		self.bindSorted(self.imageLayers);
 		self.bindSorted(self.layers);
 		
-		// add the local layer last - so user's scribbles always appear on top
+		// Add the local layer last, so user's strokes always appear on top
 		if (self.localLayer) {
 			self.container.addChild(self.localLayer.renderSprite)
 			self.container.addChild(self.localLayer.stroke.renderSprite);
 		}
+		
+		// true means we're clearing before render
+		// - must specify since we set clear to false in the initialiser
+		self.renderer.render(self.container, null, true);
 	}
 
-	// Helper method for bindSprites()
+	// Render Helper method
 	// Sort the layers, most recent at the bottom - these will render on top
+	// Bind sprites to container
 	this.bindSorted = function(layers) {
 		var entries = layers.getValues();
 		entries.sort(function(a, b) {
@@ -136,21 +144,6 @@ function DrawUI(roomUI) {
 			layer.bindSprite();
 			// console.log(layer.order+" "+layer.createdLocal);
 		}
-	}
-
-	// Render the main container
-	// Should only be called once per frame - WIP
-	this.render = function() {
-		console.log("render() called");
-		// Render stroke data onto each sprite
-		self.renderStrokes();
-
-		// Attach the sprites to the main container
-		self.bindSprites();
-
-		// true means we're clearing before render
-		// - must specify since we set clear to false in the initialiser
-		self.renderer.render(self.container, null, true);
 	}
 
 	this.renderStrokes = function() {
@@ -201,7 +194,14 @@ function ImageLayer(drawUI, layerData) {
 		self.createSprite(layerData.base64);
 	}
 	this.createSprite = function(base64) {
+		// this seems to have some async problems
 		self.sprite = PIXI.Sprite.fromImage(base64);
+		console.log(self.sprite)
+		self.sprite.texture.on('update', function() {
+
+			// render every time a layer loads
+			self.drawUI.render();
+	    });
 	}
 	this.destroy = function() {
 		console.log("Remember to destroy imageLayer! "+self.id);
