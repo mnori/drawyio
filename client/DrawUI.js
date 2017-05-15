@@ -89,20 +89,17 @@ function DrawUI(roomUI) {
 
 	// happens when new layer data comes from the server - ditch the old layers
 	this.destroyLayer = function(layerID) {
-		var layer = self.getLayer(layerID)
+		var layer = self.getLayer(layerID); // can get image layers as well
 		if (layer) {
 			layer.destroy();
 			self.layers.remove(layerID);
-		}
-		layer = self.imageLayers.get(layerID)
-		if (layer) {
-			layer.destroy();
-			self.imageLayers.remove(layerID);
 		}
 	}
 
 	// Gets all the ducks in a row
 	this.bindSprites = function() {
+
+		console.log("bindSprites() invoked");
 
 		// Empty the container
 		self.container.removeChildren();

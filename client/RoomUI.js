@@ -1303,14 +1303,12 @@ function RoomUI() {
 			console.log(value);
 			addLayer(value);
 		});
-		console.log("RENDER");
 		self.drawUI.render();
 	}
 
 	function receiveLayer(data) {
 		data = $.parseJSON(data);
 		addLayer(data.layer);
-		console.log("RENDER");
 		self.drawUI.render();
 	}	
 
@@ -1401,10 +1399,10 @@ function RoomUI() {
 	// Add layer data to the dom
 	// Layer data comes from the server
 	function addLayer(layerIn) {
+		console.log("addLayer", layerIn);
 
 		// If "components" is set, it means it's a flattened image
 		// Delete component layers, if there are any
-		console.log(layerIn["components"]);
 		if (layerIn["components"]) {
 			var codes = layerIn["components"]
 			for (var i = 0; i < codes.length; i++) {
@@ -1416,6 +1414,7 @@ function RoomUI() {
 		// Delete the layer with the ID
 		self.drawUI.destroyLayer(layerIn.code);
 		console.log("Finally tried to destroy "+layerIn.code)
+
 		self.drawUI.addImageLayer(layerIn);
 
 		return;
