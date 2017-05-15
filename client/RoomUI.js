@@ -1300,13 +1300,13 @@ function RoomUI() {
 			if (minNew == null || keyInt < minNew) {
 				minNew = keyInt;
 			}
-			renderLayerHtml(keyInt, value, false);
+			addLayer(value);
 		});
 	}
 
 	function receiveLayer(data) {
 		data = $.parseJSON(data);
-		renderLayerHtml(data.id, data.layer, false);
+		addLayer(data.layer);
 	}	
 
 	// get the mouse position inside the canvas
@@ -1393,9 +1393,9 @@ function RoomUI() {
 		return null;
 	}
 	
-	// add layer data to the dom
-	// isTemp: whether this is a temporary layer created by the client
-	function renderLayerHtml(layerIDIn, layerIn, isTemp) {
+	// Add layer data to the dom
+	// Layer data comes from the server
+	function addLayer(layerIn) {
 
 		// If "components" is set, it means it's a flattened image
 		// Delete component layers, if there are any
@@ -1409,8 +1409,8 @@ function RoomUI() {
 		// Delete the layer with the ID
 		self.drawUI.destroyLayer(layerIn.code);
 
-		// Clear local layer. TODO put this in the right place
-		// self.drawUI.clearLocal();
+		// 
+		self.drawUI.addImageLayer(layerIn);
 
 		// Call render() so the changes are displayed
 		self.drawUI.render();
@@ -1497,7 +1497,7 @@ function RoomUI() {
 				}
 
 				// Render the layer image - this replaces the canvas
-				renderLayerHtml(highestLayerID + 1, layer, true);
+				addLayer(layer);
 
 				// // Remove the canvas copy
 				// canvasCopy.remove();

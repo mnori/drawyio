@@ -175,6 +175,7 @@ h1 {
 
 #scratch_canvas, #crop_canvas {
 	border: 2px solid #f00;
+	display: none;
 }
 
 .drawing_layer {

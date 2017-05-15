@@ -12,10 +12,13 @@ function DrawUI(roomUI) {
 		this.container = new PIXI.Container();
 		this.createRenderers();
 
-		// Set up layer storage stuff
+		// Set up layer storage
 		self.layers = new AssocArray();
+		self.imageLayers = new AssocArray();
 		this.localID = null;
 		self.localLayer = null;
+
+		// This is for cropping images and sending to the server
 		self.stagingContainer = new PIXI.Container();
 	}
 
@@ -96,8 +99,20 @@ function DrawUI(roomUI) {
 		// Empty the container
 		self.container.removeChildren();
 
-		// Sort the layers, most recent at the bottom - these will render on top
-		var entries = self.layers.getValues();
+		self.bindSorted(self.imageLayers);
+		self.bindSorted(self.layers);
+		
+		// add the local layer last - so user's scribbles always appear on top
+		if (self.localLayer) {
+			self.container.addChild(self.localLayer.renderSprite)
+			self.container.addChild(self.localLayer.stroke.renderSprite);
+		}
+	}
+
+	// Helper method for bindSprites()
+	// Sort the layers, most recent at the bottom - these will render on top
+	this.bindSorted = function(layers) {
+		var entries = layers.getValues();
 		entries.sort(function(a, b) {
 			if (a.order < b.order) {
 				return -1;
@@ -110,18 +125,8 @@ function DrawUI(roomUI) {
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
 			var layer = entries[i];
-			if (layer.local) {
-				continue;
-			}
-			self.container.addChild(layer.renderSprite);
-			self.container.addChild(layer.stroke.renderSprite);
+			layer.bindSprite();
 			// console.log(layer.order+" "+layer.createdLocal);
-		}
-		// add the local layer last - so user's scribbles always appear on top
-		if (self.localLayer) {
-			self.container.addChild(self.localLayer.renderSprite)
-			self.container.addChild(self.localLayer.stroke.renderSprite);
-			// console.log(layer.order+" "+self.localLayer.createdLocal);
 		}
 	}
 
@@ -162,6 +167,28 @@ function DrawUI(roomUI) {
 		return layer;
 	}
 
+	this.addImageLayer = function(layerData) {
+		var newLayer = new ImageLayer(self, layerData);
+		self.imageLayers.set(layerData.code, newLayer);
+	}
+
+	this.init();
+}
+
+function ImageLayer(drawUI, layerData) {
+	var self = this;
+	this.init = function() {
+		self.id = layerData.code;
+		self.drawUI = drawUI;
+		self.createSprite(layerData.base64);
+	}
+	this.createSprite = function(base64) {
+		self.sprite = PIXI.Sprite.fromImage(base64);
+	}
+
+	this.bindSprite = function() {
+		self.drawUI.container.addChild(self.sprite);
+	}
 	this.init();
 }
 
@@ -179,6 +206,14 @@ function Layer(drawUI, layerID, local) {
 		self.local = local ? local : false; // whether currently the local target
 		self.createdLocal = self.local; // debugging
 		createRenderSprite(self);
+	}
+
+	this.bindSprite = function() {
+		if (self.local) {
+			return;
+		}
+		self.drawUI.container.addChild(self.renderSprite);
+		self.drawUI.container.addChild(self.stroke.renderSprite);
 	}
 
 	// Renders finished Stroke render texture to the layer's render texture
