@@ -1303,12 +1303,14 @@ function RoomUI() {
 			console.log(value);
 			addLayer(value);
 		});
+		console.log("RENDER");
 		self.drawUI.render();
 	}
 
 	function receiveLayer(data) {
 		data = $.parseJSON(data);
 		addLayer(data.layer);
+		console.log("RENDER");
 		self.drawUI.render();
 	}	
 
@@ -1402,15 +1404,18 @@ function RoomUI() {
 
 		// If "components" is set, it means it's a flattened image
 		// Delete component layers, if there are any
+		console.log(layerIn["components"]);
 		if (layerIn["components"]) {
 			var codes = layerIn["components"]
 			for (var i = 0; i < codes.length; i++) {
 				self.drawUI.destroyLayer(codes[i]);
+				console.log("tried to destroy "+codes[i])
 			}
 		}
 
 		// Delete the layer with the ID
 		self.drawUI.destroyLayer(layerIn.code);
+		console.log("Finally tried to destroy "+layerIn.code)
 		self.drawUI.addImageLayer(layerIn);
 
 		return;
@@ -1496,6 +1501,8 @@ function RoomUI() {
 
 				// Render the layer image - this replaces the canvas
 				addLayer(layer);
+				self.drawUI.render();
+
 
 				// // Remove the canvas copy
 				// canvasCopy.remove();

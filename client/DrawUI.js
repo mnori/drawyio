@@ -99,8 +99,6 @@ function DrawUI(roomUI) {
 			layer.destroy();
 			self.imageLayers.remove(layerID);
 		}
-		
-		
 	}
 
 	// Gets all the ducks in a row
@@ -188,6 +186,7 @@ function DrawUI(roomUI) {
 
 	this.addImageLayer = function(layerData) {
 		console.log("addImageLayer");
+		console.log(layerData.code);
 		var newLayer = new ImageLayer(self, layerData);
 		self.imageLayers.set(layerData.code, newLayer);
 	}
@@ -208,7 +207,7 @@ function ImageLayer(drawUI, layerData) {
 		self.sprite = PIXI.Sprite.fromImage(base64);
 	}
 	this.destroy = function() {
-		console.log("Remember to destroy imageLayer!");
+		console.log("Remember to destroy imageLayer! "+self.id);
 	}
 
 	this.bindSprite = function() {
