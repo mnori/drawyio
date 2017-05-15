@@ -81,12 +81,6 @@ function DrawUI(roomUI) {
 		self.getLayer(layerID).stroke.startBatch();
 	}
 
-	// // Local layer clear - we don't want to delete the layer, 
-	// // just remove all the graphics, since that just came back from the server
-	// this.clearLocal = function() {
-	// 	self.getLayer("local").clear();
-	// }
-
 	// happens when new layer data comes from the server - ditch the old layers
 	this.destroyLayer = function(layerID) {
 		var layer = self.getLayer(layerID); // can get image layers as well
@@ -94,12 +88,20 @@ function DrawUI(roomUI) {
 			layer.destroy();
 			self.layers.remove(layerID);
 		}
+		var imageLayer = self.getImageLayer(layerID);
+		if (imageLayer) {
+			imageLayer.destroy();
+			self.imageLayers.remove(layerID);
+		}
+	}
+
+	this.destroyImageLayer = function(layerID) {
+
 	}
 
 	// Render the main container
 	// Should only be called once per frame - WIP
 	this.render = function() {
-		console.log("render() called");
 		// Empty the container
 		self.container.removeChildren();
 
@@ -137,12 +139,9 @@ function DrawUI(roomUI) {
 		});
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
+			// console.log(layer.type+" "+layer.id+" "+layer.order);
 			var layer = entries[i];
-			
-			console.log(layer.type+" "+layer.id+" "+layer.order);
-			
 			layer.bindSprite();
-			// console.log(layer.order+" "+layer.createdLocal);
 		}
 	}
 
@@ -157,11 +156,6 @@ function DrawUI(roomUI) {
 	// Get a layer by its layer code.
 	// Generates a new layer if it doesn't exist.
 	this.getLayer = function(layerID) {
-		console.log("getLayer: "+layerID);
-		var layer = self.imageLayers.get(layerID);
-		if (layer) {
-			return layer;
-		}
 		layer = self.layers.get(layerID);
 		if (!layer) {
 			var local = (layerID == self.localID) ? true : false; 
@@ -174,9 +168,15 @@ function DrawUI(roomUI) {
 		return layer;
 	}
 
+	this.getImageLayer = function(layerID) {
+		var layer = self.imageLayers.get(layerID);
+		if (layer) {
+			return layer;
+		}
+		return null;
+	}
+
 	this.addImageLayer = function(layerData) {
-		console.log("addImageLayer");
-		console.log(layerData.code);
 		var newLayer = new ImageLayer(self, layerData);
 		self.imageLayers.set(layerData.code, newLayer);
 	}
@@ -196,7 +196,6 @@ function ImageLayer(drawUI, layerData) {
 	this.createSprite = function(base64) {
 		// this seems to have some async problems
 		self.sprite = PIXI.Sprite.fromImage(base64);
-		console.log(self.sprite)
 		self.sprite.texture.on('update', function() {
 
 			// render every time a layer loads
@@ -204,7 +203,8 @@ function ImageLayer(drawUI, layerData) {
 	    });
 	}
 	this.destroy = function() {
-		console.log("Remember to destroy imageLayer! "+self.id);
+		// console.log("Remember to destroy imageLayer! "+self.id);
+		self.sprite.destroy(true);
 	}
 
 	this.bindSprite = function() {
@@ -394,8 +394,8 @@ function rgbaToHex(rgba) {
         // a = parseFloat(rgbaTrim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
 
     var str = "0x" + extractHex(r) + extractHex(g) + extractHex(b);
-    // console.log(r, g, b);
-    // console.log(str);
+    console.log(rgba);
+    console.log(str);
     return parseInt(str);
 }
 

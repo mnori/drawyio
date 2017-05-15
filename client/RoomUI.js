@@ -1407,13 +1407,13 @@ function RoomUI() {
 			var codes = layerIn["components"]
 			for (var i = 0; i < codes.length; i++) {
 				self.drawUI.destroyLayer(codes[i]);
-				console.log("tried to destroy "+codes[i])
+				// console.log("tried to destroy "+codes[i])
 			}
 		}
 
 		// Delete the layer with the ID
 		self.drawUI.destroyLayer(layerIn.code);
-		console.log("Finally tried to destroy "+layerIn.code)
+		// console.log("Finally tried to destroy "+layerIn.code)
 
 		self.drawUI.addImageLayer(layerIn);
 
