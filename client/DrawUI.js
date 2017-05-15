@@ -89,8 +89,18 @@ function DrawUI(roomUI) {
 
 	// happens when new layer data comes from the server - ditch the old layers
 	this.destroyLayer = function(layerID) {
-		self.getLayer(layerID).destroy();
-		self.layers.remove(layerID);
+		var layer = self.getLayer(layerID)
+		if (layer) {
+			layer.destroy();
+			self.layers.remove(layerID);
+		}
+		layer = self.imageLayers.get(layerID)
+		if (layer) {
+			layer.destroy();
+			self.imageLayers.remove(layerID);
+		}
+		
+		
 	}
 
 	// Gets all the ducks in a row
@@ -125,6 +135,9 @@ function DrawUI(roomUI) {
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
 			var layer = entries[i];
+			
+			console.log(layer.type+" "+layer.id+" "+layer.order);
+			
 			layer.bindSprite();
 			// console.log(layer.order+" "+layer.createdLocal);
 		}
@@ -133,6 +146,7 @@ function DrawUI(roomUI) {
 	// Render the main container
 	// Should only be called once per frame - WIP
 	this.render = function() {
+		console.log("render() called");
 		// Render stroke data onto each sprite
 		self.renderStrokes();
 
@@ -155,7 +169,12 @@ function DrawUI(roomUI) {
 	// Get a layer by its layer code.
 	// Generates a new layer if it doesn't exist.
 	this.getLayer = function(layerID) {
-		var layer = self.layers.get(layerID);
+		console.log("getLayer: "+layerID);
+		var layer = self.imageLayers.get(layerID);
+		if (layer) {
+			return layer;
+		}
+		layer = self.layers.get(layerID);
 		if (!layer) {
 			var local = (layerID == self.localID) ? true : false; 
 			layer = new Layer(self, layerID, local);
@@ -168,6 +187,7 @@ function DrawUI(roomUI) {
 	}
 
 	this.addImageLayer = function(layerData) {
+		console.log("addImageLayer");
 		var newLayer = new ImageLayer(self, layerData);
 		self.imageLayers.set(layerData.code, newLayer);
 	}
@@ -178,12 +198,17 @@ function DrawUI(roomUI) {
 function ImageLayer(drawUI, layerData) {
 	var self = this;
 	this.init = function() {
+		self.type = "ImageLayer";
 		self.id = layerData.code;
+		self.order = drawUI.getNLayers();
 		self.drawUI = drawUI;
 		self.createSprite(layerData.base64);
 	}
 	this.createSprite = function(base64) {
 		self.sprite = PIXI.Sprite.fromImage(base64);
+	}
+	this.destroy = function() {
+		console.log("Remember to destroy imageLayer!");
 	}
 
 	this.bindSprite = function() {
@@ -198,6 +223,7 @@ function ImageLayer(drawUI, layerData) {
 function Layer(drawUI, layerID, local) {
 	var self = this;
 	this.init = function() {
+		self.type = "Layer";
 		self.id = layerID;
 		self.order = drawUI.getNLayers();
 		self.drawUI = drawUI;

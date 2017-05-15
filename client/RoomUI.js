@@ -1300,13 +1300,16 @@ function RoomUI() {
 			if (minNew == null || keyInt < minNew) {
 				minNew = keyInt;
 			}
+			console.log(value);
 			addLayer(value);
 		});
+		self.drawUI.render();
 	}
 
 	function receiveLayer(data) {
 		data = $.parseJSON(data);
 		addLayer(data.layer);
+		self.drawUI.render();
 	}	
 
 	// get the mouse position inside the canvas
@@ -1408,12 +1411,7 @@ function RoomUI() {
 
 		// Delete the layer with the ID
 		self.drawUI.destroyLayer(layerIn.code);
-
-		// 
 		self.drawUI.addImageLayer(layerIn);
-
-		// Call render() so the changes are displayed
-		self.drawUI.render();
 
 		return;
 
