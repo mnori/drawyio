@@ -182,8 +182,8 @@ function RoomUI() {
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	function newLocal() {
 		tool.layerCode = randomString(layerCodeLen);
-		var oldData = self.drawUI.newLocal(tool.layerCode);
-		return oldData;
+		var oldCanvas = self.drawUI.newLocal(tool.layerCode);
+		return oldCanvas;
 	}
 
 	function randomString(length) {
@@ -1300,7 +1300,6 @@ function RoomUI() {
 			if (minNew == null || keyInt < minNew) {
 				minNew = keyInt;
 			}
-			console.log(value);
 			addLayer(value);
 		});
 		self.drawUI.render();
@@ -1399,79 +1398,18 @@ function RoomUI() {
 	// Add layer data to the dom
 	// Layer data comes from the server
 	function addLayer(layerIn) {
-		console.log("addLayer", layerIn);
-
 		// If "components" is set, it means it's a flattened image
 		// Delete component layers, if there are any
 		if (layerIn["components"]) {
 			var codes = layerIn["components"]
 			for (var i = 0; i < codes.length; i++) {
 				self.drawUI.destroyLayer(codes[i]);
-				// console.log("tried to destroy "+codes[i])
 			}
 		}
 
 		// Delete the layer with the ID
 		self.drawUI.destroyLayer(layerIn.code);
-		// console.log("Finally tried to destroy "+layerIn.code)
-
 		self.drawUI.addImageLayer(layerIn);
-
-		return;
-
-		// Everything after this point is old and will be removed
-
-		var context = {}
-		context.layer = layerIn; // for scope
-
-		// Get duplicate layer with same ID and rename its ID
-		context.duplicate = getLayerByCode(context.layer.code);	
-		context.previewDuplicate = getLayerByCode(context.layer.code+"_preview");
-		if (context.duplicate != null) {
-			context.duplicate.attr("id", "duplicate_temp");
-		}
-
-		// check if there are any component layers to remove from a flattened image
-		var bump = (isTemp) ? 1000 : 0; // temporary layers always above the rest
-		var newLayerID = "drawing_layer_"+context.layer.code;
-		var layersHtml = 
-			"<img id=\""+newLayerID+"\" class=\"drawing_layer\" "+
-				"src=\""+context.layer.base64+"\" "+
-				"style=\""+
-					"z-index: "+(layerIDIn + bump)+"; "+
-					"left: "+context.layer.offsets.left+"px; "+
-					"top: "+context.layer.offsets.top+"px;\"/>";
-
-		$("#drawing_layers").append(layersHtml);
-
-		// If this is a flatten layer, removes the components
-		if (typeof(context.layer["components"]) !== "undefined") {
-			var codes = context.layer["components"]
-			for (var i = 0; i < codes.length; i++) {
-
-				// Delete component layers
-				var layerCode = codes[i];
-				var layer = getLayerByCode(layerCode);
-				if (layer != null) {
-					layer.remove();
-				}
-				var previewLayer = getLayerByCode(codes[i]);
-				if (previewLayer != null) {
-					previewLayer.remove();
-				}
-			}
-		}
-		if (context.duplicate != null) {
-			// Delete duplicate layer
-			context.duplicate.remove();
-		}
-		if (context.previewDuplicate != null) {
-			context.previewDuplicate.remove();
-		}
-
-		if (layerIDIn > highestLayerID) {
-			highestLayerID = layerIDIn;
-		}
 	}
 
 	// Happens when the user times out from not being active for n milliseconds
@@ -1479,6 +1417,9 @@ function RoomUI() {
 	// Image is smart cropped before sending to save server some image processing
 	function processCanvas(toolIn) {
 		var sourceCanvas = newLocal();
+
+		$("#drawing_form").append(sourceCanvas);			
+
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
 		// Crop the canvas to save resources (this is pretty slow, around 20ms)

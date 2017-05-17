@@ -57,8 +57,8 @@ function DrawUI(roomUI) {
 		// Extract pixels from render sprite
 		self.stagingContainer.removeChildren();
 		self.stagingContainer.addChild(oldLayer.renderSprite);
-		var pixels = self.renderer.extract.canvas(self.stagingContainer);
-		return pixels;		
+		var canvas = self.renderer.extract.canvas(self.stagingContainer);
+		return canvas;		
 	}
 
 	this.getNLayers = function() {
@@ -93,10 +93,6 @@ function DrawUI(roomUI) {
 			imageLayer.destroy();
 			self.imageLayers.remove(layerID);
 		}
-	}
-
-	this.destroyImageLayer = function(layerID) {
-
 	}
 
 	// Render the main container
