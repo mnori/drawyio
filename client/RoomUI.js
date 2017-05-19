@@ -1418,7 +1418,7 @@ function RoomUI() {
 	function processCanvas(toolIn) {
 		var sourceCanvas = newLocal();
 
-		$("#drawing_form").append(sourceCanvas);			
+		// $("#drawing_form").append(sourceCanvas);			
 
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 

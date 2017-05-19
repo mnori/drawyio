@@ -36,7 +36,7 @@ function DrawUI(roomUI) {
 	}
 
 	// Create new local layer, setting the old one to being a normal layer
-	// Returns pixel buffer of the old layer
+	// Returns canvas of the old layer
 	this.newLocal = function(layerID) {
 		var oldLayer = null;
 		if (self.localLayer) {
@@ -58,6 +58,7 @@ function DrawUI(roomUI) {
 		self.stagingContainer.removeChildren();
 		self.stagingContainer.addChild(oldLayer.renderSprite);
 		var canvas = self.renderer.extract.canvas(self.stagingContainer);
+		// $("#drawing_layers").append(self.renderer.extract.image(self.stagingContainer));
 		return canvas;		
 	}
 
