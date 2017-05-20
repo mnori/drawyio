@@ -27,7 +27,7 @@ function setup() {
 }
 
 function renderCircle() {
-	graphics.beginFill(0xff0000dd, 1);
+	graphics.beginFill(0xff000055, 1);
 	graphics.lineStyle(0);
 	graphics.drawCircle(100, 100, 50);
 	graphics.endFill();
