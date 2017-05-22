@@ -1,10 +1,8 @@
 <html>
 <head>
 	<title>Conversion test</title>
-	<link href="conversion.css" rel="stylesheet" />
-	<script src="conversion.js"></script>
-	<script src="/js/pixi.js"></script>
-	<script src="/js/jquery-3.1.1.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.2/pixi.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<style>
 		.source_canvas {
 			border: 2px solid #f00;
@@ -17,6 +15,10 @@
 </head>
 <body>
 <h1>Conversion test</h1>
+<h2>Before canvas extract:</h2>
+<div id="before"></div>
+<h2>After canvas extract:</h2>
+<div id="after"></div>
 <script>
 	var renderer, container, graphics;
 
@@ -38,7 +40,7 @@
 			"preserveDrawingBuffer": true
 		});
 		var view = $(self.renderer.view);
-		$("body").append(view);
+		$("#before").append(view);
 		view.addClass("source_canvas");
 
 		container = new PIXI.Container();
@@ -58,7 +60,7 @@
 		var stagingContainer = new PIXI.Container();
 		stagingContainer.addChild(graphics);
 		var canvas = renderer.extract.canvas(stagingContainer);
-		$("body").append(canvas);	
+		$("#after").append(canvas);	
 		$(canvas).addClass("dest_canvas");
 	}
 
