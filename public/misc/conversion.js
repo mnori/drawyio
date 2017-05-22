@@ -23,7 +23,6 @@ function setup() {
 
 	container = new PIXI.Container();
 	graphics = new PIXI.Graphics();
-
 	container.addChild(graphics);
 }
 
@@ -38,7 +37,7 @@ function renderCircle() {
 function createCanvas() {
 	var stagingContainer = new PIXI.Container();
 	stagingContainer.addChild(graphics);
-	var canvas = renderer.extract.canvas(self.stagingContainer);
+	var canvas = renderer.extract.canvas(stagingContainer);
 	$("body").append(canvas);	
 	$(canvas).addClass("dest_canvas");
 }
