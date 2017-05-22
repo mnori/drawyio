@@ -6,6 +6,7 @@ function main() {
 	// Render the circle
 	setup();
 	renderCircle();
+	createCanvas();
 }
 
 function setup() {
@@ -27,9 +28,17 @@ function setup() {
 }
 
 function renderCircle() {
-	graphics.beginFill(0xff000055, 1);
+	graphics.beginFill(0xff0000, 0.2);
 	graphics.lineStyle(0);
 	graphics.drawCircle(100, 100, 50);
 	graphics.endFill();
 	renderer.render(container);
+}
+
+function createCanvas() {
+	var stagingContainer = new PIXI.Container();
+	stagingContainer.addChild(graphics);
+	var canvas = renderer.extract.canvas(self.stagingContainer);
+	$("body").append(canvas);	
+	$(canvas).addClass("dest_canvas");
 }
