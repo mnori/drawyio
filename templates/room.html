@@ -4,41 +4,8 @@
 
 {% block content %}
 
-	{% include "mod_dialog.html" %}
-
-	<!-- Snapshot dialog -->
-	<div id="snapshot_dialog" class="modal_dialog" title="Save this drawing" style="display: none;">
-		<p id="snapshot_name_label" class="modal_message">Enter a name</p>
-		<input id="snapshot_name_input" class="modal_input" type="text" value="{{ snapshotName }}" maxlength="50" />
-		<p id="snapshot_name_label" class="modal_message">Visibility</p>
-		<div>
-			<label for="snapshot_visibility_public">
-				Public
-			</label><label for="snapshot_visibility_private">
-				Private
-			</label>
-			<input class="modal_radio snapshot_visibility" type="radio" name="snapshot_visibility" id="snapshot_visibility_public">
-			
-			<input class="modal_radio snapshot_visibility" type="radio" name="snapshot_visibility" id="snapshot_visibility_private">
-		</div>
-		<p id="snapshot_public_info" class="modal_info">
-			Saved drawing will appear in public galleries on this website. Anyone visiting the site can see it.
-		</p>
-		<p id="snapshot_private_info" class="modal_info" style="display: none;">
-			Saved drawing won't appear in public galleries. Only people with the link can see it. 
-		</p>
-
-		<div class="recaptcha_container">
-            <div id="snapshot_captcha" class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>
-        </div>
-
-		<a id="snapshot_ok" class="button modal_button" href="javascript:void(0)">
-			<i class="fa fa-check button_icon" aria-hidden="true"></i>OK
-		</a>
-		<a id="snapshot_cancel" class="button modal_button" href="javascript:void(0)">
-			<i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
-		</a>
-	</div>
+	{% include "dialogs/mod.html" %}
+	{% include "dialogs/snapshot.html" %}
 
 	<span class="bold_fix"></span>
 	<div id="drawing_form">
