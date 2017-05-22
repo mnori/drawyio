@@ -1,0 +1,33 @@
+<!-- New Room dialog -->
+<div id="room_dialog" class="modal_dialog" title="Create a new room" style="display: none;">
+    <p id="room_name_label" class="modal_message">Name your room</p>
+    <input id="room_name_input" class="modal_input" type="text" value="{{ settings.DEFAULT_ROOM_NAME }}" maxlength="50" />
+    <p id="room_name_label" class="modal_message">Visibility</p>
+    <div>
+        <label for="room_visibility_public">
+            Public
+        </label><label for="room_visibility_private">
+            Private
+        </label>
+        <input class="modal_radio room_visibility" type="radio" name="room_visibility" id="room_visibility_public">
+        <input class="modal_radio room_visibility" type="radio" name="room_visibility" id="room_visibility_private">
+    </div>
+    <p id="room_public_info" class="modal_info">
+        Room will appear in public galleries on this website. Anyone visiting the site can view and edit.
+    </p>
+    <p id="room_private_info" class="modal_info" style="display: none;">
+        Room won't appear in public galleries. Only people with the link can view and edit.
+    </p>
+
+    <div class="recaptcha_container">
+        <div id="room_captcha" class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>
+    </div>
+
+    <a id="room_ok" class="button modal_button" href="javascript:void(0)">
+        <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
+    </a>
+
+    <a id="room_cancel" class="button modal_button" href="javascript:void(0)">
+        <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+    </a>
+</div>
