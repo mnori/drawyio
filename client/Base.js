@@ -170,7 +170,6 @@ function Timeline() {
 	this.entries = [];
 	this.log = function(name) {
 		var ts = window.performance.now();
-		// var ts = Date.now(); // this is in milliseconds
 		this.entries.push({
 			name: name,
 			ts: ts

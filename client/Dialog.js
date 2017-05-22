@@ -1,4 +1,6 @@
-// Dialog classes
+// Dialog UI classes
+// Would be nice to have a base class for dialogs that everything extends off...
+// How to do it in JS in the best way?
 
 function ModDialog(entityType, entityID, processCallback) {
 	this.entityType = entityType;
