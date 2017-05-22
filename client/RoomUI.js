@@ -1,4 +1,6 @@
 // This handles the room page, where the drawing happens.
+// Contains lots of code that will be made redundant once the new pixi.js renderer 
+// is fully working
 
 function RoomUI() {
 	var drawID = opts["roomID"];
