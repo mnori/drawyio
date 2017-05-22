@@ -8,7 +8,7 @@ function Base(conf) {
 	self.conf = conf;
 
 	var roomDialog, errorDialog, infoDialog, galleriesDialog, loginDialog, nickDialog, 
-		accountDialog, changePwDialog, registerDialog;
+		accountDialog, changePwDialog;
 		
 	this.init = function() {
 		var snapID = (typeof(opts) !== "undefined") ? opts["snapshotID"] : null;
@@ -17,10 +17,11 @@ function Base(conf) {
 		infoDialog = new InfoDialog();
 		galleriesDialog = new GalleriesDialog(self);
 		loginDialog = new LoginDialog(self);
-		nickDialog = new NickDialog(self);
 		accountDialog = new AccountDialog(self);
 		changePwDialog = new ChangePwDialog();
-		registerDialog = new RegisterDialog(self);
+
+		self.nickDialog = new NickDialog(self);
+		self.registerDialog = new RegisterDialog(self);
 
 		initGlobalResizeHandler();
 
@@ -30,7 +31,7 @@ function Base(conf) {
 	// either ask user for nickname, or give them the option of logging out
 	function manageAccount() {
 		if (self.conf["sessionData"]["type"] == "guest") {
-			nickDialog.show(); // this starts the login flow by asking for a nickname
+			self.nickDialog.show(); // this starts the login flow by asking for a nickname
 		} else {
 			accountDialog.show();
 		}

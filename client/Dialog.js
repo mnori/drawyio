@@ -146,12 +146,12 @@ function NickDialog(base) {
 			}).done(function(response) {
 				// !! can be error if username is taken
 				var handleClose = function() { // Close button OK click event handler
-					nickDialog.show();
+					base.nickDialog.show();
 				}
 				$("#nick_dialog").dialog("close");
 				if (!processError(response, handleClose)) { // success
 					self.base.receiveSessionData(response);
-					registerDialog.show();
+					base.registerDialog.show();
 				}
 			});
 		})
@@ -310,7 +310,7 @@ function LoginDialog(base) {
 
 		$("#login_back").click(function() {
 			$("#login_dialog").dialog("close");
-			nickDialog.show();
+			base.nickDialog.show();
 		});
 
 		$("#login_cancel").click(function() {
@@ -364,7 +364,7 @@ function RegisterDialog(base) {
 
 		$("#register_back").click(function() {
 			$("#register_dialog").dialog("close");
-			nickDialog.show();
+			base.nickDialog.show();
 		});
 
 		$("#register_skip").click(function() {
@@ -383,7 +383,7 @@ function RegisterDialog(base) {
 			}).done(function(response) {
 				$("#register_dialog").dialog("close");
 				var handleClose = function() { // Close button OK click event handler
-					registerDialog.show();
+					self.show();
 				}
 				if (!processError(response, handleClose)) { // success
 					self.base.receiveSessionData(JSON.parse(response));
