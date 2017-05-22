@@ -1,7 +1,6 @@
 var renderer, container, graphics;
 
 function main() {
-	console.log("main()");
 	setup();
 	renderCircle();
 	createCanvas();
