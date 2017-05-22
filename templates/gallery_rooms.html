@@ -3,14 +3,12 @@
 		<div class="thumb_title">{{ entry.row.name }}</div>
 		<img src="/r/{{ entry.row.id }}.png" class="thumb_img" style="width: {{ width }}, height: {{ height }}" /><br />
 		<div class="thumb_inf">
-
 			{% if entry.nUsers > 0 %}
 				<div class="thumb_nusers">
 					<i class="fa fa-user-circle button_icon" aria-hidden="true"></i>{{ entry.nUsers }}
 				</div>
 			{% endif %}
 			<div class="thumb_ago" data-unixtime="{{ entry.unixtime }}">{{ entry.ago }}</div>
-
 		</div>
 	</a>
 {% endfor %}

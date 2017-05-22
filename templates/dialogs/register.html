@@ -2,16 +2,13 @@
 <div id="register_dialog" class="modal_dialog" title="Register your nickname (optional)" style="display: none;">
     <form>
         <p class="modal_message">Create an account on drawy.io. No email confirmation required.</p>
-
         <p class="modal_message">Password</p>
         <input id="register_pw1" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
         <p class="modal_message">Confirm password</p>
         <input id="register_pw2" class="modal_input" type="password" maxlength="{{ settings.PASSWORD_MAX_LEN }}" />
-
         <div class="recaptcha_container">
             <div id="register_captcha" class="g-recaptcha" data-sitekey="{{ settings.RECAPTCHA_SITE_KEY }}"></div>
         </div>
-
         <a id="register_back" class="button modal_button modal_button_left" href="javascript:void(0)">
             <i class="fa fa-arrow-left button_icon" aria-hidden="true"></i>Back
         </a>
