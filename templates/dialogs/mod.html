@@ -1,0 +1,40 @@
+<div id="mod_dialog" class="modal_dialog" title="Moderation tools" style="display: none;">
+    <p class="modal_message">Visibility</p>
+    <div>
+        <label for="mod_visibility_public">
+            Public
+        </label><label for="mod_visibility_private">
+            Private
+        </label>
+        <input id="mod_visibility_public" class="modal_radio mod_visibility" type="radio" name="mod_visibility">
+        <input id="mod_visibility_private" class="modal_radio mod_visibility" type="radio" name="mod_visibility">
+    </div>
+    <p class="modal_message">Deleted</p>
+    <div>
+        <label for="mod_deleted_no">
+            No
+        </label><label for="mod_deleted_yes">
+            Yes
+        </label>
+        <input id="mod_deleted_no" class="modal_radio mod_deleted" type="radio" name="mod_deleted">
+        <input id="mod_deleted_yes" class="modal_radio mod_deleted" type="radio" name="mod_deleted" >
+    </div>
+    <div id="mod_staff_pick_container">
+        <p class="modal_message">Featured</p>
+        <div>
+            <label for="mod_staffpick_no">
+                No
+            </label><label for="mod_staffpick_yes">
+                Yes
+            </label>
+            <input id="mod_staffpick_no" class="modal_radio mod_staffpick" type="radio" name="mod_staffpick">
+            <input id="mod_staffpick_yes" class="modal_radio mod_staffpick" type="radio" name="mod_staffpick" >
+        </div>
+    </div>
+    <a id="mod_ok" class="button modal_button" href="javascript:void(0)">
+        <i class="fa fa-check button_icon" aria-hidden="true"></i>OK
+    </a>
+    <a id="mod_cancel" class="button modal_button" href="javascript:void(0)">
+        <i class="fa fa-times button_icon" aria-hidden="true"></i>Cancel
+    </a>
+</div>
