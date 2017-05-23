@@ -1,9 +1,13 @@
 var renderer, container, graphics;
 
 function main() {
+	console.log("main()");
 	setup();
+	console.log("1");
 	renderCircle();
+	console.log("2");
 	createCanvas();
+	console.log("3");
 }
 
 function setup() {
