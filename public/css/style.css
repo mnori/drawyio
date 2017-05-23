@@ -926,3 +926,13 @@ input::selection {
 #change_password {
 	margin-top: 0px;
 }
+
+/*
+.g-recaptcha {
+	width: 376px;
+
+	border-radius: 4px;
+	border-right: 1px solid #d8d8d8;
+	overflow: hidden;	
+}
+*/

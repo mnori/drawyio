@@ -35,15 +35,15 @@ function renderCircle() {
 
 function createCanvas() {
 	// can't seem to make it work after fiddling with the color matrix
-	// colorMatrix = [
-	// 	1, 0, 0, 0, 0,
-	// 	0, 1, 0, 0, 0,
-	// 	0, 0, 1, 0, 0,
-	// 	0, 0, 0, 1, 0
-	// ];
-	// filter = new PIXI.filters.ColorMatrixFilter();
-	// filter._loadMatrix(colorMatrix, true);
-	// container.filters = [filter];
+	colorMatrix = [
+		1, 0, 0, 0, 0,
+		0, 1, 0, 0, 0,
+		0, 0, 1, 0, 0,
+		0, 0, 0, 1, 0
+	];
+	filter = new PIXI.filters.ColorMatrixFilter();
+	filter._loadMatrix(colorMatrix, false);
+	container.filters = [filter];
 	
 	var canvas = renderer.extract.canvas(graphics, true);
 
