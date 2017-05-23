@@ -1,13 +1,9 @@
 var renderer, container, graphics;
 
 function main() {
-	console.log("main()");
 	setup();
-	console.log("1");
 	renderCircle();
-	console.log("2");
 	createCanvas();
-	console.log("3");
 }
 
 function setup() {
@@ -37,9 +33,19 @@ function renderCircle() {
 }
 
 function createCanvas() {
+	colorMatrix = [
+		1, 0, 0, 0, 0,
+		0, 1, 0, 0, 0,
+		0, 0, 1, 0, 0,
+		0, 0, 0, 1, 0
+	];
+	filter = new PIXI.filters.ColorMatrixFilter();
+	filter._loadMatrix(colorMatrix);
+
 	// Extract canvas using Pixi API
 	var stagingContainer = new PIXI.Container();
 	stagingContainer.addChild(graphics);
+	stagingContainer.filters = [filter];
 	var canvas = renderer.extract.canvas(stagingContainer);
 	$("#after").append(canvas);	
 	$(canvas).addClass("dest_canvas");
