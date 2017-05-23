@@ -10,7 +10,7 @@ function setup() {
 	// Create the source canvas to render a circle onto
 	renderer = PIXI.autoDetectRenderer(200, 200, {
 		antialias: true,
-		transparent: "notMultiplied",
+		transparent: true,
 		clearBeforeRender: false,
 		preserveDrawingBuffer: true
 	});
@@ -43,7 +43,7 @@ function createCanvas() {
 	];
 	filter = new PIXI.filters.ColorMatrixFilter();
 	filter._loadMatrix(colorMatrix, true);
-	container.filters = [filter];
+	// container.filters = [filter];
 	
 	var canvas = renderer.extract.canvas(container);
 	$("#after").append(canvas);	

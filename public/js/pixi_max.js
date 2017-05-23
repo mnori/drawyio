@@ -16235,6 +16235,7 @@ var CanvasRenderer = function (_SystemRenderer) {
 
 
     CanvasRenderer.prototype.setBlendMode = function setBlendMode(blendMode) {
+      console.log("setBlendMode()");
         if (this._activeBlendMode === blendMode) {
             return;
         }
@@ -18060,13 +18061,18 @@ var WebGLState = function () {
 
 
     WebGLState.prototype.setBlendMode = function setBlendMode(value) {
+      console.log("setBlendMode");
         if (value === this.activeState[BLEND_FUNC]) {
             return;
         }
 
         this.activeState[BLEND_FUNC] = value;
 
-        this.gl.blendFunc(this.blendModes[value][0], this.blendModes[value][1]);
+        console.log("0: "+this.blendModes[value][0]);
+        console.log("1: "+this.blendModes[value][1]);
+
+        // this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.ONE, this.gl.SRC_COLOR);
     };
 
     /**
@@ -20233,6 +20239,9 @@ function mapWebGLBlendModesToPixi(gl) {
 
     // TODO - premultiply alpha would be different.
     // add a boolean for that!
+
+    // console.log("SRC_COLOR: "+gl.SRC_COLOR);
+
     array[_const.BLEND_MODES.NORMAL] = [gl.ONE, gl.SRC_COLOR]; //[gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
     array[_const.BLEND_MODES.ADD] = [gl.ONE, gl.DST_ALPHA];
     array[_const.BLEND_MODES.MULTIPLY] = [gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA];
