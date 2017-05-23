@@ -10,9 +10,9 @@ function setup() {
 	// Create the source canvas to render a circle onto
 	renderer = PIXI.autoDetectRenderer(200, 200, {
 		antialias: true,
-		transparent: true,
-		clearBeforeRender: false,
-		preserveDrawingBuffer: true
+		transparent: true, // makes big difference for the "before" element
+		clearBeforeRender: true, // makes no difference
+		preserveDrawingBuffer: false // also makes no difference
 	});
 	var view = $(self.renderer.view);
 	$("#before").append(view);
@@ -35,18 +35,22 @@ function renderCircle() {
 
 function createCanvas() {
 	// can't seem to make it work after fiddling with the color matrix
-	colorMatrix = [
-		1, 0, 0, 0, 0,
-		0, 1, 0, 0, 0,
-		0, 0, 1, 0, 0,
-		0, 0, 0, 1, 0
-	];
-	filter = new PIXI.filters.ColorMatrixFilter();
-	filter._loadMatrix(colorMatrix, true);
+	// colorMatrix = [
+	// 	1, 0, 0, 0, 0,
+	// 	0, 1, 0, 0, 0,
+	// 	0, 0, 1, 0, 0,
+	// 	0, 0, 0, 1, 0
+	// ];
+	// filter = new PIXI.filters.ColorMatrixFilter();
+	// filter._loadMatrix(colorMatrix, true);
 	// container.filters = [filter];
 	
-	var canvas = renderer.extract.canvas(container);
+	var canvas = renderer.extract.canvas(graphics, true);
+
+	// exactly the same result
+	var pixels = renderer.extract.pixels(container, true);
 	$("#after").append(canvas);	
+
 	$(canvas).addClass("dest_canvas");
 }
 

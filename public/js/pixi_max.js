@@ -9247,6 +9247,7 @@ var Container = function (_DisplayObject) {
 
 
     Container.prototype.updateTransform = function updateTransform() {
+      console.log("updateTransform()");
         this._boundsID++;
 
         this.transform.updateTransform(this.parent.transform);
@@ -18072,7 +18073,8 @@ var WebGLState = function () {
         console.log("1: "+this.blendModes[value][1]);
 
         // this.gl.enable(this.gl.BLEND);
-        this.gl.blendFunc(this.gl.ONE, this.gl.SRC_COLOR);
+        this.gl.blendFunc(this.gl.ONE, this.gl.SRC_ALPHA);
+        // this.gl.blendFunc(this.gl.ONE, this.gl.SRC_COLOR);
     };
 
     /**
@@ -29059,13 +29061,18 @@ var WebGLExtract = function () {
             // bind the buffer
             renderer.bindRenderTarget(textureBuffer);
 
-            // set up an array of pixels
+            // set up an array of pixels - looks ok
             var webglPixels = new Uint8Array(BYTES_PER_PIXEL * width * height);
 
             // read pixels to the array
             var gl = renderer.gl;
 
+            // this looks OK
+            // see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels
             gl.readPixels(frame.x * resolution, frame.y * resolution, width, height, gl.RGBA, gl.UNSIGNED_BYTE, webglPixels);
+
+            // The pixels are wrong - red is multiplied by alpha!
+            console.log(webglPixels);
 
             // add the pixels to the canvas
             var canvasData = canvasBuffer.context.getImageData(0, 0, width, height);
