@@ -41,13 +41,9 @@ function createCanvas() {
 		0, 0, 0, 1, 0
 	];
 	filter = new PIXI.filters.ColorMatrixFilter();
-	filter._loadMatrix(colorMatrix);
-	// filter.alpha = 1;
-
-	// Extract canvas using Pixi API
-	// var stagingContainer = new PIXI.Container();
-	// stagingContainer.addChild(graphics);
+	filter._loadMatrix(colorMatrix, true);
 	container.filters = [filter];
+	
 	var canvas = renderer.extract.canvas(container);
 	$("#after").append(canvas);	
 	$(canvas).addClass("dest_canvas");
