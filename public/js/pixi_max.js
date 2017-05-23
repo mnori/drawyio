@@ -18072,9 +18072,9 @@ var WebGLState = function () {
         console.log("0: "+this.blendModes[value][0]);
         console.log("1: "+this.blendModes[value][1]);
 
-        // this.gl.enable(this.gl.BLEND);
-        this.gl.blendFunc(this.gl.ONE, this.gl.SRC_ALPHA);
-        // this.gl.blendFunc(this.gl.ONE, this.gl.SRC_COLOR);
+        this.gl.enable(this.gl.BLEND);
+        // this.gl.blendFunc(this.gl.SRC_COLOUR, this.gl.ONE);
+        this.gl.blendFunc(this.gl.ONE, this.gl.SRC_COLOR);
     };
 
     /**
