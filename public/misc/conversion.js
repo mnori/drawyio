@@ -33,6 +33,7 @@ function renderCircle() {
 }
 
 function createCanvas() {
+	// can't seem to make it work after fiddling with the color matrix
 	colorMatrix = [
 		1, 0, 0, 0, 0,
 		0, 1, 0, 0, 0,
@@ -41,12 +42,13 @@ function createCanvas() {
 	];
 	filter = new PIXI.filters.ColorMatrixFilter();
 	filter._loadMatrix(colorMatrix);
+	// filter.alpha = 1;
 
 	// Extract canvas using Pixi API
-	var stagingContainer = new PIXI.Container();
-	stagingContainer.addChild(graphics);
-	stagingContainer.filters = [filter];
-	var canvas = renderer.extract.canvas(stagingContainer);
+	// var stagingContainer = new PIXI.Container();
+	// stagingContainer.addChild(graphics);
+	container.filters = [filter];
+	var canvas = renderer.extract.canvas(container);
 	$("#after").append(canvas);	
 	$(canvas).addClass("dest_canvas");
 }
