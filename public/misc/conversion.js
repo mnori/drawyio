@@ -10,7 +10,7 @@ function setup() {
 	// Create the source canvas to render a circle onto
 	renderer = PIXI.autoDetectRenderer(200, 200, {
 		antialias: true,
-		transparent: true,
+		transparent: "notMultiplied",
 		clearBeforeRender: false,
 		preserveDrawingBuffer: true
 	});
@@ -25,6 +25,7 @@ function setup() {
 
 function renderCircle() {
 	// Render circle into container
+	// graphics.worldAlpha = 0; // nothing happens
 	graphics.beginFill(0xff0000, 0.2);
 	graphics.lineStyle(0);
 	graphics.drawCircle(100, 100, 50);
