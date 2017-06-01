@@ -1,4 +1,4 @@
-var renderer, container, graphics;
+var renderer, container, graphics, blend;
 
 function main() {
 	setup();
@@ -20,6 +20,16 @@ function setup() {
 
 	container = new PIXI.Container();
 	graphics = new PIXI.Graphics();
+
+	// set up blend mode
+	var gl = renderer.gl;
+	blend = new PIXI.BlendMode(
+		gl.ONE, 
+		gl.ONE_MINUS_SRC_ALPHA);
+
+	graphics.blendMode = blend;
+
+	console.log("blendMode", graphics.blendMode);
 	container.addChild(graphics);
 }
 
@@ -35,15 +45,15 @@ function renderCircle() {
 
 function createCanvas() {
 	// can't seem to make it work after fiddling with the color matrix
-	colorMatrix = [
-		1, 0, 0, 0, 0,
-		0, 1, 0, 0, 0,
-		0, 0, 1, 0, 0,
-		0, 0, 0, 1, 0
-	];
-	filter = new PIXI.filters.ColorMatrixFilter();
-	filter._loadMatrix(colorMatrix, false);
-	container.filters = [filter];
+	// colorMatrix = [
+	// 	1, 0, 0, 0, 0,
+	// 	0, 1, 0, 0, 0,
+	// 	0, 0, 1, 0, 0,
+	// 	0, 0, 0, 1, 0
+	// ];
+	// filter = new PIXI.filters.ColorMatrixFilter();
+	// filter._loadMatrix(colorMatrix, false);
+	// container.filters = [filter];
 	
 	var canvas = renderer.extract.canvas(graphics, true);
 

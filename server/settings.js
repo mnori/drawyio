@@ -57,7 +57,8 @@ module.exports = {
 		password: (isLive) ? "CHANGEME" : "password"
 	},
 	DB_NAME: "drawyio",
-	MIGRATE_START: "v0.2.1", 
+	MIGRATE_START: "beginning", 
+	// MIGRATE_START: "v0.2.1", 
 	SQL_DEBUG: false, // (isLive) ? false : true,
 	DEBUG_FILEPATH: "/usr/src/app/code/debug.log",
 	ROOMS_DIR: "/usr/src/app/code/images/rooms",

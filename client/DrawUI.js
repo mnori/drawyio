@@ -391,8 +391,8 @@ function rgbaToHex(rgba) {
         // a = parseFloat(rgbaTrim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
 
     var str = "0x" + extractHex(r) + extractHex(g) + extractHex(b);
-    console.log(rgba);
-    console.log(str);
+    // console.log(rgba);
+    // console.log(str);
     return parseInt(str);
 }
 
