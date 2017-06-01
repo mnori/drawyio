@@ -9247,7 +9247,6 @@ var Container = function (_DisplayObject) {
 
 
     Container.prototype.updateTransform = function updateTransform() {
-      console.log("updateTransform()");
         this._boundsID++;
 
         this.transform.updateTransform(this.parent.transform);
@@ -16236,7 +16235,6 @@ var CanvasRenderer = function (_SystemRenderer) {
 
 
     CanvasRenderer.prototype.setBlendMode = function setBlendMode(blendMode) {
-      console.log("setBlendMode()");
         if (this._activeBlendMode === blendMode) {
             return;
         }
@@ -18044,6 +18042,7 @@ var WebGLState = function () {
 
     WebGLState.prototype.setBlend = function setBlend(value) {
       console.log("setBlend")
+      console.log(value);
         // value = value ? 1 : 0;
 
         // if (this.activeState[BLEND] === value) {
@@ -18062,7 +18061,6 @@ var WebGLState = function () {
 
 
     WebGLState.prototype.setBlendMode = function setBlendMode(value) {
-      console.log("setBlendMode");
         if (value === this.activeState[BLEND_FUNC]) {
             return;
         }
@@ -29072,7 +29070,6 @@ var WebGLExtract = function () {
             gl.readPixels(frame.x * resolution, frame.y * resolution, width, height, gl.RGBA, gl.UNSIGNED_BYTE, webglPixels);
 
             // The pixels are wrong - red is multiplied by alpha!
-            console.log(webglPixels);
 
             // add the pixels to the canvas
             var canvasData = canvasBuffer.context.getImageData(0, 0, width, height);

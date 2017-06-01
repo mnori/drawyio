@@ -14,7 +14,6 @@ function ModDialog(entityType, entityID, processCallback) {
 	this.setup = function() {
 		$("#mod_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -26,7 +25,7 @@ function ModDialog(entityType, entityID, processCallback) {
 		    }
 		});
 
-		// Set up OK button event handler
+		// Button event handlers
 		$("#mod_ok").click(function() {
 			self.process();
 			$("#mod_dialog").dialog("close");
@@ -186,7 +185,6 @@ function AccountDialog(base) {
 	function setup() {
 		$("#account_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -237,7 +235,6 @@ function ChangePwDialog() {
 	function setup() {
 		$("#change_pw_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -353,7 +350,6 @@ function RegisterDialog(base) {
 		self.base = base;
 		$("#register_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -415,7 +411,6 @@ function GalleriesDialog(base) {
 	function setup() {
 		$("#galleries_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -468,7 +463,6 @@ function ErrorDialog() {
 	function setup() {
 		$("#error_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -514,7 +508,6 @@ function InfoDialog() {
 	function setup() {
 		$("#info_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -571,7 +564,6 @@ function RoomDialog(roomIDIn) {
 	function setup() {
 		$("#room_dialog").dialog({
 			resizable: false,
-			// height: 582,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -681,7 +673,6 @@ function SnapshotDialog(roomIDIn) {
 	function setup() {
 		$("#snapshot_dialog").dialog({
 			resizable: false,
-			// height: 382,
 			width: 400,
 			modal: true,
 			draggable: false,
@@ -713,7 +704,7 @@ function SnapshotDialog(roomIDIn) {
 		$("#snapshot_name_input").click(function() { $(this).select(); })
 		$("#snapshot_name_input").select();
 
-		// Set up OK button event handler
+		// Button event handlers
 		$("#snapshot_ok").click(function() {
 			process();
 			$("#snapshot_dialog").dialog("close");
