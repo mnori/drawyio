@@ -11,8 +11,8 @@ function setup() {
 	renderer = PIXI.autoDetectRenderer(200, 200, {
 		antialias: true,
 		transparent: true, // makes big difference for the "before" element
-		clearBeforeRender: true, // makes no difference
-		preserveDrawingBuffer: false // also makes no difference
+		// clearBeforeRender: true, // makes no difference
+		// preserveDrawingBuffer: false // also makes no difference
 	});
 	var view = $(self.renderer.view);
 	$("#before").append(view);
@@ -20,14 +20,6 @@ function setup() {
 
 	container = new PIXI.Container();
 	graphics = new PIXI.Graphics();
-
-	// set up blend mode
-	var gl = renderer.gl;
-	blend = new PIXI.BlendMode(
-		gl.ONE, 
-		gl.ONE_MINUS_SRC_ALPHA);
-
-	graphics.blendMode = blend;
 
 	console.log("blendMode", graphics.blendMode);
 	container.addChild(graphics);
@@ -54,11 +46,16 @@ function createCanvas() {
 	// filter = new PIXI.filters.ColorMatrixFilter();
 	// filter._loadMatrix(colorMatrix, false);
 	// container.filters = [filter];
+
+	// set up blend mode
+	var gl = renderer.gl;
+	blend = new PIXI.BlendMode(gl.SRC_ALPHA, this.dstRGB, this.srcAlpha, this.dstAlpha, this.modeRGB, this.modeAlpha)
+	graphics.blendMode = blend;
 	
 	var canvas = renderer.extract.canvas(graphics, true);
 
-	// exactly the same result
-	var pixels = renderer.extract.pixels(container, true);
+	// // exactly the same result
+	// var pixels = renderer.extract.pixels(container, true);
 	$("#after").append(canvas);	
 
 	$(canvas).addClass("dest_canvas");
