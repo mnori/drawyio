@@ -8,12 +8,13 @@ function main() {
 
 function setup() {
 	// Create the source canvas to render a circle onto
-	renderer = PIXI.autoDetectRenderer(200, 200, {
+	renderer = new PIXI.WebGLRenderer(200, 200, {
 		antialias: true,
 		transparent: true, // makes big difference for the "before" element
-		// clearBeforeRender: true, // makes no difference
-		// preserveDrawingBuffer: false // also makes no difference
+		clearBeforeRender: true, // makes no difference
+		preserveDrawingBuffer: true // also makes no difference
 	});
+	console.log(renderer);
 	var view = $(self.renderer.view);
 	$("#before").append(view);
 	view.addClass("source_canvas");
@@ -47,17 +48,15 @@ function createCanvas() {
 	// filter._loadMatrix(colorMatrix, false);
 	// container.filters = [filter];
 
-	// set up blend mode
-	var gl = renderer.gl;
-	blend = new PIXI.BlendMode(gl.SRC_ALPHA, this.dstRGB, this.srcAlpha, this.dstAlpha, this.modeRGB, this.modeAlpha)
-	graphics.blendMode = blend;
-	
-	var canvas = renderer.extract.canvas(graphics, true);
+	// set up blend mode - again this doesn't work either
+	// var gl = renderer.gl;
+	// blend = new PIXI.BlendMode(gl.ONE, gl.ONE, gl.ONE, gl.SRC_ALPHA)
+	// graphics.blendMode = blend;
+	var canvas = renderer.extract.canvas(graphics);
 
 	// // exactly the same result
 	// var pixels = renderer.extract.pixels(container, true);
 	$("#after").append(canvas);	
-
 	$(canvas).addClass("dest_canvas");
 }
 
