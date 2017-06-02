@@ -9,10 +9,10 @@ function main() {
 function setup() {
 	// Create the source canvas to render a circle onto
 	renderer = new PIXI.WebGLRenderer(200, 200, {
-		antialias: true,
-		transparent: true, // makes big difference for the "before" element
-		clearBeforeRender: true, // makes no difference
-		preserveDrawingBuffer: true // also makes no difference
+		// antialias: true,
+		// transparent: true, // makes big difference for the "before" element
+		// clearBeforeRender: true, // makes no difference
+		// preserveDrawingBuffer: true // also makes no difference
 	});
 	console.log(renderer);
 	var view = $(self.renderer.view);
@@ -37,21 +37,7 @@ function renderCircle() {
 }
 
 function createCanvas() {
-	// can't seem to make it work after fiddling with the color matrix
-	// colorMatrix = [
-	// 	1, 0, 0, 0, 0,
-	// 	0, 1, 0, 0, 0,
-	// 	0, 0, 1, 0, 0,
-	// 	0, 0, 0, 1, 0
-	// ];
-	// filter = new PIXI.filters.ColorMatrixFilter();
-	// filter._loadMatrix(colorMatrix, false);
-	// container.filters = [filter];
-
-	// set up blend mode - again this doesn't work either
-	// var gl = renderer.gl;
-	// blend = new PIXI.BlendMode(gl.ONE, gl.ONE, gl.ONE, gl.SRC_ALPHA)
-	// graphics.blendMode = blend;
+	// this right here is where the conversion occurs
 	var canvas = renderer.extract.canvas(graphics);
 
 	// // exactly the same result
@@ -59,5 +45,22 @@ function createCanvas() {
 	$("#after").append(canvas);	
 	$(canvas).addClass("dest_canvas");
 }
+
+
+// can't seem to make it work after fiddling with the color matrix
+// colorMatrix = [
+// 	1, 0, 0, 0, 0,
+// 	0, 1, 0, 0, 0,
+// 	0, 0, 1, 0, 0,
+// 	0, 0, 0, 1, 0
+// ];
+// filter = new PIXI.filters.ColorMatrixFilter();
+// filter._loadMatrix(colorMatrix, false);
+// container.filters = [filter];
+
+// set up blend mode - again this doesn't work either
+// var gl = renderer.gl;
+// blend = new PIXI.BlendMode(gl.ONE, gl.ONE, gl.ONE, gl.SRC_ALPHA)
+// graphics.blendMode = blend;
 
 main();
