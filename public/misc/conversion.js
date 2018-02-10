@@ -9,11 +9,17 @@ function main() {
 function setup() {
 	// Create the source canvas to render a circle onto
 	renderer = new PIXI.WebGLRenderer(200, 200, {
+		transparent: true,
+		alpha: true,
+		premultipliedAlpha: true,
+
+		// other parameters
 		// antialias: true,
-		// transparent: true, // makes big difference for the "before" element
 		// clearBeforeRender: true, // makes no difference
 		// preserveDrawingBuffer: true // also makes no difference
 	});
+	var gl = renderer.gl;
+
 	console.log(renderer);
 	var view = $(self.renderer.view);
 	$("#before").append(view);
@@ -29,6 +35,7 @@ function setup() {
 function renderCircle() {
 	// Render circle into container
 	// graphics.worldAlpha = 0; // nothing happens
+	graphics.clear();
 	graphics.beginFill(0xff0000, 0.2);
 	graphics.lineStyle(0);
 	graphics.drawCircle(100, 100, 50);

@@ -13,12 +13,12 @@ function App() {
 	var sharp = this.sharp = require("sharp"); // Image processing library
 	const nano = require('nanoseconds'); // For measuring performance
 	const expressApp = express();
-	const ta = require('time-ago')(); // set up time-ago human readable dates library
+	const ta = require('node-time-ago')(); // set up time-ago human readable dates library
 	const server = require("http").Server(expressApp); // set up socket.io
 	this.io = require("socket.io")(server);
 
 	var cookieParser = require('cookie-parser');
-	this.recaptcha = require('express-recaptcha');
+	// this.recaptcha = require('express-recaptcha');
 
 	var settings = this.settings = require("./settings"); // Our settings
 	this.validation = require("./validation"); // Validation tools
@@ -44,7 +44,7 @@ function App() {
 		process.on('unhandledRejection', function(err, promise) {
 			console.error('Unhandled rejection (promise: ', promise, ', reason: ', err, ').');
 		});
-		this.recaptcha.init(settings.RECAPTCHA_SITE_KEY, settings.RECAPTCHA_SECRET_KEY);
+		// this.recaptcha.init(settings.RECAPTCHA_SITE_KEY, settings.RECAPTCHA_SECRET_KEY);
 		self.db = db = new database.DB(settings.DB_CONNECT_PARAMS);
 		db.query("USE "+settings.DB_NAME+";");
 		this.rooms = new utils.AssocArray();

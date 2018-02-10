@@ -24,7 +24,7 @@ function DrawUI(roomUI) {
 
 	this.createRenderers = function() {
 		// Setup main renderer
-		self.renderer = PIXI.autoDetectRenderer(this.roomUI.width, this.roomUI.height, {
+		self.renderer = new PIXI.WebGLRenderer(this.roomUI.width, this.roomUI.height, {
 			"antialias": true,
 			"transparent": true,
 			"clearBeforeRender": false,
@@ -99,15 +99,24 @@ function DrawUI(roomUI) {
 	// Render the main container
 	// Should only be called once per frame - WIP
 	this.render = function() {
+		var tl = new Timeline();
+		
+		tl.log("1");
 		// Empty the container
 		self.container.removeChildren();
+
+		tl.log("2");
 
 		// Render stroke data onto each sprite
 		self.renderStrokes();
 
+		tl.log("3");
+
 		// Bind the layer sets
 		self.bindSorted(self.imageLayers);
 		self.bindSorted(self.layers);
+
+		tl.log("4");
 		
 		// Add the local layer last, so user's strokes always appear on top
 		if (self.localLayer) {
@@ -115,9 +124,14 @@ function DrawUI(roomUI) {
 			self.container.addChild(self.localLayer.stroke.renderSprite);
 		}
 		
+		tl.log("5");
+
 		// true means we're clearing before render
 		// - must specify since we set clear to false in the initialiser
+		
 		self.renderer.render(self.container, null, true);
+		tl.log("6");
+		tl.dump();
 	}
 
 	// Render Helper method
@@ -247,6 +261,7 @@ function Layer(drawUI, layerID, local) {
 		self.container.removeChildren();	
 
 		// Clear the stroke render texture
+		// console.log(self.drawUI.renderer);
 		self.drawUI.renderer.clearRenderTexture(self.stroke.renderTexture, 0x00000000);
 
 		// Put the stroke render sprite back in the main container
