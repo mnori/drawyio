@@ -18,7 +18,7 @@ function App() {
 	this.io = require("socket.io")(server);
 
 	var cookieParser = require('cookie-parser');
-	// this.recaptcha = require('express-recaptcha');
+	this.recaptcha = require('express-recaptcha');
 
 	var settings = this.settings = require("./settings"); // Our settings
 	this.validation = require("./validation"); // Validation tools

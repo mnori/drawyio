@@ -15,7 +15,7 @@
     "nanoseconds": "*",
     "socket.io": "*",
     "http": "*",
-    "node-time-ago": "*",
+    "time-ago": "*",
     "mysql": "*",
     "synchronize": "*",
     "cookie-parser": "*",
