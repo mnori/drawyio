@@ -13,7 +13,7 @@ function App() {
 	var sharp = this.sharp = require("sharp"); // Image processing library
 	const nano = require('nanoseconds'); // For measuring performance
 	const expressApp = express();
-	const ta = require('node-time-ago')(); // set up time-ago human readable dates library
+	const ta = require('time-ago')(); // set up time-ago human readable dates library
 	const server = require("http").Server(expressApp); // set up socket.io
 	this.io = require("socket.io")(server);
 
@@ -22,7 +22,7 @@ function App() {
 
 	var settings = this.settings = require("./settings"); // Our settings
 	this.validation = require("./validation"); // Validation tools
-	const database = require("./database"); // Our db wrexpressApper
+	const database = require("./database"); // Our db wrapper
 	var models = this.models = require("./models"); // Data classes
 	const register = require("./register") // Registration flow
 	const utils = require("./utils"); // Misc utilities

@@ -131,7 +131,7 @@ function DrawUI(roomUI) {
 		
 		self.renderer.render(self.container, null, true);
 		tl.log("6");
-		tl.dump();
+		// tl.dump();
 	}
 
 	// Render Helper method
