@@ -1,5 +1,5 @@
-# Grab the latest version of node.js
-FROM node:latest
+# Grab a particular version of node.js
+FROM node:7.8.0
 
 # Create app directory
 RUN mkdir -p /usr/src/app
