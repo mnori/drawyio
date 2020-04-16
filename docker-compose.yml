@@ -1,7 +1,9 @@
-version: "0.1.0"
+version: "3"
 services:
   web:
     build: .
+    depends_on:
+      - db
     command: "npm start"
     user: "node"
     environment:
@@ -10,3 +12,8 @@ services:
       - ./:/usr/src/app/code
     expose:
       - "8080"
+  db:
+    image: mysql:8.0.19
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: sJlaNwiaB
