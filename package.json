@@ -7,20 +7,19 @@
   "scripts": {
     "start": "node server/app.js"
   },
-  "dependencies": {   
-    "minifier": "0.8.1",
-    "express": "4.15.2",
-    "nunjucks": "3.0.0",
-    "sharp": "0.17.3",
-    "nanoseconds": "0.1.0",
-    "socket.io": "1.7.3",
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "colors": "^1.1.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.17.1",
+    "express-recaptcha": "^2.1.0",
     "http": "0.0.0",
-    "time-ago": "0.1.0",
-    "mysql": "2.13.0",
-    "synchronize": "2.0.0",
-    "cookie-parser": "1.4.3",
-    "express-recaptcha": "2.1.0",
-    "bcrypt": "1.0.2",
-    "colors": "1.1.2"
+    "mysql": "^2.18.1",
+    "nanoseconds": "^0.1.0",
+    "nunjucks": "^3.0.0",
+    "sharp": "^0.25.2",
+    "socket.io": "^1.7.3",
+    "time-ago": "^0.1.0",
+    "fibers": "4.0.2"
   }
 }

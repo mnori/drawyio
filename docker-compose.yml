@@ -1,0 +1,12 @@
+version: "0.1.0"
+services:
+  web:
+    build: .
+    command: "npm start"
+    user: "node"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/usr/src/app/code
+    expose:
+      - "8080"

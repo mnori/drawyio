@@ -1,20 +1,21 @@
 # Grab a particular version of node.js
-FROM node:7.8.0
+FROM node:12.16.2
 
-# Create app directory
+# Create app directory (assumed done)
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-# Install app dependencies
-COPY package.json /usr/src/app/
-RUN npm install
+# Install app dependencies (assumed done)
+COPY package.json .
+RUN npm install --verbose
 
-# Determine the working directory for running the code
+# Copy code, determine the working directory for running it
+COPY . /usr/src/app/code
 WORKDIR /usr/src/app/code
 
-EXPOSE 8080
+# EXPOSE 8080
 
 # Start mysql and then run the node.js webserver
 # Use && since only one CMD line is allowed
-# CMD /etc/init.d/mysql start && npm start
-CMD npm start
+# CMD /etc/init.d/mysql start && npm start (assumed done)
+# CMD npm start
