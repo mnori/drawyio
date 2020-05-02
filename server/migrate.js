@@ -37,6 +37,9 @@ var migrations = [
 					var filenames = fs.readdirSync(settings.ROOMS_DIR);
 					return filenames.reduce((chain, filename) => {
 				        return chain.then(_ => {
+				        	if (filename[0] === ".") {
+				        		return; // ignore hidden files
+				        	}
 				        	var modified = fs.statSync(dir+"/"+filename).mtime.getTime() / 1000;
 							var id = filename.split(".")[0]
 				        	return db.pquery([

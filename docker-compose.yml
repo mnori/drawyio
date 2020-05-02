@@ -2,15 +2,22 @@ version: "3"
 services:
   web:
     build: .
-    command: ["./wait-for.sh", "db:3306", "--", "npm", "start"]
+    # command: ["./wait-for.sh", "db:33060", "--", "npm", "start"]
+    command: ["./wait-for-it.sh", "db:3306", "--", "npm", "start"]
     user: "node"
     environment:
       - NODE_ENV=production
-      - WAIT_HOSTS=db:33060
     volumes:
       - ./:/usr/src/app/code
-    expose:
-      - "8080"
+    depends_on: 
+      - db
+    links:
+      - db
+    # expose:
+    #   - 80
+    #   - 8080
+    ports:
+      - "8080:80" # redundant when using 8080 to connect
     networks:
       testing:
         ipv4_address: 172.29.1.1
@@ -18,6 +25,10 @@ services:
     image: mysql:8.0.19
     command: --default-authentication-plugin=mysql_native_password
     restart: always
+    # ports: # we probably don't need this bit cos it's already done by the container service?
+    #   - 3306:3306
+    # expose: 
+    #   - 3306
     environment:
       MYSQL_ROOT_PASSWORD: sJlaNwiaB
     networks:

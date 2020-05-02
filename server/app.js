@@ -44,16 +44,21 @@ function App() {
 		process.on('unhandledRejection', function(err, promise) {
 			console.error('Unhandled rejection (promise: ', promise, ', reason: ', err, ').');
 		});
-		// this.recaptcha.init(settings.RECAPTCHA_SITE_KEY, settings.RECAPTCHA_SECRET_KEY);
-		self.db = db = new database.DB(settings.DB_CONNECT_PARAMS);
-		db.query("USE "+settings.DB_NAME+";");
-		this.rooms = new utils.AssocArray();
-		expressApp.use(cookieParser());
-		nunjucks.configure("templates", {express: expressApp});
-		configureRoutes(expressApp);
-		cleanup(settings);
-		server.listen(settings.PORT);
-		console.log("Running on http://localhost:" + settings.PORT);
+		try {
+			// this.recaptcha.init(settings.RECAPTCHA_SITE_KEY, settings.RECAPTCHA_SECRET_KEY);
+			self.db = db = new database.DB(settings.DB_CONNECT_PARAMS);
+			db.query("USE "+settings.DB_NAME+";");
+			this.rooms = new utils.AssocArray();
+			expressApp.use(cookieParser());
+			nunjucks.configure("templates", {express: expressApp});
+			configureRoutes(expressApp);
+			cleanup(settings);
+			server.listen(settings.PORT);
+			console.log("Running on http://localhost:" + settings.PORT);
+
+		} catch (e) {
+			console.log("Database init failed. Waiting for remedy (e.g migration)...");
+		}
 	}
 
 	// Set up all URL endpoints
