@@ -4,28 +4,18 @@ var colors = require('colors');
 const settings = require("./settings")
 var database = require("./database");
 var db = new database.DB(settings.DB_CONNECT_PARAMS);
-// var deasync = require('deasync');
-// db.deasync = deasync;
 
 var migrations = [
-	
-	// Dummty test migrations - return some promise chains which can then be attached into a longer one
+
+	// Dummy test migrations - return some promise chains which can then be attached into a longer one
 	{
 		name: "m1",
 		run: function() {
 			return db
 				.pquery("select sleep(1)")
-				.then((result) => {
-					console.log("Finished sleeping 1");
-				})
-				.then(_ => { return db.pquery("select * from mysql.help_category"); })
-				.then((result) => {
-					console.log("Finished selection 1");
-				})
-				// .catch((error) => {
-				// 	console.log("Migration failed")
-				// 	console.log(error)
-				// });
+				.then(_ => console.log("Finished sleeping 1"))
+				.then(_ => db.pquery("select * from mysql.help_category"))
+				.then(_ => console.log("Finished selection 1"))
 		}
 	},
 	{
@@ -33,13 +23,9 @@ var migrations = [
 		run: function() {
 			return db
 				.pquery("select sleep(1)")
-				.then(result => {
-					console.log("Finished sleeping 2");
-				})
-				.then(_ => { return db.pquery("select * from mysql.help_category"); })
-				.then(result => {
-					console.log("Finished selection 2");
-				})
+				.then(_ => console.log("Finished sleeping 2"))
+				.then(_ => db.pquery("select * from mysql.help_category"))
+				.then(_ => console.log("Finished selection 2"))
 		}
 	}
 
@@ -172,21 +158,25 @@ var migrations = [
 	// }
 ]
 
-function migrate() {
 
+// Migration method executes promise chains in the correct order. Got the idea from here:
+// https://medium.com/better-programming/dynamic-promise-chaining-af9c5cb87f2e
+function migrate() {
 	console.log("Started migration.");
-	// goes through array, processing items one by one, this is a nice way of executing
-	// an array of promises in the correct order.
-	// from from https://medium.com/better-programming/dynamic-promise-chaining-af9c5cb87f2e
 	return migrations.reduce((chain, migration) => {
         return chain.then(_ => {
         	console.log("*** Processing "+migration.name+" ***");
         	return migration.run()
         });
     }, Promise.resolve())
-
-	console.log("Finished migration.");
-	process.exit(); 
+    .then(_ => {
+    	console.log("Finished migration.");
+		process.exit(); 
+    })
+    .catch(_ => {
+    	console.log("Migration failed");
+    	process.exit();
+    });
 }
 
 migrate();
