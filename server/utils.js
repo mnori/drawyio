@@ -3,6 +3,8 @@
 module.exports = {
 
 	// Define a nice java-like associative array wrapper with cleaner access than plain JS.
+	// TODO: decide whether we actually need this? Can just use built in stuff?
+	// e.g. https://zellwk.com/blog/looping-through-js-objects/ for more info
 	AssocArray: function(valuesIn) {
 		this.values = valuesIn ? valuesIn : {};
 		this.get = function(key) {
