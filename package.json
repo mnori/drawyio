@@ -1,5 +1,5 @@
 {
-  "name": "drawcloud",
+  "name": "drawyio",
   "version": "0.1.0",
   "description": "Collab drawing app",
   "author": "drawy.io",
@@ -19,7 +19,6 @@
     "nunjucks": "^3.0.0",
     "sharp": "^0.25.2",
     "socket.io": "^1.7.3",
-    "time-ago": "^0.1.0",
-    "fibers": "4.0.2"
+    "time-ago": "^0.1.0"
   }
 }

@@ -3,7 +3,7 @@
 ./cleanup.sh
 docker image prune -a
 cd ..
-docker build -t mnori/drawcloud .
+docker build -t mnori/drawyio .
 cd commands
 ./create-mysql.sh
 ./create.sh

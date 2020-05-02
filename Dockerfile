@@ -12,8 +12,13 @@ RUN npm install --verbose
 # Copy code, determine the working directory for running it
 COPY . /usr/src/app/code
 WORKDIR /usr/src/app/code
+RUN chmod 777 /usr/src/app/code/wait-for.sh
 
-# EXPOSE 8080
+COPY ./wait-for.sh /usr/src/app
+RUN chmod -x /usr/src/app/wait-for.sh
+
+# ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
+# RUN chmod +x /wait
 
 # Start mysql and then run the node.js webserver
 # Use && since only one CMD line is allowed

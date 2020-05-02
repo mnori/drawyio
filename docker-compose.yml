@@ -2,12 +2,11 @@ version: "3"
 services:
   web:
     build: .
-    depends_on:
-      - db
-    command: "npm start"
+    command: ["./wait-for.sh", "db:3306", "--", "npm", "start"]
     user: "node"
     environment:
       - NODE_ENV=production
+      - WAIT_HOSTS=db:33060
     volumes:
       - ./:/usr/src/app/code
     expose:
@@ -17,13 +16,13 @@ services:
         ipv4_address: 172.29.1.1
   db:
     image: mysql:8.0.19
+    command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: sJlaNwiaB
     networks:
       testing:
         ipv4_address: 172.29.1.2
-
 networks:
   testing:
     ipam:
