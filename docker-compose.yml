@@ -1,39 +1,40 @@
-version: "3"
+version: "3.2"
 services:
+
+  # Define the node.js web server
   web:
     build: .
-    # command: ["./wait-for.sh", "db:33060", "--", "npm", "start"]
-    command: ["./wait-for-it.sh", "db:3306", "--", "npm", "start"]
+    command: ./wait-for-it.sh db:3306 -- npm start
     user: "node"
     environment:
+      - DOCKER_ENVIRONMENT
       - NODE_ENV=production
     volumes:
       - ./:/usr/src/app/code
     depends_on: 
       - db
-    links:
-      - db
-    # expose:
-    #   - 80
-    #   - 8080
+    expose:
+      - "8080"
     ports:
-      - "8080:80" # redundant when using 8080 to connect
+      # Mapping a host IP to our web server so we can test it.
+      # 127.0.0.12:80 on the host points to port 8080 inside the container
+      - "127.0.0.12:80:8080" 
     networks:
       testing:
         ipv4_address: 172.29.1.1
+
+  # Define the mysql database server
   db:
     image: mysql:8.0.19
     command: --default-authentication-plugin=mysql_native_password
     restart: always
-    # ports: # we probably don't need this bit cos it's already done by the container service?
-    #   - 3306:3306
-    # expose: 
-    #   - 3306
     environment:
       MYSQL_ROOT_PASSWORD: sJlaNwiaB
     networks:
       testing:
         ipv4_address: 172.29.1.2
+
+# A network for our containers
 networks:
   testing:
     ipam:

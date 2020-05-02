@@ -53,7 +53,8 @@ function App() {
 			nunjucks.configure("templates", {express: expressApp});
 			configureRoutes(expressApp);
 			cleanup(settings);
-			server.listen(settings.PORT);
+			// 0.0.0.0 is important. Makes it accept connections from anywhere.
+			server.listen(settings.PORT, "0.0.0.0"); 
 			console.log("Running on http://localhost:" + settings.PORT);
 
 		} catch (e) {
