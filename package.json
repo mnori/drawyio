@@ -11,6 +11,7 @@
     "bcrypt": "^4.0.1",
     "colors": "^1.1.2",
     "cookie-parser": "^1.4.3",
+    "deasync": "0.1.20",
     "express": "^4.17.1",
     "express-recaptcha": "^2.1.0",
     "http": "0.0.0",

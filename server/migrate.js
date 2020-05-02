@@ -4,7 +4,8 @@ var colors = require('colors');
 const settings = require("./settings")
 var database = require("./database");
 var db = new database.DB(settings.DB_CONNECT_PARAMS);
-db.sync = require('synchronize');
+// var deasync = require('deasync');
+// db.deasync = deasync;
 
 var migrations = [
 	{ 
@@ -137,31 +138,69 @@ var migrations = [
 ]
 
 function migrate() {
-	// fiber allows synchronous operations - avoids getting in a pickle with callbacks
-	db.sync.fiber(function() {
-		try {
-			console.log("Started migration.");
-			var migrating = false;
-			for (var i = 0; i < migrations.length; i++) {
-				migration = migrations[i];
-				if (migration["name"] == settings.MIGRATE_START){
-					migrating = true;	
-				}
-				if (!migrating) {
-					console.log("\t"+"skipped".grey+" "+migration.name);
-				} else {
-					migration.run();
-					console.log("\t"+"migrated".green+" "+migration.name);
-				}
-			}
-			console.log("Finished migration.");
+	console.log("Started migration");
+
+	// const myPromise = new Promise((resolve, reject) => {
+	// 	db.query("select * from mysql.help_category", function(results, fields, error) {
+	// 		if (error) {
+	// 			// fail, return error object
+	// 			reject(error);
+	// 		} else {
+	// 			// success, return result and field object
+	// 			console.log("Migration succeeded with:")
+	// 			console.log(fields)
+	// 			resolve({ "results": results, "fields": fields });
+	// 		}
+	// 	});
+	// })
+
+	db 	
+		.pquery("select sleep(1)")
+		.then((result) => {
+			console.log("Finished sleeping");
+		})
+		.then(v => { return db.pquery("select * from mysql.help_category") })
+		.then((result) => {
+			console.log("Finished selection")
+			console.log("Migration succeeded");
 			process.exit(); 
-		} catch (err) {
-			console.log("Something went wrong:");
-			console.log(err);
-			process.exit(); 
-		}
-	});
+		})
+		.catch((error) => {
+			console.log("Migration failed")
+			console.log(error)
+		});
+
+	// this is where we put some code to do a sync operation - 
+
+	// try a mysql sleep followed by a show databases command
+
+
+
+	// // fiber allows synchronous operations - avoids getting in a pickle with callbacks
+	// db.sync.fiber(function() {
+	// 	try {
+	// 		console.log("Started migration.");
+	// 		var migrating = false;
+	// 		for (var i = 0; i < migrations.length; i++) {
+	// 			migration = migrations[i];
+	// 			if (migration["name"] == settings.MIGRATE_START){
+	// 				migrating = true;	
+	// 			}
+	// 			if (!migrating) {
+	// 				console.log("\t"+"skipped".grey+" "+migration.name);
+	// 			} else {
+	// 				migration.run();
+	// 				console.log("\t"+"migrated".green+" "+migration.name);
+	// 			}
+	// 		}
+	// 		console.log("Finished migration.");
+	// 		process.exit(); 
+	// 	} catch (err) {
+	// 		console.log("Something went wrong:");
+	// 		console.log(err);
+	// 		process.exit(); 
+	// 	}
+	// });
 }
 
 migrate();
