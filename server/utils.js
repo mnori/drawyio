@@ -3,8 +3,8 @@
 module.exports = {
 
 	// Define a nice java-like associative array wrapper with cleaner access than plain JS.
-	AssocArray: function() {
-		this.values = {};
+	AssocArray: function(valuesIn) {
+		this.values = valuesIn ? valuesIn : {};
 		this.get = function(key) {
 			if (typeof(this.values[key]) !== "undefined") {
 				return this.values[key];
@@ -53,5 +53,10 @@ module.exports = {
 
 	getNowMysql: function() {
 		return (new Date ((new Date((new Date(new Date())).toISOString() )).getTime() - ((new Date()).getTimezoneOffset()*60000))).toISOString().slice(0, 19).replace('T', ' ');
+	},
+
+	// Replace all instances of "search" string with "replace" string
+	replaceAll: function(input, search, replace) {
+		return input.split(search).join(replace);
 	}
 };

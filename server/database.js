@@ -1,22 +1,25 @@
 // Database API wrapper
 // This wrapper means we can get some nice debugging and also run synchronous queries.
-// (c) 2017 drawy.io
+// (c) 2020 drawy.io
 
 const mysql = require("mysql"); // https://www.npmjs.com/package/mysql
 const sqlstring = require("sqlstring") // sql escaping library
 const settings = require("./settings")
+const utils = require("./utils");
+const fs = require("fs");
 
 class DB {
+
 	constructor(params) {
 		this.connection = mysql.createConnection(params)
 		this.connection.connect();
 		this.deasync = null; // set in migrate.js when setting up the database
 	}
 
-	// Do a query asynchronously, then call the supplied callback with the results.
+	// Do a query and then call the supplied callback with the results.
 	query(sql, callback) {
 		if (settings.SQL_DEBUG) {
-			console.log("Async query:\n"+this.addTab(sql))		
+			console.log("Async query:\n"+this.addTab(sql));
 		}
 		this.connection.query(sql, function(error, results, fields) {
 			if (error) {
@@ -29,31 +32,28 @@ class DB {
 		});
 	}
 
-	// Do query synchronously. For use in database migrations, don't use on the server.
-	// @deprecated
-	// querySync(sql) {
-	// 	if (settings.SQL_DEBUG) {
-	// 		console.log("Sync query:\n"+this.addTab(sql))		
-	// 	}
-	// 	if (this.deasync == null) { // should not ever happen, because it shouldn't be called within app
-	// 		console.log("\tCan't find deasync API!");
-	// 	}
+	// Like query(), but accepts path to an SQL file instead of an SQL string. 
+	// Can include string replacements e.g. from a config file.
+	queryf(filepath, replacements, callback) {
+		fs.readFile(settings.SQL_BASEPATH+"/"+filepath, "utf8", (error, sql) => {
+			if (error) {
+				// Failed to read anything from the file
+				return callback(null, null, error);
 
-	// 	// explanation of how this work can be found here:
-	// 	// https://www.npmjs.com/package/deasync
-	// 	var done = false
-	// 	var output = null;
-	// 	this.connection.query(sql, function cb(error, results, fields) {
-	// 		done = true;
-	// 		output = {
-	// 			"error": error,
-	// 			"results": results,
-	// 			"fields": fields
-	// 		};
-	// 	});
-	// 	var results = this.deasync.loopWhile(function() { return !done; });
-	// 	return results;
-	// }
+			} else {
+				// File read successfully. Apply any replacements specified to the SQL
+				if (replacements) {
+					for (const search of replacements.getKeys()) {
+						const replace = replacements.get(search);
+						sql = utils.replaceAll(sql, ":"+search, replace);
+					}
+				}
+
+				// Run the query
+				return this.query(sql, callback);
+			}
+		})
+	}
 
 	// Like query() but returns a promise so you can do sequential shit
 	pquery(sql) {
@@ -65,7 +65,20 @@ class DB {
 					resolve({ "results": results, "fields": fields });
 				}
 			});
-		})
+		});
+	}
+
+	// Like pquery() but reads from file instead.
+	pqueryf(filepath, replacements) {
+		return new Promise((resolve, reject) => {
+			this.queryf(filepath, replacements, function(results, fields, error) {
+				if (error) { // fail, return error object
+					reject(error);
+				} else { // success, return result and field object
+					resolve({ "results": results, "fields": fields });
+				}
+			});
+		});
 	}
 
 	// For debugging
@@ -78,8 +91,8 @@ class DB {
 		return bits.join("\n");
 	}
 
+	// For escaping mysql strings
 	esc(strIn) {
-		// !! fill this out
 		return sqlstring.escape(strIn);
 	}
 };
