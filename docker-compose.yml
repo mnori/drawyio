@@ -12,8 +12,21 @@ services:
       - ./:/usr/src/app/code
     expose:
       - "8080"
+    networks:
+      testing:
+        ipv4_address: 172.29.1.1
   db:
     image: mysql:8.0.19
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: sJlaNwiaB
+    networks:
+      testing:
+        ipv4_address: 172.29.1.2
+
+networks:
+  testing:
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.29.0.0/16

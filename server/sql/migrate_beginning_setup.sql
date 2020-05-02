@@ -1,4 +1,4 @@
-# Part 1.1 of drawy.io migration script
+# Initial SQL statements for the beginning migration
 
 # Remove possible db lingering from previous run
 DROP DATABASE IF EXISTS :settings.DB_NAME;

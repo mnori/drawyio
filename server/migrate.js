@@ -11,19 +11,18 @@ var dbParams = settings.DB_CONNECT_PARAMS;
 dbParams["multipleStatements"] = true; // set this here because it shouldn't be allowed in app context.
 var db = new database.DB(dbParams);
 
-// All keys/value to replace in the migration SQL files
-// TODO make this a bit less repetitive somehow? Could just have an array of key names
-var configReplacements = new utils.AssocArray({
-	"settings.DB_NAME" : settings.DB_NAME,
-	"settings.DEFAULT_ROOM_NAME" : settings.DEFAULT_ROOM_NAME,
-	"settings.DEFAULT_SNAPSHOT_NAME" : settings.DEFAULT_SNAPSHOT_NAME,
-	"settings.ID_LEN" : settings.ID_LEN,
-	"settings.PASSWORD_HASH_LEN" : settings.PASSWORD_HASH_LEN,
-	"settings.ROOM_NAME_LEN" : settings.ROOM_NAME_LEN,
-	"settings.SESSION_ID_LEN" : settings.SESSION_ID_LEN,
-	"settings.SNAPSHOT_NAME_LEN" : settings.SNAPSHOT_NAME_LEN,
-	"settings.USER_NAME_LEN" : settings.USER_NAME_LEN
-});
+// Names of variables in the settings.js to replace in our SQL files
+var settingReplacements = utils.getSettingReplacements([
+	"DB_NAME",
+	"DEFAULT_ROOM_NAME",
+	"DEFAULT_SNAPSHOT_NAME",
+	"ID_LEN",
+	"PASSWORD_HASH_LEN",
+	"ROOM_NAME_LEN",
+	"SESSION_ID_LEN",
+	"SNAPSHOT_NAME_LEN",
+	"USER_NAME_LEN"
+], settings);
 
 var migrations = [
 	{ 
@@ -31,7 +30,7 @@ var migrations = [
 		run: function() {
 			return db.
 				// Initial queries
-				pqueryf("migrate_beginning_setup.sql", configReplacements)
+				pqueryf("migrate_beginning_setup.sql", settingReplacements)
 				// Convert images in our folder into rooms
 				.then(_ => {
 					var dir = settings.ROOMS_DIR;
@@ -57,7 +56,7 @@ var migrations = [
 	}, { 
 		name: "v0.2.1",
 		run: function() {
-			return db.pqueryf("migrate_v0.2.1_all.sql", configReplacements);
+			return db.pqueryf("migrate_v0.2.1_all.sql", settingReplacements);
 		}
 	}
 ]
