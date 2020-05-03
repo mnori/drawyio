@@ -18,6 +18,7 @@ services:
     ports:
       # Mapping a host IP to our web server so we can test it.
       # 127.0.0.12:80 on the host points to port 8080 inside the container
+      # Mapp this IP to an entry in the hosts file such as drawyio.dev
       - "127.0.0.12:80:8080" 
     networks:
       testing:
