@@ -262,7 +262,8 @@ function Layer(drawUI, layerID, local) {
 
 		// Clear the stroke render texture
 		// console.log(self.drawUI.renderer);
-		self.drawUI.renderer.clearRenderTexture(self.stroke.renderTexture, 0x00000000);
+		// self.drawUI.renderer.clearRenderTexture(self.stroke.renderTexture, 0x00000000);
+		// self.renderTexture.clear();
 
 		// Put the stroke render sprite back in the main container
 		self.drawUI.container.addChild(self.stroke.renderSprite);

@@ -614,12 +614,13 @@ function Room(idIn, startLayer, fields, isModified, app) {
 				// not reached the end yet - so overlay the image
 				componentCodes.push(overlay.code);
 				var overlayBuf = utils.base64ToBuffer(overlay.base64);
-				var overlayParams = {top: overlay.offsets.top,  left: overlay.offsets.left};
-				self.app.sharp(baseBuf).overlayWith(overlayBuf, overlayParams).toBuffer().then(
-					function(buffer) {
-						flattenRecursive(buffer, ++ind);
-					}
-				);
+				
+				// new way of doing it
+				self.app.sharp(baseBuf).composite([{ 
+					input: overlayBuf, 
+					top: overlay.offsets.top,
+					left: overlay.offsets.left
+				}]);
 
 			} else { // reached the end - no more layers to merge
 				// now we must convert the image to base 64 encoded string again
