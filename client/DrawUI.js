@@ -287,18 +287,21 @@ function Stroke(layer) {
 	this.stroking = false;
 
 	this.init = function() {
+		console.log("Stroke.init()");
 		self.graphics = new PIXI.Graphics();
 		self.container = new PIXI.Container();
 		createRenderSprite(self);
 	}
 
 	this.destroy = function() { 
+		console.log("Stroke.destroy()");
 		self.renderTexture.destroy(true); 
 	}
 
 	// Might need a destroy method as well
 
 	this.startStroke = function(toolIn) {
+		console.log("Stroke.startStroke()");
 		self.tool = toolIn;
 		self.width = self.tool.meta.brushSize;
 		self.radius = parseInt(self.tool.meta.brushSize / 2);
@@ -309,11 +312,13 @@ function Stroke(layer) {
 
 	// Render the stroke data onto the layer render sprite
 	this.endStroke = function(toolIn) { 
+		console.log("Stroke.endStroke()");
 		self.layer.renderStroke(toolIn); 
 	}
 
 	// Render part of a stroke in a single batch
 	this.startBatch = function(toolIn) {
+		console.log("Stroke.startBatch()");
 		self.toolIn = toolIn;
 
 		// Removes all the line elements that got drawn previously
@@ -321,6 +326,7 @@ function Stroke(layer) {
 	}
 
 	this.plotLine = function(x0, y0, x1, y1) {
+		console.log("Stroke.plotLine()");
 		self.stroking = true;
 		self.graphics.beginFill(self.colour, 1);
 		self.graphics.lineStyle(self.tool.meta.brushSize, self.colour, 1);
@@ -333,6 +339,7 @@ function Stroke(layer) {
 	}
 
 	this.placeCircleSprite = function(x, y, radius) {
+		console.log("Stroke.placeCircleSprite()");
 		var circleSprite = new PIXI.Sprite(self.circleTexture)
 	 	circleSprite.x = x - (self.radius);
 	 	circleSprite.y = y - (self.radius);
@@ -340,6 +347,7 @@ function Stroke(layer) {
 	}
 
 	this.render = function() {
+		console.log("Stroke.render()");
 		if (!self.stroking) { // don't render if there is nothing to do
 			return;
 		}
@@ -353,6 +361,7 @@ function Stroke(layer) {
 	}
 
 	this.createCircleSprite = function() {
+		console.log("Stroke.createCircleSprite()");
 		var width = self.tool.meta.brushSize;
 
 		// Render a circle into the circle graphics element
