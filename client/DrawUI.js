@@ -83,10 +83,6 @@ function DrawUI(roomUI) {
 		self.getLayer(layerID).stroke.endStroke();
 	}
 
-	this.startBatch = function(layerID) {
-		self.getLayer(layerID).stroke.startBatch();
-	}
-
 	// happens when new layer data comes from the server - ditch the old layers
 	this.destroyLayer = function(layerID) {
 		var layer = self.getLayer(layerID); // can get image layers as well
@@ -104,39 +100,24 @@ function DrawUI(roomUI) {
 	// Render the main container
 	// Should only be called once per frame - WIP
 	this.render = function() {
-		var tl = new Timeline();
-		
-		tl.log("1");
 		// Empty the container
 		self.container.removeChildren();
 
-		tl.log("2");
-
 		// Render stroke data onto each sprite
 		self.renderStrokes();
-
-		tl.log("3");
 
 		// Bind the layer sets
 		self.bindSorted(self.imageLayers);
 		self.bindSorted(self.layers);
 
-		tl.log("4");
-		
 		// Add the local layer last, so user's strokes always appear on top
 		if (self.localLayer) {
 			self.container.addChild(self.localLayer.renderSprite)
 			self.container.addChild(self.localLayer.stroke.renderSprite);
 		}
 		
-		tl.log("5");
-
 		// true means we're clearing before render
-		// - must specify since we set clear to false in the initialiser
-		
 		self.renderer.render(self.container, null, true);
-		tl.log("6");
-		// tl.dump();
 	}
 
 	// Render Helper method
@@ -233,7 +214,6 @@ function ImageLayer(drawUI, layerData) {
 function Layer(drawUI, layerID, local) {
 	var self = this;
 	this.init = function() {
-		console.log("Layer.init()")
 		self.type = "Layer";
 		self.id = layerID;
 		self.order = drawUI.getNLayers();
@@ -248,10 +228,8 @@ function Layer(drawUI, layerID, local) {
 	this.bindSprite = function() {
 		if (self.local) {
 			// if local, it's handled by drawUI
-			console.log("Layer.bindSprite() is local, doing nothing")
 			return;
 		}
-		console.log("Layer.bindSprite() not local")
 		self.drawUI.container.addChild(self.renderSprite);
 		self.drawUI.container.addChild(self.stroke.renderSprite); // might add twice!
 	}
@@ -259,65 +237,19 @@ function Layer(drawUI, layerID, local) {
 	// Renders finished Stroke render texture to the layer's render texture.
 	// Only called after a stroke is completed. Not called between frames.
 	this.renderStroke = function() {
-		console.log("Layer.renderStroke()")
-
-		var tl = new Timeline();
-		tl.log("render start");
-
 		// Attach the stroke sprite to the layer container
 		self.container.addChild(self.stroke.renderSprite); 
-
-		tl.log("1");
 
 		// Render layer container onto layer render texture
 		self.drawUI.renderer.render(self.container, self.renderTexture);
 
-		tl.log("2");
-
 		// Remove stroke sprite from the layer container, since we just rendered it
 		self.container.removeChildren();
 
-		tl.log("3");
-
-		// Remove circle sprite elements from the stroke container
-		// TODO: needed? Or pass result into render() call?
-		self.stroke.container.removeChildren(); 
-
-		tl.log("4");
-
-		// Clear the render texture inside the stroke container (this is where the lines would be)
-		// The problem is that this is still not clearing out the line component of the texture
-		// It might be due to the render settings or some other shit
-		// TODO - figure out a better way to do this stuff
-		// var tl = new Timeline(); // performance benchmarking
-		// tl.log("pixi 1");
-		// Doesn't do shit.
-
-		tl.log("5");
-
-		// Remove circles from renderTexture by passing the cleared container
-		self.drawUI.renderer.render(self.stroke.container, self.stroke.renderTexture, true);
-
-		tl.log("6");
-
-		// Clear lines inside stroke
-		self.stroke.graphics.clear(); 
-
-		tl.log("7");
-		tl.dump();
-
-		// Where are the lines being placed inside the Stroke? How to delete them?
-		// var tl = new Timeline(); // performance benchmarking
-		// tl.log("reset start");
-		// self.stroke.destroy(); // <- expensive
-		// tl.log("reset end");
-		// self.stroke = new Stroke(this);	 // <- also expensive
-		// tl.log("pixi 4");
-		// tl.dump();
+		self.stroke.reset();
 	}
 
 	this.destroy = function() {
-		console.log("Layer.destroy()")
 		// need to delete all the render stuff properly, otherwise memory will leak
 		self.stroke.destroy();
 		self.renderTexture.destroy(true);
@@ -334,22 +266,31 @@ function Stroke(layer) {
 	this.tool = null;
 	this.stroking = false;
 
+	// Initialise the stroke
 	this.init = function() {
-		console.log("Stroke.init()");
 		self.graphics = new PIXI.Graphics();
 		self.container = new PIXI.Container();
 		createRenderSprite(self);
 	}
 
+	// Reset the stroke, this is more efficient than destroy() as we don't start from scratch
+	this.reset = function() {
+		// Remove our circle sprite elements from the stroke container
+		self.container.removeChildren(); 
+
+		// Remove circles from renderTexture by passing the cleared container, true means clear
+		self.drawUI.renderer.render(self.container, self.renderTexture, true);
+
+		// Clear out line elements, attached to a graphics object
+		self.graphics.clear(); 
+	}
+
+	// Get rid of our render texture
 	this.destroy = function() { 
-		console.log("Stroke.destroy()");
 		self.renderTexture.destroy(true); 
 	}
 
-	// Might need a destroy method as well
-
 	this.startStroke = function(toolIn) {
-		console.log("Stroke.startStroke()");
 		self.tool = toolIn;
 		self.width = self.tool.meta.brushSize;
 		self.radius = parseInt(self.tool.meta.brushSize / 2);
@@ -360,22 +301,10 @@ function Stroke(layer) {
 
 	// Render the stroke data onto the layer render sprite
 	this.endStroke = function(toolIn) { 
-		console.log("Stroke.endStroke()");
 		self.layer.renderStroke(toolIn); 
 	}
 
-	// Render part of a stroke in a single batch
-	this.startBatch = function(toolIn) {
-		console.log("Stroke.startBatch()");
-		self.toolIn = toolIn;
-
-		// Removes all the line elements that got drawn previously
-		// We should not actually do this here, since this can be midway through a stroke
-		// self.graphics.clear(); 
-	}
-
 	this.plotLine = function(x0, y0, x1, y1) {
-		console.log("Stroke.plotLine()");
 		self.stroking = true;
 		self.graphics.beginFill(self.colour, 1);
 		self.graphics.lineStyle(self.tool.meta.brushSize, self.colour, 1);
@@ -388,7 +317,6 @@ function Stroke(layer) {
 	}
 
 	this.placeCircleSprite = function(x, y, radius) {
-		console.log("Stroke.placeCircleSprite("+x+", "+y+")");
 		var circleSprite = new PIXI.Sprite(self.circleTexture)
 	 	circleSprite.x = x - (self.radius);
 	 	circleSprite.y = y - (self.radius);
@@ -396,7 +324,6 @@ function Stroke(layer) {
 	}
 
 	this.render = function() {
-		console.log("Stroke.render()");
 		if (!self.stroking) { // don't render if there is nothing to do
 			return;
 		}
@@ -412,7 +339,6 @@ function Stroke(layer) {
 	}
 
 	this.createCircleSprite = function() {
-		console.log("Stroke.createCircleSprite()");
 		var width = self.tool.meta.brushSize;
 
 		// Render a circle into the circle graphics element
@@ -467,8 +393,6 @@ function rgbaToHex(rgba) {
         // a = parseFloat(rgbaTrim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
 
     var str = "0x" + extractHex(r) + extractHex(g) + extractHex(b);
-    // console.log(rgba);
-    // console.log(str);
     return parseInt(str);
 }
 

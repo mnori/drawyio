@@ -498,22 +498,14 @@ function RoomUI() {
 
 	// Draw free form line onto canvas
 	function drawPaintPixi(toolIn, emit) {
-		// return drawPaintOld(toolIn, emit);
-
-		// var tl = new Timeline(); // performance benchmarking
-		// tl.log("pixi 1");
 		if (toolIn.meta == null) {
-			console.log("Warning -> drawPaint called without data!");
+			console.warn("DrawPaint called without data!");
 			return;
 		}
 
 		var renderID = toolIn.layerCode;
-
-		// var destData = thisCtx.getImageData(0, 0, width, height);
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
-
-		self.drawUI.startBatch(renderID, toolIn); // doesn't actually do anything except set tool
 
 		if (firstCoord != null) {
 			self.drawUI.plotLine(renderID, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
@@ -531,58 +523,55 @@ function RoomUI() {
 		}
 
 		self.drawUI.render(renderID);
-
-		// tl.log("pixi 2");
-		// tl.dump();
 	}
 
 
-	// Draw woblly line onto canvas
-	// Draw woblly line onto canvas
-	function drawPaintOld(toolIn, emit) {
-		var tl = new Timeline();
-		tl.log("old 1");
+	// // Draw woblly line onto canvas
+	// // Draw woblly line onto canvas
+	// function drawPaintOld(toolIn, emit) {
+	// 	var tl = new Timeline();
+	// 	tl.log("old 1");
 
-		if (toolIn.meta == null) {
-			console.log("Warning -> drawPaint called without data!");
-			return;
-		}
-		var thisCtx = getDrawCtx(toolIn, emit);
-		if (toolIn.state == "start" || typeof(thisCtx.strokeData) == "undefined") {
-			thisCtx.strokeData = makeStrokeData();
-		}
+	// 	if (toolIn.meta == null) {
+	// 		console.warn("drawPaint() called without data!");
+	// 		return;
+	// 	}
+	// 	var thisCtx = getDrawCtx(toolIn, emit);
+	// 	if (toolIn.state == "start" || typeof(thisCtx.strokeData) == "undefined") {
+	// 		thisCtx.strokeData = makeStrokeData();
+	// 	}
 
-		var destData = thisCtx.getImageData(0, 0, width, height);
+	// 	var destData = thisCtx.getImageData(0, 0, width, height);
 
-		var entries = toolIn.meta.lineEntries;
-		var firstCoord = entries[0].coord;
+	// 	var entries = toolIn.meta.lineEntries;
+	// 	var firstCoord = entries[0].coord;
 
-		// draw a dot to start off
-		// this is where it breaks - coord is missing
-		// check for null and do nothing if empty
+	// 	// draw a dot to start off
+	// 	// this is where it breaks - coord is missing
+	// 	// check for null and do nothing if empty
 
-		if (firstCoord != null) {
-			plotLine(thisCtx, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
-		}
+	// 	if (firstCoord != null) {
+	// 		plotLine(thisCtx, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+	// 	}
 
-		// now draw the rest of the line
-		for (var i = 1; i < entries.length; i++) {
-			var prevCoord = entries[i - 1].coord;
-			var thisCoord = entries[i].coord;
-			if (prevCoord == null || thisCoord == null) {
-				// might happen if mouse is outside the boundaries
-				continue;
-			}
-			plotLine(thisCtx, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
-		}
+	// 	// now draw the rest of the line
+	// 	for (var i = 1; i < entries.length; i++) {
+	// 		var prevCoord = entries[i - 1].coord;
+	// 		var thisCoord = entries[i].coord;
+	// 		if (prevCoord == null || thisCoord == null) {
+	// 			// might happen if mouse is outside the boundaries
+	// 			continue;
+	// 		}
+	// 		plotLine(thisCtx, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+	// 	}
 
-		// Write data to canvas. Quite slow so should be done sparingly
-		// also this copies the whole image! Could it be done faster using a slice?
-		thisCtx.putImageData(destData, 0, 0);
+	// 	// Write data to canvas. Quite slow so should be done sparingly
+	// 	// also this copies the whole image! Could it be done faster using a slice?
+	// 	thisCtx.putImageData(destData, 0, 0);
 
-		tl.log("old 2");
-		tl.dump();
-	}
+	// 	tl.log("old 2");
+	// 	tl.dump();
+	// }
 
 	function clearFinalise() {
 		if (finaliseTimeout != null) { 
@@ -833,41 +822,41 @@ function RoomUI() {
 	}
 
 	// @deprecated
-	function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
-		var circleData = makeCircle(toolIn);
-		var colour = parseColour(toolIn.colour);
-		var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
-		var dy = -Math.abs(y1-y0), sy = y0<y1 ? 1 : -1;
-		var err = dx+dy, e2;
+	// function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
+	// 	var circleData = makeCircle(toolIn);
+	// 	var colour = parseColour(toolIn.colour);
+	// 	var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
+	// 	var dy = -Math.abs(y1-y0), sy = y0<y1 ? 1 : -1;
+	// 	var err = dx+dy, e2;
 
-		for (;;) {
-			var offset = -toolIn.meta.brushSize;
-			for (var x = 0; x < circleData.length; x++) {
-				for (var y = 0; y < circleData[x].length; y++) {
-					if (circleData[x][y] == true) {
-						var xCirc = x0 + offset + x;
-						var yCirc = y0 + offset + y;
-						if (
-							xCirc >= 0 && xCirc < width && 
-							yCirc >= 0 && yCirc < height
-						) {
-							// strokeData tells us which pixels have already been 
-							// painted for this stroke
-							if (!ctx.strokeData[xCirc][yCirc]) {
-								setColour(data, xCirc, yCirc, colour);	
-								ctx.strokeData[xCirc][yCirc] = true;
-							}
-						}
-					}
-				}
-			}
+	// 	for (;;) {
+	// 		var offset = -toolIn.meta.brushSize;
+	// 		for (var x = 0; x < circleData.length; x++) {
+	// 			for (var y = 0; y < circleData[x].length; y++) {
+	// 				if (circleData[x][y] == true) {
+	// 					var xCirc = x0 + offset + x;
+	// 					var yCirc = y0 + offset + y;
+	// 					if (
+	// 						xCirc >= 0 && xCirc < width && 
+	// 						yCirc >= 0 && yCirc < height
+	// 					) {
+	// 						// strokeData tells us which pixels have already been 
+	// 						// painted for this stroke
+	// 						if (!ctx.strokeData[xCirc][yCirc]) {
+	// 							setColour(data, xCirc, yCirc, colour);	
+	// 							ctx.strokeData[xCirc][yCirc] = true;
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
 
-			if (x0 == x1 && y0 == y1) break;
-			e2 = 2*err;
-			if (e2 >= dy) { err += dy; x0 += sx; }
-			if (e2 <= dx) { err += dx; y0 += sy; }
-		}
-	}
+	// 		if (x0 == x1 && y0 == y1) break;
+	// 		e2 = 2*err;
+	// 		if (e2 >= dy) { err += dy; x0 += sx; }
+	// 		if (e2 <= dx) { err += dx; y0 += sy; }
+	// 	}
+	// }
 
 	function eyedropper(tool) {
 		if (tool.newCoord == null) { // can happen outside of canvas area
