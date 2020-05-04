@@ -1,5 +1,6 @@
 // Holds the code for rendering drawings using coordinate data
 // This is the new version that uses WebGL (via pixijs wrapper library)
+// It's supposed to be a replacement for various parts of RoomUI.js
 
 function DrawUI(roomUI) {
 	var self = this;
@@ -230,6 +231,7 @@ function ImageLayer(drawUI, layerData) {
 function Layer(drawUI, layerID, local) {
 	var self = this;
 	this.init = function() {
+		console.log("Layer.init()")
 		self.type = "Layer";
 		self.id = layerID;
 		self.order = drawUI.getNLayers();
@@ -242,34 +244,48 @@ function Layer(drawUI, layerID, local) {
 	}
 
 	this.bindSprite = function() {
+		console.log("Layer.bindSprite()")
 		if (self.local) {
 			return;
 		}
 		self.drawUI.container.addChild(self.renderSprite);
-		self.drawUI.container.addChild(self.stroke.renderSprite);
+		self.drawUI.container.addChild(self.stroke.renderSprite); // might add twice!
 	}
 
 	// Renders finished Stroke render texture to the layer's render texture
 	this.renderStroke = function() {
+		console.log("Layer.renderStroke()")
 		// Move the stroke sprite to the layer container
 		self.container.addChild(self.stroke.renderSprite); 
 
 		// render
 		self.drawUI.renderer.render(self.container, self.renderTexture);
 
-		// Remove the stroke from the container
-		self.container.removeChildren();	
+		// Remove the stroke components from the container (circle sprites and line shapes)
+		self.container.removeChildren();
 
-		// Clear the stroke render texture
+		// Clear the stroke render texture for the next iteration
 		// console.log(self.drawUI.renderer);
+
+		// this call does clear, but it also causes issues, we need to clear the SPRITE's 
+		// render teture, not the layer's!
+		// self.drawUI.renderer.render(self.container, self.renderTexture, true)
+
 		// self.drawUI.renderer.clearRenderTexture(self.stroke.renderTexture, 0x00000000);
 		// self.renderTexture.clear();
 
+		// Clear stroke render texture (self.container probably not the best thing to pass in)
+		// self.drawUI.renderer.render(self.container, self.stroke.renderTexture, true)
+		self.stroke.renderTexture.destroy(true); 
+		createRenderSprite(self.stroke)
+
 		// Put the stroke render sprite back in the main container
 		self.drawUI.container.addChild(self.stroke.renderSprite);
+
 	}
 
 	this.destroy = function() {
+		console.log("Layer.destroy()")
 		// need to delete all the render stuff properly, otherwise memory will leak
 		self.stroke.destroy();
 		self.renderTexture.destroy(true);
@@ -322,7 +338,8 @@ function Stroke(layer) {
 		self.toolIn = toolIn;
 
 		// Removes all the line elements that got drawn previously
-		self.graphics.clear(); 
+		// We should not actually do this, since it leads to bits of the drawing disappearing
+		// self.graphics.clear(); 
 	}
 
 	this.plotLine = function(x0, y0, x1, y1) {
@@ -339,7 +356,7 @@ function Stroke(layer) {
 	}
 
 	this.placeCircleSprite = function(x, y, radius) {
-		console.log("Stroke.placeCircleSprite()");
+		console.log("Stroke.placeCircleSprite("+x+", "+y+")");
 		var circleSprite = new PIXI.Sprite(self.circleTexture)
 	 	circleSprite.x = x - (self.radius);
 	 	circleSprite.y = y - (self.radius);
@@ -355,8 +372,10 @@ function Stroke(layer) {
 		self.container.addChild(self.graphics);
 		self.layer.drawUI.renderer.render(self.container, self.renderTexture);
 
-		// clear for next iteration
-		self.container.removeChildren();
+		// clear for next iteration. 
+		// We shouldn't do this here, because it removves the circle textures....
+		// self.container.removeChildren(); // <-- TODO, remove this and the comment 
+		// above when confirmed working!
 		self.stroking = false;
 	}
 

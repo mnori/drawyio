@@ -496,12 +496,12 @@ function RoomUI() {
 		toolIn.meta.lineEntries = [lastEntry]
 	}
 
-	// Draw woblly line onto canvas
+	// Draw free form line onto canvas
 	function drawPaintPixi(toolIn, emit) {
 		// return drawPaintOld(toolIn, emit);
 
-		var tl = new Timeline();
-		tl.log("pixi 1");
+		// var tl = new Timeline(); // performance benchmarking
+		// tl.log("pixi 1");
 		if (toolIn.meta == null) {
 			console.log("Warning -> drawPaint called without data!");
 			return;
@@ -529,9 +529,10 @@ function RoomUI() {
 			}
 			self.drawUI.plotLine(renderID, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
+
 		self.drawUI.render(renderID);
 
-		tl.log("pixi 2");
+		// tl.log("pixi 2");
 		// tl.dump();
 	}
 
