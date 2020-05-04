@@ -24,13 +24,16 @@ function DrawUI(roomUI) {
 	}
 
 	this.createRenderers = function() {
-		// Setup main renderer
-		self.renderer = new PIXI.WebGLRenderer(this.roomUI.width, this.roomUI.height, {
+		// Setup main renderer, all the parameters are in an options object passed as 1st parameter
+		self.renderer = new PIXI.WebGLRenderer({
+			"width": this.roomUI.width,
+			"height": this.roomUI.height,
 			"antialias": true,
 			"transparent": true,
-			"clearBeforeRender": false,
-			"preserveDrawingBuffer": true
+			"clearBeforeRender": false, // needed for overlay rendering
+			"preserveDrawingBuffer": true // as above
 		});
+
 		var view = $(self.renderer.view);
 		$("#drawing_layers").append(view);
 		view.attr("id", "renderer");
@@ -151,7 +154,6 @@ function DrawUI(roomUI) {
 		});
 		// Add layers to container in the correct order
 		for (var i = 0; i < entries.length; i++) {
-			// console.log(layer.type+" "+layer.id+" "+layer.order);
 			var layer = entries[i];
 			layer.bindSprite();
 		}
@@ -215,7 +217,6 @@ function ImageLayer(drawUI, layerData) {
 	    });
 	}
 	this.destroy = function() {
-		// console.log("Remember to destroy imageLayer! "+self.id);
 		self.sprite.destroy(true);
 	}
 
@@ -244,44 +245,46 @@ function Layer(drawUI, layerID, local) {
 	}
 
 	this.bindSprite = function() {
-		console.log("Layer.bindSprite()")
 		if (self.local) {
+			// if local, it's handled by drawUI
+			console.log("Layer.bindSprite() is local, doing nothing")
 			return;
 		}
+		console.log("Layer.bindSprite() not local")
 		self.drawUI.container.addChild(self.renderSprite);
 		self.drawUI.container.addChild(self.stroke.renderSprite); // might add twice!
 	}
 
-	// Renders finished Stroke render texture to the layer's render texture
+	// Renders finished Stroke render texture to the layer's render texture.
+	// Only called after a stroke is completed. Not called between frames.
 	this.renderStroke = function() {
 		console.log("Layer.renderStroke()")
-		// Move the stroke sprite to the layer container
+
+		// Attach the stroke sprite to the layer container
 		self.container.addChild(self.stroke.renderSprite); 
 
-		// render
+		// Render layer container onto layer render texture
 		self.drawUI.renderer.render(self.container, self.renderTexture);
 
-		// Remove the stroke components from the container (circle sprites and line shapes)
+		// Remove stroke sprite from the layer container, since we just rendered it
 		self.container.removeChildren();
 
-		// Clear the stroke render texture for the next iteration
-		// console.log(self.drawUI.renderer);
+		// Remove circle sprite elements from the stroke container
+		self.stroke.container.removeChildren(); 
 
-		// this call does clear, but it also causes issues, we need to clear the SPRITE's 
-		// render teture, not the layer's!
-		// self.drawUI.renderer.render(self.container, self.renderTexture, true)
-
-		// self.drawUI.renderer.clearRenderTexture(self.stroke.renderTexture, 0x00000000);
-		// self.renderTexture.clear();
-
-		// Clear stroke render texture (self.container probably not the best thing to pass in)
-		// self.drawUI.renderer.render(self.container, self.stroke.renderTexture, true)
-		self.stroke.renderTexture.destroy(true); 
-		createRenderSprite(self.stroke)
-
-		// Put the stroke render sprite back in the main container
-		self.drawUI.container.addChild(self.stroke.renderSprite);
-
+		// Clear the render texture inside the stroke container (this is where the lines would be)
+		// The problem is that this is still not clearing out the line component of the texture
+		// It might be due to the render settings or some other shit
+		// TODO - figure out a better way to do this stuff
+		var tl = new Timeline(); // performance benchmarking
+		tl.log("pixi 1");
+		self.drawUI.renderer.render(self.container, self.stroke.renderTexture, true)
+		tl.log("pixi 2");
+		self.stroke.destroy(); // <- expensive
+		tl.log("pixi 3");
+		self.stroke = new Stroke(this);	 // <- also expensive
+		tl.log("pixi 4");
+		tl.dump();
 	}
 
 	this.destroy = function() {
@@ -338,7 +341,7 @@ function Stroke(layer) {
 		self.toolIn = toolIn;
 
 		// Removes all the line elements that got drawn previously
-		// We should not actually do this, since it leads to bits of the drawing disappearing
+		// We should not actually do this here, since this can be midway through a stroke
 		// self.graphics.clear(); 
 	}
 

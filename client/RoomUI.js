@@ -513,7 +513,7 @@ function RoomUI() {
 		var entries = toolIn.meta.lineEntries;
 		var firstCoord = entries[0].coord;
 
-		self.drawUI.startBatch(renderID, toolIn);
+		self.drawUI.startBatch(renderID, toolIn); // doesn't actually do anything except set tool
 
 		if (firstCoord != null) {
 			self.drawUI.plotLine(renderID, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
