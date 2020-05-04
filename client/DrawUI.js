@@ -1,6 +1,7 @@
 // Holds the code for rendering drawings using coordinate data
 // This is the new version that uses WebGL (via pixijs wrapper library)
 // It's supposed to be a replacement for various parts of RoomUI.js
+// All PIXI.* library calls go here.
 
 function DrawUI(roomUI) {
 	var self = this;
@@ -260,31 +261,59 @@ function Layer(drawUI, layerID, local) {
 	this.renderStroke = function() {
 		console.log("Layer.renderStroke()")
 
+		var tl = new Timeline();
+		tl.log("render start");
+
 		// Attach the stroke sprite to the layer container
 		self.container.addChild(self.stroke.renderSprite); 
+
+		tl.log("1");
 
 		// Render layer container onto layer render texture
 		self.drawUI.renderer.render(self.container, self.renderTexture);
 
+		tl.log("2");
+
 		// Remove stroke sprite from the layer container, since we just rendered it
 		self.container.removeChildren();
 
+		tl.log("3");
+
 		// Remove circle sprite elements from the stroke container
+		// TODO: needed? Or pass result into render() call?
 		self.stroke.container.removeChildren(); 
+
+		tl.log("4");
 
 		// Clear the render texture inside the stroke container (this is where the lines would be)
 		// The problem is that this is still not clearing out the line component of the texture
 		// It might be due to the render settings or some other shit
 		// TODO - figure out a better way to do this stuff
-		var tl = new Timeline(); // performance benchmarking
-		tl.log("pixi 1");
-		self.drawUI.renderer.render(self.container, self.stroke.renderTexture, true)
-		tl.log("pixi 2");
-		self.stroke.destroy(); // <- expensive
-		tl.log("pixi 3");
-		self.stroke = new Stroke(this);	 // <- also expensive
-		tl.log("pixi 4");
+		// var tl = new Timeline(); // performance benchmarking
+		// tl.log("pixi 1");
+		// Doesn't do shit.
+
+		tl.log("5");
+
+		// Remove circles from renderTexture by passing the cleared container
+		self.drawUI.renderer.render(self.stroke.container, self.stroke.renderTexture, true);
+
+		tl.log("6");
+
+		// Clear lines inside stroke
+		self.stroke.graphics.clear(); 
+
+		tl.log("7");
 		tl.dump();
+
+		// Where are the lines being placed inside the Stroke? How to delete them?
+		// var tl = new Timeline(); // performance benchmarking
+		// tl.log("reset start");
+		// self.stroke.destroy(); // <- expensive
+		// tl.log("reset end");
+		// self.stroke = new Stroke(this);	 // <- also expensive
+		// tl.log("pixi 4");
+		// tl.dump();
 	}
 
 	this.destroy = function() {
