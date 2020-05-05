@@ -636,6 +636,7 @@ function RoomUI() {
 		bindToolButton("line");
 		bindToolButton("flood");
 		bindToolButton("text");
+		bindToolButton("test");
 
 		// Special case prevent text button from stealing the focus
 		$("#text").on("mouseup", function() { 
