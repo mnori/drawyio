@@ -63,11 +63,81 @@ function RoomUI() {
 	var renderCanvas = $("#renderer");
 
 	this.init = function() { 
+
 		setupControls();
 		var body = $("body");
 
+		//////////////////////////////////////////////////////////////////////////////////////////
+
+		// Handle mouse move. To initialise it with the best precision, some hacking is required
+		var moveFun = function(ev) {
+			if (self.tl) {
+				self.tl.log("handleAction: c");
+				self.tl.dump();
+			}
+			self.tl = new Timeline();
+			self.tl.log("handleAction: a");
+
+			// create new layer code if required
+			// note this should be in mousemove, since we need to generate a new layer code
+			// for idle previews, like with the text
+
+			// Sync with the tick so coords send are the same used for drawing
+			tool.newCoord = getMousePos(ev);
+
+			// var pointerEvents = ev.getCoalescedEvents();
+			// console.log("pointerEvents:");
+			// console.log(pointerEvents);
+
+			// console.log("coords");
+			// console.log(tool.newCoord);
+
+			// keep high resolution map of line entries for processing at intervals
+			if (tool.tool == "paint" && tool.state == "drawing") {
+				tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
+			}
+			if (tool.state == "start") {
+				tool.state = "drawing";
+			}
+			// this is where processing occurs
+			if (tool.newCoord == null && tool.tool != "eyedropper") { 
+				stopTool(ev);
+			} else {
+				handleAction(tool, true);
+			}
+
+			self.tl.log("handleAction: b"); // b => c takes a long time -- why?
+			return false;
+		}
+
+		// These look redundant, but having them here speeds up the interval. I have no idea why
+		// because I found it through experimentation. Probably should ask somewhere.
+		// ALSO THIS DOESNT WORK HERE :( even though the codepen does.
+		// Might be a race condition causing the inconsistend behaviour
+		// https://codepen.io/lordmanderly/pen/VwvydOM
+		
+		// $("body").off();
+		// document.body.removeEventListener("mousemove", moveFun)
+		// document.body.addEventListener("mousemove", moveFun);
+		// $("body").off();
+		// $("body").on("mousemove", moveFun);
+
+
+		$("body").on("pointermove", function(ev) {
+			// console.log("PointerEvent");
+			// console.log(ev);
+			console.log(ev.originalEvent.getCoalescedEvents());
+		});
+
+		// setTimeout(function() {
+		// 	console.log("ready");
+		// 	$(document).on("mousemove", moveFun);
+		// }, 5000)
+
+		//////////////////////////////////////////////////////////////////////////////////////////
+
 		// Handle mouse down.
-		renderCanvas.mousedown($.proxy(function(ev) {
+		renderCanvas.mousedown($.proxy(function(ev) { 
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
 				if (menusOpen()) {
@@ -123,30 +193,6 @@ function RoomUI() {
 				stopTool();
 			}
 		}, this));
-
-		// Handle mouse move. 
-		body.mousemove(function(ev) {
-			// create new layer code if required
-			// note this should be in mousemove, since we need to generate a new layer code
-			// for idle previews, like with the text
-
-			// Sync with the tick so coords send are the same used for drawing
-			tool.newCoord = getMousePos(ev);
-
-			// keep high resolution map of line entries for processing at intervals
-			if (tool.tool == "paint" && tool.state == "drawing") {
-				tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
-			}
-			if (tool.state == "start") {
-				tool.state = "drawing";
-			}
-			// this is where processing occurs
-			if (tool.newCoord == null && tool.tool != "eyedropper") { 
-				stopTool(ev);
-			} else {
-				handleAction(tool, true);
-			}
-		});
 
 		// stop the tool on mouseup
 		doc.mouseup(stopTool);
@@ -759,7 +805,7 @@ function RoomUI() {
 		} else if (tool.tool != "text") { // tool does not have a data attribute
 			tool.meta = null;
 		}
-		handleAction(tool, true);
+		handleAction(tool, true);startTool
 	}
 
 	function startLine(tool) {
