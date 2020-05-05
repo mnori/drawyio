@@ -13,13 +13,11 @@ function App() {
 	var sharp = this.sharp = require("sharp"); // Image processing library
 	const nano = require('nanoseconds'); // For measuring performance
 	const expressApp = express();
-	const ta = require('time-ago')(); // set up time-ago human readable dates library
+	const ta = require("time-ago")
 	const server = require("http").Server(expressApp); // set up socket.io
 	this.io = require("socket.io")(server);
-
-	var cookieParser = require('cookie-parser');
-	this.recaptcha = require('express-recaptcha');
-
+	var cookieParser = require("cookie-parser");
+	this.recaptcha = require("express-recaptcha");
 	var settings = this.settings = require("./settings"); // Our settings
 	this.validation = require("./validation"); // Validation tools
 	const database = require("./database"); // Our db wrapper

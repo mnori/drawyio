@@ -1,7 +1,6 @@
 // Database migrations for drawy.io
 // (c) 2020 drawy.io
 
-var colors = require('colors');
 const settings = require("./settings")
 var fs = require("fs");
 var database = require("./database");
