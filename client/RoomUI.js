@@ -525,7 +525,6 @@ function RoomUI() {
 		self.drawUI.render(renderID);
 	}
 
-
 	// // Draw woblly line onto canvas
 	// // Draw woblly line onto canvas
 	// function drawPaintOld(toolIn, emit) {

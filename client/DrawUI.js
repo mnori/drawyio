@@ -187,14 +187,13 @@ function ImageLayer(drawUI, layerData) {
 		self.id = layerData.code;
 		self.order = drawUI.getNLayers();
 		self.drawUI = drawUI;
-		self.createSprite(layerData.base64);
+		self.createSprite(layerData);
 	}
-	this.createSprite = function(base64) {
-		// this seems to have some async problems
-		self.sprite = PIXI.Sprite.fromImage(base64);
-		self.sprite.texture.on('update', function() {
-
-			// render every time a layer loads
+	this.createSprite = function(layerData) {
+		self.sprite = PIXI.Sprite.fromImage(layerData.base64);
+		self.sprite.x = layerData.offsets.left;
+		self.sprite.y = layerData.offsets.top;
+		self.sprite.texture.on('update', function() { // render every time a layer loads
 			self.drawUI.render();
 	    });
 	}
