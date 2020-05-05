@@ -26,7 +26,7 @@ function DrawUI(roomUI) {
 
 	this.createRenderers = function() {
 		// Setup main renderer, all the parameters are in an options object passed as 1st parameter
-		self.renderer = new PIXI.WebGLRenderer({
+		self.renderer = new PIXI.Renderer({
 			"width": this.roomUI.width,
 			"height": this.roomUI.height,
 			"antialias": true,
@@ -190,7 +190,7 @@ function ImageLayer(drawUI, layerData) {
 		self.createSprite(layerData);
 	}
 	this.createSprite = function(layerData) {
-		self.sprite = PIXI.Sprite.fromImage(layerData.base64);
+		self.sprite = PIXI.Sprite.from(layerData.base64);
 		self.sprite.x = layerData.offsets.left;
 		self.sprite.y = layerData.offsets.top;
 		self.sprite.texture.on('update', function() { // render every time a layer loads
