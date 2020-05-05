@@ -50,7 +50,22 @@ function App() {
 			db.query("USE "+settings.DB_NAME+";");
 			this.rooms = new utils.AssocArray();
 			expressApp.use(cookieParser());
-			nunjucks.configure("templates", {express: expressApp});
+			nunjucks.configure(
+				// Template folder
+				"templates", 
+
+				// Config params
+				{ 
+					// Link to express framework
+					express: expressApp,
+
+					// for development, so we can see template changes without server restart
+					noCache: !settings.IS_LIVE, 
+
+					// Security shizzle
+					autoescape: true
+				}
+			);
 			configureRoutes(expressApp);
 			cleanup(settings);
 			// 0.0.0.0 is important. Makes it accept connections from anywhere.

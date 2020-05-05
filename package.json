@@ -16,7 +16,7 @@
     "http": "0.0.0",
     "mysql": "^2.18.1",
     "nanoseconds": "^0.1.0",
-    "nunjucks": "^3.0.0",
+    "nunjucks": "^3.2.1",
     "sharp": "^0.25.2",
     "socket.io": "^1.7.3",
     "time-ago": "^0.1.0"
