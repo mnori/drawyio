@@ -67,77 +67,8 @@ function RoomUI() {
 		setupControls();
 		var body = $("body");
 
-		//////////////////////////////////////////////////////////////////////////////////////////
-
-		// Handle mouse move. To initialise it with the best precision, some hacking is required
-		var moveFun = function(ev) {
-			if (self.tl) {
-				self.tl.log("handleAction: c");
-				self.tl.dump();
-			}
-			self.tl = new Timeline();
-			self.tl.log("handleAction: a");
-
-			// create new layer code if required
-			// note this should be in mousemove, since we need to generate a new layer code
-			// for idle previews, like with the text
-
-			// Sync with the tick so coords send are the same used for drawing
-			tool.newCoord = getMousePos(ev);
-
-			// var pointerEvents = ev.getCoalescedEvents();
-			// console.log("pointerEvents:");
-			// console.log(pointerEvents);
-
-			// console.log("coords");
-			// console.log(tool.newCoord);
-
-			// keep high resolution map of line entries for processing at intervals
-			if (tool.tool == "paint" && tool.state == "drawing") {
-				tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
-			}
-			if (tool.state == "start") {
-				tool.state = "drawing";
-			}
-			// this is where processing occurs
-			if (tool.newCoord == null && tool.tool != "eyedropper") { 
-				stopTool(ev);
-			} else {
-				handleAction(tool, true);
-			}
-
-			self.tl.log("handleAction: b"); // b => c takes a long time -- why?
-			return false;
-		}
-
-		// These look redundant, but having them here speeds up the interval. I have no idea why
-		// because I found it through experimentation. Probably should ask somewhere.
-		// ALSO THIS DOESNT WORK HERE :( even though the codepen does.
-		// Might be a race condition causing the inconsistend behaviour
-		// https://codepen.io/lordmanderly/pen/VwvydOM
-		
-		// $("body").off();
-		// document.body.removeEventListener("mousemove", moveFun)
-		// document.body.addEventListener("mousemove", moveFun);
-		// $("body").off();
-		// $("body").on("mousemove", moveFun);
-
-
-		$("body").on("pointermove", function(ev) {
-			// console.log("PointerEvent");
-			// console.log(ev);
-			console.log(ev.originalEvent.getCoalescedEvents());
-		});
-
-		// setTimeout(function() {
-		// 	console.log("ready");
-		// 	$(document).on("mousemove", moveFun);
-		// }, 5000)
-
-		//////////////////////////////////////////////////////////////////////////////////////////
-
-		// Handle mouse down.
-		renderCanvas.mousedown($.proxy(function(ev) { 
+		// Handle cursor down
+		renderCanvas.on("pointerdown", $.proxy(function(ev) { 
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
 				if (menusOpen()) {
@@ -149,7 +80,8 @@ function RoomUI() {
 			return false;
 		}, this));
 
-		renderCanvas.mouseenter(function(ev) {
+		// Handle cursor entering canvas 
+		renderCanvas.on("pointerenter", function(ev) {
 			toolInCanvas = true;
 			if (pickerVisible()) { // no mouse enter when colour picker is visible
 				return;
@@ -157,7 +89,41 @@ function RoomUI() {
 			if (event.which == 1) { // left mouse button is pressed
 				startTool(getMousePos(ev));
 			}
-		})
+		});
+
+		// Handle cursor movement
+		// This function gets called about 60 frames per second. Each event parameter contains
+		// a list of coalesced events that happened over about 1/60th of a second. By processing
+		// the subevents we can draw a smooth line at max time resolution
+		renderCanvas.on("pointermove", function(ev) {
+
+			// Change tool state to drawing if we're at the beginning of a tool action
+			if (tool.state == "start") {
+				tool.state = "drawing";
+			}
+					
+			// Loop through events in the frame 
+			// This call won't work in shitty browsers like IE or Safari. So we probably want
+			// a message somewhere telling those users to sort their shit out.
+			var events = ev.originalEvent.getCoalescedEvents();
+			for (var i = 0; i < events.length; i++) {
+				var coalescedEvent = events[i];
+
+				// This is where processing occurs
+				tool.newCoord = getMousePos(coalescedEvent);
+				if (tool.tool == "paint" && tool.state == "drawing") {
+					tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
+				}
+				if (tool.newCoord == null && tool.tool != "eyedropper") { 
+					stopTool(coalescedEvent);
+				} else {
+					handleAction(tool, true);
+				}
+			}
+
+			// self.tl.log("handleAction: b"); // b => c takes a long time -- why?
+			return false;
+		});
 
 		// Right click activates the eye dropper - not the contex menu
 		renderCanvas.contextmenu(function(ev) { return false; });
@@ -195,11 +161,11 @@ function RoomUI() {
 		}, this));
 
 		// stop the tool on mouseup
-		doc.mouseup(stopTool);
+		doc.on("pointerup", stopTool);
 
 		// if mouse leaves preview canvas or window, set newCoord to null and stop the tool
-		renderCanvas.mouseleave(mouseOut);
-		doc.mouseleave(mouseOut);
+		renderCanvas.on("pointerleave", mouseOut);
+		doc.on("pointerleave", mouseOut);
 
 		// Listen for new drawing data from the server
 		socket.on("update_drawing", receiveDrawing);
