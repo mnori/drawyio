@@ -3,7 +3,7 @@
 // It's supposed to be a replacement for various parts of RoomUI.js
 // All PIXI.* library calls go here.
 
-function DrawUI(roomUI) {
+function DrawUi(roomUI) {
 	var self = this;
 
 	// set up the main container
@@ -17,7 +17,7 @@ function DrawUI(roomUI) {
 		// Set up layer storage
 		self.layers = new AssocArray();
 		self.imageLayers = new AssocArray();
-		this.localID = null;
+		this.localId = null;
 		self.localLayer = null;
 
 		// This is for cropping images and sending to the server
@@ -42,13 +42,13 @@ function DrawUI(roomUI) {
 
 	// Create new local layer, setting the old one to being a normal layer
 	// Returns canvas of the old layer
-	this.newLocal = function(layerID) {
+	this.newLocal = function(layerId) {
 		var oldLayer = null;
 		if (self.localLayer) {
 			self.localLayer.local = false;
 			oldLayer = self.localLayer;
 		}
-		self.localID = layerID;
+		self.localId = layerId;
 		self.localLayer = null; // will get created automatically when drawing begins
 
 		// now we generate a png image from the old local
@@ -71,29 +71,29 @@ function DrawUI(roomUI) {
 		return ++this.n;
 	}
 
-	this.plotLine = function(layerID, x0, y0, x1, y1) {
-		self.getLayer(layerID).stroke.plotLine(x0, y0, x1, y1);
+	this.plotLine = function(layerId, x0, y0, x1, y1) {
+		self.getLayer(layerId).stroke.plotLine(x0, y0, x1, y1);
 	}
 
-	this.startStroke = function(layerID, toolIn) {
-		self.getLayer(layerID).stroke.startStroke(toolIn);
+	this.startStroke = function(layerId, toolIn) {
+		self.getLayer(layerId).stroke.startStroke(toolIn);
 	}
 
-	this.endStroke = function(layerID, toolIn) {
-		self.getLayer(layerID).stroke.endStroke();
+	this.endStroke = function(layerId, toolIn) {
+		self.getLayer(layerId).stroke.endStroke();
 	}
 
 	// happens when new layer data comes from the server - ditch the old layers
-	this.destroyLayer = function(layerID) {
-		var layer = self.getLayer(layerID); // can get image layers as well
+	this.destroyLayer = function(layerId) {
+		var layer = self.getLayer(layerId); // can get image layers as well
 		if (layer) {
 			layer.destroy();
-			self.layers.remove(layerID);
+			self.layers.remove(layerId);
 		}
-		var imageLayer = self.getImageLayer(layerID);
+		var imageLayer = self.getImageLayer(layerId);
 		if (imageLayer) {
 			imageLayer.destroy();
-			self.imageLayers.remove(layerID);
+			self.imageLayers.remove(layerId);
 		}
 	}
 
@@ -151,12 +151,12 @@ function DrawUI(roomUI) {
 
 	// Get a layer by its layer code.
 	// Generates a new layer if it doesn't exist.
-	this.getLayer = function(layerID) {
-		layer = self.layers.get(layerID);
+	this.getLayer = function(layerId) {
+		layer = self.layers.get(layerId);
 		if (!layer) {
-			var local = (layerID == self.localID) ? true : false; 
-			layer = new Layer(self, layerID, local);
-			self.layers.set(layerID, layer);
+			var local = (layerId == self.localId) ? true : false; 
+			layer = new Layer(self, layerId, local);
+			self.layers.set(layerId, layer);
 			if (local) {
 				self.localLayer = layer;
 			}
@@ -164,8 +164,8 @@ function DrawUI(roomUI) {
 		return layer;
 	}
 
-	this.getImageLayer = function(layerID) {
-		var layer = self.imageLayers.get(layerID);
+	this.getImageLayer = function(layerId) {
+		var layer = self.imageLayers.get(layerId);
 		if (layer) {
 			return layer;
 		}
@@ -180,13 +180,13 @@ function DrawUI(roomUI) {
 	this.init();
 }
 
-function ImageLayer(drawUI, layerData) {
+function ImageLayer(drawUi, layerData) {
 	var self = this;
 	this.init = function() {
 		self.type = "ImageLayer";
 		self.id = layerData.code;
-		self.order = drawUI.getNLayers();
-		self.drawUI = drawUI;
+		self.order = drawUi.getNLayers();
+		self.drawUi = drawUi;
 		self.createSprite(layerData);
 	}
 	this.createSprite = function(layerData) {
@@ -194,7 +194,7 @@ function ImageLayer(drawUI, layerData) {
 		self.sprite.x = layerData.offsets.left;
 		self.sprite.y = layerData.offsets.top;
 		self.sprite.texture.on('update', function() { // render every time a layer loads
-			self.drawUI.render();
+			self.drawUi.render();
 	    });
 	}
 	this.destroy = function() {
@@ -202,7 +202,7 @@ function ImageLayer(drawUI, layerData) {
 	}
 
 	this.bindSprite = function() {
-		self.drawUI.container.addChild(self.sprite);
+		self.drawUi.container.addChild(self.sprite);
 	}
 	this.init();
 }
@@ -210,13 +210,13 @@ function ImageLayer(drawUI, layerData) {
 // Represents a layer which is linked to a particular user/socket
 // Consists of a render texture which has various Strokes superimposed over the top of it
 // In future, will add other types of drawing element
-function Layer(drawUI, layerID, local) {
+function Layer(drawUi, layerId, local) {
 	var self = this;
 	this.init = function() {
 		self.type = "Layer";
-		self.id = layerID;
-		self.order = drawUI.getNLayers();
-		self.drawUI = drawUI;
+		self.id = layerId;
+		self.order = drawUi.getNLayers();
+		self.drawUi = drawUi;
 		self.stroke = new Stroke(this);
 		self.container = new PIXI.Container();
 		self.local = local ? local : false; // whether currently the local target
@@ -226,11 +226,11 @@ function Layer(drawUI, layerID, local) {
 
 	this.bindSprite = function() {
 		if (self.local) {
-			// if local, it's handled by drawUI
+			// if local, it's handled by drawUi
 			return;
 		}
-		self.drawUI.container.addChild(self.renderSprite);
-		self.drawUI.container.addChild(self.stroke.renderSprite); // might add twice!
+		self.drawUi.container.addChild(self.renderSprite);
+		self.drawUi.container.addChild(self.stroke.renderSprite); // might add twice!
 	}
 
 	// Renders finished Stroke render texture to the layer's render texture.
@@ -240,7 +240,7 @@ function Layer(drawUI, layerID, local) {
 		self.container.addChild(self.stroke.renderSprite); 
 
 		// Render layer container onto layer render texture
-		self.drawUI.renderer.render(self.container, self.renderTexture);
+		self.drawUi.renderer.render(self.container, self.renderTexture);
 
 		// Remove stroke sprite from the layer container, since we just rendered it
 		self.container.removeChildren();
@@ -261,7 +261,7 @@ function Layer(drawUI, layerID, local) {
 function Stroke(layer) {
 	var self = this;
 	this.layer = layer;
-	this.drawUI = this.layer.drawUI;
+	this.drawUi = this.layer.drawUi;
 	this.tool = null;
 	this.stroking = false;
 
@@ -278,7 +278,7 @@ function Stroke(layer) {
 		self.container.removeChildren(); 
 
 		// Remove circles from renderTexture by passing the cleared container, true means clear
-		self.drawUI.renderer.render(self.container, self.renderTexture, true);
+		self.drawUi.renderer.render(self.container, self.renderTexture, true);
 
 		// Clear out line elements, attached to a graphics object
 		self.graphics.clear(); 
@@ -328,7 +328,7 @@ function Stroke(layer) {
 		}
 		// Render stroke stuff onto the render texture
 		self.container.addChild(self.graphics);
-		self.layer.drawUI.renderer.render(self.container, self.renderTexture);
+		self.layer.drawUi.renderer.render(self.container, self.renderTexture);
 
 		// clear for next iteration. 
 		// We shouldn't do this here, because it removves the circle textures....
@@ -350,7 +350,7 @@ function Stroke(layer) {
 		// Create a sprite from the graphics
 		var brt = new PIXI.BaseRenderTexture(width, width, PIXI.SCALE_MODES.LINEAR, 1);
 		self.circleTexture = new PIXI.RenderTexture(brt);
-		self.layer.drawUI.renderer.render(circleGraphics, self.circleTexture);
+		self.layer.drawUi.renderer.render(circleGraphics, self.circleTexture);
 	}
 
 	self.init();
@@ -361,8 +361,8 @@ function createRenderSprite(self) {
 
 	// Create render texture for drawing onto
 	var brt = new PIXI.BaseRenderTexture(
-		self.drawUI.roomUI.width, 
-		self.drawUI.roomUI.height, 
+		self.drawUi.roomUI.width, 
+		self.drawUi.roomUI.height, 
 		PIXI.SCALE_MODES.LINEAR, 1);
 	self.renderTexture = new PIXI.RenderTexture(brt);
 

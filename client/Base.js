@@ -53,23 +53,23 @@ function Base(conf) {
 	}
 
 	// Insert a session name with some styling
-	this.insertSessionName = function(elementID, sessionData) {
-		$("#"+elementID).text(sessionData["name"]); // using .text() 	escapes html
+	this.insertSessionName = function(elementId, sessionData) {
+		$("#"+elementId).text(sessionData["name"]); // using .text() 	escapes html
 
 		// gotta be a nicer way of doing this...
 		if (sessionData["type"] == "mod") {
-			$("#"+elementID).addClass("nick_indicator_mod");
-			$("#"+elementID).removeClass("nick_indicator_user");
-			$("#"+elementID).removeClass("nick_indicator_guest");
+			$("#"+elementId).addClass("nick_indicator_mod");
+			$("#"+elementId).removeClass("nick_indicator_user");
+			$("#"+elementId).removeClass("nick_indicator_guest");
 			
 		} else if (sessionData["type"] == "user") {
-			$("#"+elementID).removeClass("nick_indicator_mod");
-			$("#"+elementID).addClass("nick_indicator_user");
-			$("#"+elementID).removeClass("nick_indicator_guest");
+			$("#"+elementId).removeClass("nick_indicator_mod");
+			$("#"+elementId).addClass("nick_indicator_user");
+			$("#"+elementId).removeClass("nick_indicator_guest");
 		} else {
-			$("#"+elementID).removeClass("nick_indicator_mod");
-			$("#"+elementID).removeClass("nick_indicator_user");
-			$("#"+elementID).addClass("nick_indicator_guest");
+			$("#"+elementId).removeClass("nick_indicator_mod");
+			$("#"+elementId).removeClass("nick_indicator_user");
+			$("#"+elementId).addClass("nick_indicator_guest");
 		}
 	}
 

@@ -2,7 +2,7 @@
 // Contains lots of code that will be made redundant once the new pixi.js renderer 
 // is fully working
 
-function RoomUI() {
+function RoomUi() {
 	var drawID = opts["roomID"];
 	var width = this.width = opts["width"];
 	var height = this.height = opts["height"];
@@ -21,7 +21,7 @@ function RoomUI() {
 	var doc = $(document);
 	var socket = io.connect("/drawing_socket_"+drawID);
 	var layerCodeLen = 32;
-	var highestLayerID = 1;
+	var highestLayerId = 1;
 	var lastEmit = $.now(); // part of general purpose intervalling system
 	var lastPaintProcess = $.now(); // paint interval stuff 
 	var paintProcessCutoff = 250;
@@ -58,7 +58,8 @@ function RoomUI() {
 		tool: "paint",
 		meta: null
 	};
-	this.drawUI = new DrawUI(this);
+	this.drawUi = new DrawUi(this);
+	this.tester = new Tester(this);
 	newLocal(); // create the new layer code
 	var renderCanvas = $("#renderer");
 
@@ -196,7 +197,7 @@ function RoomUI() {
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	function newLocal() {
 		tool.layerCode = randomString(layerCodeLen);
-		var oldCanvas = self.drawUI.newLocal(tool.layerCode);
+		var oldCanvas = self.drawUi.newLocal(tool.layerCode);
 		return oldCanvas;
 	}
 
@@ -304,7 +305,7 @@ function RoomUI() {
 
 				// ensures that starting creates a dot on mousedown
 				if (toolIn.state == "start") {
-					self.drawUI.startStroke(renderID, toolIn); // initialise the stroke
+					self.drawUi.startStroke(renderID, toolIn); // initialise the stroke
 					drawPaint(toolIn, emit);
 					emitTool(toolOut);
 				}
@@ -320,7 +321,7 @@ function RoomUI() {
 			} else if (toolIn.meta.lineEntries != null) {
 				// remote user - draw the line using the data
 				if (toolIn.state == "start") {
-					self.drawUI.startStroke(renderID, toolIn);
+					self.drawUi.startStroke(renderID, toolIn);
 				}
 				drawPaint(toolIn, emit);
 			} 
@@ -329,7 +330,7 @@ function RoomUI() {
 			if (emit) emitTool(toolIn); // be sure to emit the end event
 			toolIn.state = "idle"; // pretty important to avoid issues
 			drawPaint(toolIn, emit);
-			self.drawUI.endStroke(renderID, toolIn);
+			self.drawUi.endStroke(renderID, toolIn);
 			finaliseEdit(toolIn, emit);
 
 		} else { // Tool state is idle - just send coords
@@ -520,7 +521,7 @@ function RoomUI() {
 		var firstCoord = entries[0].coord;
 
 		if (firstCoord != null) {
-			self.drawUI.plotLine(renderID, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
+			self.drawUi.plotLine(renderID, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
 		}
 
 		// now draw the rest of the line
@@ -531,10 +532,10 @@ function RoomUI() {
 				// might happen if mouse is outside the boundaries
 				continue;
 			}
-			self.drawUI.plotLine(renderID, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
+			self.drawUi.plotLine(renderID, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
 		}
 
-		self.drawUI.render(renderID);
+		self.drawUi.render(renderID);
 	}
 
 	// // Draw woblly line onto canvas
@@ -695,16 +696,32 @@ function RoomUI() {
 		return id;
 	}
 
-	function bindToolButton(toolID) {
-		$("#"+toolID).on("mousedown", function() {
-			toggleButtons(toolID);
-			setTool(toolID);
+	function bindToolButton(toolId) {
+		$("#"+toolId).on("mousedown", function() {
+			toggleButtons(toolId);
+			setTool(toolId);
 		});
 	}
 
-	function setTool(toolID) {
-		tool.tool = toolID;
+	function setTool(toolId) {
+
+		// Do we need to start / stop the tester?
+		if (toolId == "test" && tool.tool != "test") {
+			self.tester.start();
+		} else if (tool.tool == "test" && toolId != "test") { 
+			self.tester.stop();
+		}
+
+		// Set tool identifier into the tool
+		tool.tool = toolId;
+
+		// If the tool becomes "test" or stops being "test", we should start or stop tester
+
+
 		// when the tool is set (i.e. changed), we must initialise its metadata
+		// ... ???
+
+		
 	}
 
 	function readBrushSize(tool) {
@@ -1063,8 +1080,8 @@ function RoomUI() {
 		return true; // identical
 	}
 
-	function toggleButtons(toolID) {
-		var selectedElement = $("#"+toolID);
+	function toggleButtons(toolId) {
+		var selectedElement = $("#"+toolId);
 		$(".button_tool").each(function() {
 			var element = $(this);
 			if (element.attr("id") == selectedElement.attr("id")) {
@@ -1073,7 +1090,7 @@ function RoomUI() {
 				element.removeClass("button_pressed")
 			}
 		});
-		if (toolID == "text") {
+		if (toolId == "text") {
 			toggleTextInput();
 		} else {
 			closeTextInput();
@@ -1085,8 +1102,8 @@ function RoomUI() {
 			var el = $("#"+option+"_container");
 			if (
 				option == "room_menu" || 
-				(toolID == "text" && (option == "font_face" || option == "font_size")) ||
-				((toolID == "paint" || toolID == "line") && option == "brush_size")
+				(toolId == "text" && (option == "font_face" || option == "font_size")) ||
+				((toolId == "paint" || toolId == "line") && option == "brush_size")
 			) {
 				el.show();
 			} else {
@@ -1306,13 +1323,13 @@ function RoomUI() {
 			}
 			addLayer(value);
 		});
-		self.drawUI.render();
+		self.drawUi.render();
 	}
 
 	function receiveLayer(data) {
 		data = $.parseJSON(data);
 		addLayer(data.layer);
-		self.drawUI.render();
+		self.drawUi.render();
 	}	
 
 	// get the mouse position inside the canvas
@@ -1407,13 +1424,13 @@ function RoomUI() {
 		if (layerIn["components"]) {
 			var codes = layerIn["components"]
 			for (var i = 0; i < codes.length; i++) {
-				self.drawUI.destroyLayer(codes[i]);
+				self.drawUi.destroyLayer(codes[i]);
 			}
 		}
 
 		// Delete the layer with the ID
-		self.drawUI.destroyLayer(layerIn.code);
-		self.drawUI.addImageLayer(layerIn);
+		self.drawUi.destroyLayer(layerIn.code);
+		self.drawUi.addImageLayer(layerIn);
 	}
 
 	// Happens when the user times out from not being active for n milliseconds
@@ -1445,7 +1462,7 @@ function RoomUI() {
 
 				// Render the layer image - this replaces the canvas
 				addLayer(layer);
-				self.drawUI.render();
+				self.drawUi.render();
 
 
 				// // Remove the canvas copy
@@ -1551,7 +1568,7 @@ function RoomUI() {
 
 // Wrapper for tool menu UI elements, which use jquery selectmenu
 // TODO Pass in an options object instead of all these seperate parameters
-function ToolOptionMenu(drawUI, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isMenuIn) {
+function ToolOptionMenu(drawUi, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isMenuIn) {
 	var id = idIn;
 	var menuButton = $("#"+id);
 	var onOpen = onOpenIn
@@ -1643,5 +1660,40 @@ function ToolOptionMenu(drawUI, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isM
 		return false
 	}
 
-	this.init(drawUI);
+	this.init(drawUi);
+}
+
+// Test by performing dummy drawing movements.
+function Tester(roomUi) {
+
+	this.init = function(roomUi) {
+		self.roomUi = roomUi;
+		self.cursor = { // attributes of our virtual mouse
+			x: Math.round(self.roomUi.width / 2),
+			y: Math.round(self.roomUi.height / 2),
+		};
+		self.active = false;
+	}
+
+	this.start = function() {
+		console.log("Tester.start()");
+		self.active = true;
+		self.draw();
+	}
+
+	this.stop = function() {
+		console.log("Tester.stop()");
+		self.active = false;
+	}
+
+	this.draw = function() {
+		console.log("Tester.draw()");
+		console.log(self.cursor);
+		if (self.active) {
+			setTimeout(self.draw, 16);
+		}
+	}
+
+	var self = this;
+	self.init(roomUi);
 }

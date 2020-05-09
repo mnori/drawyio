@@ -9,10 +9,10 @@ module.exports = {
 	
 	CLIENT_JS: [ // names of the client source files before minification
 		"Base.js",
-		"GalleryUI.js",
-		"DrawUI.js",
-		"RoomUI.js",
-		"SnapshotUI.js",
+		"GalleryUi.js",
+		"DrawUi.js",
+		"RoomUi.js",
+		"SnapshotUi.js",
 		"Dialog.js"
 	],
 	IGNORE_CAPTCHA: true,

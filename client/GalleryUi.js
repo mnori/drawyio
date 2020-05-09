@@ -1,4 +1,4 @@
-function GalleryUI(type) {
+function GalleryUi(type) {
 	var self = this;
 	var init = function(type) {
 
