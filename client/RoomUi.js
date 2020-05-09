@@ -218,6 +218,7 @@ function RoomUi() {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	this.handleAction = function(tool, emit) {
+
 		if (emit) pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
 			tool.tool == "flood" && 
@@ -238,7 +239,7 @@ function RoomUi() {
 			// still need to emit those mouse coords though - for the cursor update on the remote
 			if (emit) emitToolInterval(tool); 
 
-		} else if (tool.tool == "paint") { // free drawn line
+		} else if (tool.tool == "paint" || tool.tool == "test") { // free drawn line
 			handlePaint(tool, emit);
 
 		} else if (tool.tool == "line") { // straight line
@@ -795,6 +796,10 @@ function RoomUi() {
 
 	// Stop drawing but only if already drawing
 	this.stopTool = function() {
+		if (self.tool.tool == "test") {
+			// Ignore attempts to stop tool from test mode, this is done through a seperate method
+			return;
+		}
 		if (self.tool.state == "drawing" || self.tool.state == "start") {
 			self.tool.state = "end";
 		}
@@ -1679,15 +1684,22 @@ function Tester(roomUi) {
 		self.draw();
 	}
 
-	this.stop = function() {
-		self.active = false;
-		self.roomUi.stopTool()
-	}
+	// TODO implement this
+	// this.stop = function() {
+	// 	self.active = false;
+	// 	self.roomUi.stopTool()
+	// }
 
 	this.draw = function() {
 		if (!self.active) {
 			return;
 		}
+
+		// Move the cursor
+		self.cursor = {
+			x: self.cursor.x + -1 + Math.floor(Math.random() * 3),
+			y: self.cursor.y + -1 + Math.floor(Math.random() * 3)
+		};
 		self.roomUi.tool.newCoord = self.cursor;
 		self.roomUi.tool.meta.lineEntries.push(
 			{"state": self.roomUi.tool.state, "coord": self.roomUi.tool.newCoord});
