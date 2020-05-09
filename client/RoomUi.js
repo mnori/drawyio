@@ -812,6 +812,14 @@ function RoomUi() {
 		}
 	}
 
+	// Stop test, a bit like stopTool but for automated test
+	this.stopTest = function() {
+		if (self.tool.state == "drawing" || self.tool.state == "start") {
+			self.tool.state = "end";
+		}
+		self.handleAction(self.tool, true);
+	}
+
 	function activateDropperToggle() {
 		self.tool.dropperToggle = true;
 		self.tool.prevTool = self.tool.tool;
@@ -1684,11 +1692,10 @@ function Tester(roomUi) {
 		self.draw();
 	}
 
-	// TODO implement this
-	// this.stop = function() {
-	// 	self.active = false;
-	// 	self.roomUi.stopTool()
-	// }
+	this.stop = function() {
+		self.active = false;
+		self.roomUi.stopTest()
+	}
 
 	this.draw = function() {
 		if (!self.active) {
