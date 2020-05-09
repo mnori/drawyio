@@ -22,7 +22,6 @@ function RoomUi() {
 	var socket = io.connect("/drawing_socket_"+drawID);
 	var layerCodeLen = 32;
 	var highestLayerId = 1;
-	var lastEmit = $.now(); // part of general purpose intervalling system
 	var lastPaintProcess = $.now(); // paint interval stuff 
 	var paintProcessCutoff = 250;
 	var modDialog = new ModDialog("room", drawID);
@@ -53,13 +52,14 @@ function RoomUi() {
 	var self = this; // scoping help
 
 	// Metadata about the action being performed
-	var tool = {
+	this.tool = {
 		state: "idle",
 		tool: "paint",
 		meta: null
 	};
 	this.drawUi = new DrawUi(this);
 	this.tester = new Tester(this);
+	this.lastEmit = $.now(); // part of general purpose intervalling system
 	newLocal(); // create the new layer code
 	var renderCanvas = $("#renderer");
 
@@ -77,7 +77,7 @@ function RoomUi() {
 				}
 				activateDropperToggle();
 			}
-			startTool(getMousePos(ev));
+			self.startTool(getMousePos(ev));
 			return false;
 		}, this));
 
@@ -88,7 +88,7 @@ function RoomUi() {
 				return;
 			}
 			if (event.which == 1) { // left mouse button is pressed
-				startTool(getMousePos(ev));
+				self.startTool(getMousePos(ev));
 			}
 		});
 
@@ -99,8 +99,8 @@ function RoomUi() {
 		renderCanvas.on("pointermove", function(ev) {
 
 			// Change tool state to drawing if we're at the beginning of a tool action
-			if (tool.state == "start") {
-				tool.state = "drawing";
+			if (self.tool.state == "start") {
+				self.tool.state = "drawing";
 			}
 					
 			// Loop through events in the frame 
@@ -111,15 +111,15 @@ function RoomUi() {
 				var coalescedEvent = events[i];
 
 				// This is where processing occurs
-				tool.newCoord = getMousePos(coalescedEvent);
-				if (tool.tool == "paint" && tool.state == "drawing") {
-					tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
+				self.tool.newCoord = getMousePos(coalescedEvent);
+				if (self.tool.tool == "paint" && self.tool.state == "drawing") {
+					self.tool.meta.lineEntries.push({"state": self.tool.state, "coord": self.tool.newCoord});
 				}
-				if (tool.newCoord == null && tool.tool != "eyedropper") { 
-					stopTool(coalescedEvent);
-				} else {
-					handleAction(tool, true);
-				}
+			}
+			if (self.tool.newCoord == null && self.tool.tool != "eyedropper") { 
+				self.stopTool();
+			} else {
+				self.handleAction(self.tool, true);
 			}
 
 			// self.tl.log("handleAction: b"); // b => c takes a long time -- why?
@@ -137,15 +137,15 @@ function RoomUi() {
 				}
 				self.closeMenus();
 				activateDropperToggle();
-				startTool(tool.newCoord); // use the old coord, since there is no mouse data
+				self.startTool(self.tool.newCoord); // use the old coord, since there is no mouse data
 
 			} else if ( // Text box enter key handler
 				ev.which == 13 && 
-				tool.tool == "text" &&
+				self.tool.tool == "text" &&
 				!$("#text_input").is(":visible")
 			) {
 				openTextInput();
-			} else if (ev.which == 27 &&  tool.tool == "text") {
+			} else if (ev.which == 27 && self.tool.tool == "text") {
 				closeTextInput()
 			}
 
@@ -157,12 +157,12 @@ function RoomUi() {
 					return;
 				}
 				resetDropperToggle(ev); 
-				stopTool();
+				self.stopTool();
 			}
 		}, this));
 
 		// stop the tool on mouseup
-		doc.on("pointerup", stopTool);
+		doc.on("pointerup", self.stopTool);
 
 		// if mouse leaves preview canvas or window, set newCoord to null and stop the tool
 		renderCanvas.on("pointerleave", mouseOut);
@@ -196,8 +196,8 @@ function RoomUi() {
 
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	function newLocal() {
-		tool.layerCode = randomString(layerCodeLen);
-		var oldCanvas = self.drawUi.newLocal(tool.layerCode);
+		self.tool.layerCode = randomString(layerCodeLen);
+		var oldCanvas = self.drawUi.newLocal(self.tool.layerCode);
 		return oldCanvas;
 	}
 
@@ -211,13 +211,13 @@ function RoomUi() {
 	}
 
 	function mouseOut(ev) {
-		tool.newCoord = null;
+		self.tool.newCoord = null;
 		toolInCanvas = false;
-		stopTool(ev);
+		self.stopTool();
 	}
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
-	function handleAction(tool, emit) {
+	this.handleAction = function(tool, emit) {
 		if (emit) pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
 			tool.tool == "flood" && 
@@ -272,8 +272,8 @@ function RoomUi() {
 				readBrushSize(tool);
 				clearFinalise();
 				drawLine(tool, emit); // always draw - gives smooth local
-				if ($.now() - lastEmit > lineEmitInterval) { // throttle the line preview
-					lastEmit = $.now();
+				if ($.now() - self.lastEmit > lineEmitInterval) { // throttle the line preview
+					self.lastEmit = $.now();
 					emitTool(tool);
 				}
 			} else { // not emitting - remote user
@@ -299,7 +299,7 @@ function RoomUi() {
 		var renderID = toolIn.layerCode;
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
-				readBrushSize(tool);
+				readBrushSize(toolIn);
 				clearFinalise(); // prevent line drawings getting cut off by finaliser
 				var toolOut = JSON.parse(JSON.stringify(toolIn));
 
@@ -311,10 +311,10 @@ function RoomUi() {
 				}
 
 				// must put drawPaint in the interval, since it's quite a slow operation
-				if ($.now() - lastEmit > paintEmitInterval) { 
+				if ($.now() - self.lastEmit > paintEmitInterval) { 
 					// reached interval
 					drawPaint(toolIn, emit); // draw onto canvas
-					lastEmit = $.now();
+					self.lastEmit = $.now();
 					emitTool(toolOut); // version of tool with line coords array
 
 				}
@@ -423,23 +423,25 @@ function RoomUi() {
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
 	function finaliseEdit(toolIn, emit) {
-		if (emit) { // local user, not remote user
-
-			// Copy the tool so we can modify it before sending to client
-			var toolOut = JSON.parse(JSON.stringify(toolIn));
-			toolOut.state = "end";
-			if (finaliseTimeout != null) {
-				// ah but what if finaliseTimeout is already running?
-				// you'll get two timeouts overlapping each other
-				clearTimeout(finaliseTimeout);
-			}
-			finaliseTimeout = setTimeout(function() {
-				// Processing step
-				// Convert canvas to png and send to the server
-				processCanvas(toolOut);
-
-			}, finaliseTimeoutMs);
+		if (!emit) { 
+			return // is remote user
 		}
+
+		// this bit is local user only
+		// Copy the tool so we can modify it before sending to client
+		var toolOut = JSON.parse(JSON.stringify(toolIn));
+		toolOut.state = "end";
+		if (finaliseTimeout != null) {
+			// ah but what if finaliseTimeout is already running?
+			// you'll get two timeouts overlapping each other
+			clearTimeout(finaliseTimeout);
+		}
+		finaliseTimeout = setTimeout(function() {
+			// Processing step
+			// Convert canvas to png and send to the server
+			processCanvas(toolOut);
+
+		}, finaliseTimeoutMs);
 	}
 
 	// can pass in either a preview or a drawing canvas context
@@ -706,34 +708,26 @@ function RoomUi() {
 	function setTool(toolId) {
 
 		// Do we need to start / stop the tester?
-		if (toolId == "test" && tool.tool != "test") {
+		if (toolId == "test" && self.tool.tool != "test") {
 			self.tester.start();
-		} else if (tool.tool == "test" && toolId != "test") { 
+		} else if (self.tool.tool == "test" && toolId != "test") { 
 			self.tester.stop();
 		}
 
 		// Set tool identifier into the tool
-		tool.tool = toolId;
-
-		// If the tool becomes "test" or stops being "test", we should start or stop tester
-
-
-		// when the tool is set (i.e. changed), we must initialise its metadata
-		// ... ???
-
-		
+		self.tool.tool = toolId;
 	}
 
 	function readBrushSize(tool) {
-		tool.meta.brushSize = parseInt($("#brush_size").val());
+		self.tool.meta.brushSize = parseInt($("#brush_size").val());
 	}
 
 	function readFontSize(tool) {
-		tool.meta.fontSize = parseInt($("#font_size").val());
+		self.tool.meta.fontSize = parseInt($("#font_size").val());
 	}
 
 	function readFontFace(tool) {
-		tool.meta.fontFace = getFontFromMenu();
+		self.tool.meta.fontFace = getFontFromMenu();
 	}
 
 	function getFontFromMenu() {
@@ -763,66 +757,70 @@ function RoomUi() {
 	}
 
 	function pickerToToolColour() {
-		tool.colour = colourPicker.spectrum("get").toRgbString();
+		self.tool.colour = colourPicker.spectrum("get").toRgbString();
 	}
 
 	// Start drawing using the local tool
-	function startTool(coord) {
-		tool.newCoord = coord;
-		if (tool.newCoord == null) { // make sure mouse is within canvas
+	this.startTool = function(coord) {
+
+		self.tool.newCoord = coord;
+		if (self.tool.newCoord == null) { // make sure mouse is within canvas
 			return;
 		}
 		// only when outside the timeout
-		tool.state = "start";
+		self.tool.state = "start";
 		// only create new layer code when outside rolling timeout, or when there is no layer code yet
 
 		// do we need to set the tool data?
-		if (tool.tool == "paint") { // paints have a list of entries
-			// TODO put this in a "data" property
-			tool.meta = {"lineEntries": [{"state": tool.state, "coord": tool.newCoord}]};
-			lastEmit = $.now();
+		if (self.tool.tool == "paint") { // paints have a list of entries
+			startPaint(self.tool);
 
-		} else if (tool.tool == "line") {
-			startLine(tool);
+		} else if (self.tool.tool == "line") {
+			startLine(self.tool);
 
-		} else if (tool.tool != "text") { // tool does not have a data attribute
-			tool.meta = null;
+		} else if (self.tool.tool != "text") { // tool does not have a data attribute
+			self.tool.meta = null;
 		}
-		handleAction(tool, true);startTool
+		self.handleAction(self.tool, true);
+	}
+
+	function startPaint(tool) {
+		self.tool.meta = {"lineEntries": [{"state": self.tool.state, "coord": self.tool.newCoord}]};
+		self.lastEmit = $.now();
 	}
 
 	function startLine(tool) {
-		tool.meta = {startCoord: tool.newCoord}
+		self.tool.meta = {startCoord: self.tool.newCoord}
 	}
 
 	// Stop drawing but only if already drawing
-	function stopTool(ev) {
-		if (tool.state == "drawing" || tool.state == "start") {
-			tool.state = "end";
+	this.stopTool = function() {
+		if (self.tool.state == "drawing" || self.tool.state == "start") {
+			self.tool.state = "end";
 		}
-		handleAction(tool, true);
+		self.handleAction(self.tool, true);
 
 		// reset after using the eye dropper tool
 		// but only if CTRL is not pressed
-		if (tool.dropperToggle) { 
-			resetDropperToggle(ev);
+		if (self.tool.dropperToggle) { 
+			resetDropperToggle();
 		}
 	}
 
 	function activateDropperToggle() {
-		tool.dropperToggle = true;
-		tool.prevTool = tool.tool;
-		tool.tool = "eyedropper";
-		toggleButtons(tool.tool);
+		self.tool.dropperToggle = true;
+		self.tool.prevTool = self.tool.tool;
+		self.tool.tool = "eyedropper";
+		toggleButtons(self.tool.tool);
 	}
 
 	function resetDropperToggle() {
-		tool.dropperToggle = false;
-		tool.tool = tool.prevTool;
-		if (tool.tool == "line") {
-			startLine(tool)
+		self.tool.dropperToggle = false;
+		self.tool.tool = self.tool.prevTool;
+		if (self.tool.tool == "line") {
+			startLine(self.tool)
 		}
-		toggleButtons(tool.tool);
+		toggleButtons(self.tool.tool);
 	}
 
 	function makeCircle(toolIn) {
@@ -888,14 +886,14 @@ function RoomUi() {
 	// }
 
 	function eyedropper(tool) {
-		if (tool.newCoord == null) { // can happen outside of canvas area
+		if (self.tool.newCoord == null) { // can happen outside of canvas area
 			return;
 		}
 		// get the colour from the scratch canvas at the given coordinate
 		var scratchCtx = drawScratchCanvas();
-		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-		tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
-		colourPicker.spectrum("set", tool.colour);
+		var col = scratchCtx.getImageData(self.tool.newCoord.x, self.tool.newCoord.y, 1, 1).data;
+		self.tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+		colourPicker.spectrum("set", self.tool.colour);
 	}
 
 	// commented out since we don't want flood fill anymore
@@ -1238,7 +1236,7 @@ function RoomUi() {
 
 	function emitToolInterval(toolIn, beforeEmit) {
 		// emitTool(toolIn); // version of tool with line coords array
-		if ($.now() - lastEmit > mouseEmitInterval) { 
+		if ($.now() - self.lastEmit > mouseEmitInterval) { 
 			if (
 				toolIn.tool == "paint" && 
 				toolIn.meta != null && 
@@ -1248,7 +1246,7 @@ function RoomUi() {
 			}
 			// reached interval
 			emitTool(toolIn); // version of tool with line coords array
-			lastEmit = $.now();
+			self.lastEmit = $.now();
 			return true;
 		}
 		return false;
@@ -1264,7 +1262,7 @@ function RoomUi() {
 			pointerElement.fadeOut(labelFadeOutMs, function() {
 				pointerElement.remove();
 			});
-			handleAction(tool, false);
+			self.handleAction(tool, false);
 			return;
 		}
 
@@ -1296,7 +1294,7 @@ function RoomUi() {
 			});
 		}, pointerTimeoutMs)
 
-		handleAction(tool, false);
+		self.handleAction(tool, false);
 	}
 
 	// Ask the server for drawing data
@@ -1676,22 +1674,26 @@ function Tester(roomUi) {
 	}
 
 	this.start = function() {
-		console.log("Tester.start()");
 		self.active = true;
+		self.roomUi.startTool(self.cursor)
 		self.draw();
 	}
 
 	this.stop = function() {
-		console.log("Tester.stop()");
 		self.active = false;
+		self.roomUi.stopTool()
 	}
 
 	this.draw = function() {
-		console.log("Tester.draw()");
-		console.log(self.cursor);
-		if (self.active) {
-			setTimeout(self.draw, 16);
+		if (!self.active) {
+			return;
 		}
+		self.roomUi.tool.newCoord = self.cursor;
+		self.roomUi.tool.meta.lineEntries.push(
+			{"state": self.roomUi.tool.state, "coord": self.roomUi.tool.newCoord});
+
+		self.roomUi.handleAction(self.roomUi.tool, true);
+		setTimeout(self.draw, 16);
 	}
 
 	var self = this;
