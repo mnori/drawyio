@@ -19,6 +19,7 @@ function DrawUi(roomUI) {
 		self.imageLayers = new AssocArray();
 		this.localId = null;
 		self.localLayer = null;
+		self.utils = new DrawUtils(self);
 
 		// This is for cropping images and sending to the server
 		self.stagingContainer = new PIXI.Container();
@@ -220,8 +221,8 @@ function Layer(drawUi, layerId, local) {
 		self.stroke = new Stroke(this);
 		self.container = new PIXI.Container();
 		self.local = local ? local : false; // whether currently the local target
-		self.createdLocal = self.local; // debugging
-		createRenderSprite(self);
+		self.createdLocal = self.local; // debugging		
+		self.drawUi.utils.createRenderSprite(self);
 	}
 
 	this.bindSprite = function() {
@@ -269,7 +270,7 @@ function Stroke(layer) {
 	this.init = function() {
 		self.graphics = new PIXI.Graphics();
 		self.container = new PIXI.Container();
-		createRenderSprite(self);
+		self.drawUi.utils.createRenderSprite(self);
 	}
 
 	// Reset the stroke, this is more efficient than destroy() as we don't start from scratch
@@ -293,8 +294,8 @@ function Stroke(layer) {
 		self.tool = toolIn;
 		self.width = self.tool.meta.brushSize;
 		self.radius = parseInt(self.tool.meta.brushSize / 2);
-		self.colour = rgbaToHex(self.tool.colour);
-		self.renderSprite.alpha = rgbaToAlpha(self.tool.colour);
+		self.colour = self.drawUi.utils.rgbaToHex(self.tool.colour);
+		self.renderSprite.alpha = self.drawUi.utils.rgbaToAlpha(self.tool.colour);
 		self.createCircleSprite();
 	}
 
@@ -356,53 +357,3 @@ function Stroke(layer) {
 	self.init();
 }
 
-// Generic RenderTexture and Sprite creation
-function createRenderSprite(self) {
-
-	// Create render texture for drawing onto
-	var brt = new PIXI.BaseRenderTexture(
-		self.drawUi.roomUI.width, 
-		self.drawUi.roomUI.height, 
-		PIXI.SCALE_MODES.LINEAR, 1);
-	self.renderTexture = new PIXI.RenderTexture(brt);
-
-	// Create sprite from render texture
-	self.renderSprite = new PIXI.Sprite(self.renderTexture)
-}
-
-// Extract alpha value from rgba() string
-function rgbaToAlpha(strIn) {
-	if (strIn.search("rgba") == -1) { // no alpha
-		return 1;
-	}
-
-	// fetch the alpha value from the string
-	var strBit = strIn.split(",").pop().slice(0, -1);
-	var floatOut = parseFloat(strBit);
-	return floatOut; // return it
-
-}
-
-// Extract hex colour code string from rgba() string
-function rgbaToHex(rgba) {
-    var parts = rgba.substring(rgba.indexOf("(")).split(","),
-        r = parseInt(rgbaTrim(parts[0].substring(1)), 10),
-        g = parseInt(rgbaTrim(parts[1]), 10),
-        b = parseInt(rgbaTrim(parts[2]), 10);
-        // a = parseFloat(rgbaTrim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
-
-    var str = "0x" + extractHex(r) + extractHex(g) + extractHex(b);
-    return parseInt(str);
-}
-
-function extractHex(intVal) {
-	var str = intVal.toString(16);
-	if (str.length == 1) {
-		str = "0"+str;
-	}
-	return str;
-}
-
-function rgbaTrim(str) {
-  return str.replace(/^\s+|\s+$/gm,'');
-}

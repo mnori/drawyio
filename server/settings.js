@@ -10,6 +10,7 @@ module.exports = {
 	CLIENT_JS: [ // names of the client source files before minification
 		"Base.js",
 		"GalleryUi.js",
+		"DrawUtils.js",
 		"DrawUi.js",
 		"RoomUi.js",
 		"SnapshotUi.js",
