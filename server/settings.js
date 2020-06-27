@@ -15,6 +15,7 @@ module.exports = {
 		"Stroke.js",
 		"ImageLayer.js",
 		"Layer.js",
+		"ToolOptionMenu.js",
 		"ToolManager.js",
 		"DrawUiTester.js",
 		"DrawUi.js",
