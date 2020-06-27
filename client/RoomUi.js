@@ -61,27 +61,27 @@ function RoomUi() {
 
 		// Handle cursor down
 		self.renderCanvas.on("pointerdown", $.proxy(function(ev) { 
-			pickerToToolColour();
+			self.pickerToToolColour();
 			if (ev.which == 3) { // right click
 				if (menusOpen()) {
 					return;
 				}
-				activateDropperToggle();
+				self.activateDropperToggle();
 			}
 			var tool = self.toolManager.getLocalTool();
-			self.startTool(getMousePos(ev), tool);
+			self.startTool(self.getMousePos(ev), tool);
 			return false;
 		}, this));
 
 		// Handle cursor entering canvas 
 		self.renderCanvas.on("pointerenter", function(ev) {
 			self.toolInCanvas = true;
-			if (pickerVisible()) { // no mouse enter when colour picker is visible
+			if (self.pickerVisible()) { // no mouse enter when colour picker is visible
 				return;
 			}
 			if (event.which == 1) { // left mouse button is pressed
 				var tool = self.toolManager.getLocalTool();
-				self.startTool(getMousePos(ev), tool);
+				self.startTool(self.getMousePos(ev), tool);
 			}
 		});
 
@@ -106,7 +106,7 @@ function RoomUi() {
 				var coalescedEvent = events[i];
 
 				// This is where processing occurs
-				tool.newCoord = getMousePos(coalescedEvent);
+				tool.newCoord = self.getMousePos(coalescedEvent);
 				if (tool.tool == "paint" && tool.state == "drawing") {
 					tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
 				}
@@ -130,7 +130,7 @@ function RoomUi() {
 					return;
 				}
 				self.closeMenus();
-				activateDropperToggle();
+				self.activateDropperToggle();
 				self.startTool(tool.newCoord, tool); // use the old coord, since there is no mouse data
 
 			} else if ( // Text box enter key handler
@@ -138,19 +138,19 @@ function RoomUi() {
 				tool.tool == "text" &&
 				!$("#text_input").is(":visible")
 			) {
-				openTextInput();
+				self.openTextInput();
 			} else if (ev.which == 27 && tool.tool == "text") {
-				closeTextInput()
+				self.closeTextInput()
 			}
 
 
 		}, this));
 		body.keyup($.proxy(function(ev) {
 			if (ev.which == 16) { // shift
-				if (menusOpen()) {
+				if (self.menusOpen()) {
 					return;
 				}
-				resetDropperToggle(ev); 
+				self.resetDropperToggle(ev); 
 				var tool = self.toolManager.getLocalTool();
 				self.stopTool(tool);
 			}
@@ -163,14 +163,14 @@ function RoomUi() {
 		});
 
 		// if mouse leaves preview canvas or window, set newCoord to null and stop the tool
-		self.renderCanvas.on("pointerleave", mouseOut);
-		self.doc.on("pointerleave", mouseOut);
+		self.renderCanvas.on("pointerleave", self.mouseOut);
+		self.doc.on("pointerleave", self.mouseOut);
 
 		// Listen for new drawing data from the server
-		self.socket.on("update_drawing", receiveDrawing);
-		self.socket.on("add_layer", receiveLayer);
-		self.socket.on("receive_mouse_coords", receiveTool);
-		self.socket.on("disconnect", onDisconnect);
+		self.socket.on("update_drawing", self.receiveDrawing);
+		self.socket.on("add_layer", self.receiveLayer);
+		self.socket.on("receive_mouse_coords", self.receiveTool);
+		self.socket.on("disconnect", self.onDisconnect);
 
 		// disable mouse select on drawing page
 		$("body").attr("style", 
@@ -188,19 +188,19 @@ function RoomUi() {
 		self.setupControls();
 	}
 
-	function onDisconnect() {
+	this.onDisconnect = function() {
 		$("#disconnected_indicator").show();
 	}
 
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	this.newLocal = function() {
 		var tool = self.toolManager.getLocalTool();
-		tool.layerCode = randomString(self.layerCodeLen);
+		tool.layerCode = self.randomString(self.layerCodeLen);
 		var oldCanvas = self.drawUi.newLocal(tool.layerCode);
 		return oldCanvas;
 	}
 
-	function randomString(length) {
+	this.randomString = function(length) {
 		var text = "";
 		var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
 		for (var i = 0; i < length; i++) { 
@@ -209,7 +209,7 @@ function RoomUi() {
 		return text;
 	}
 
-	function mouseOut(ev) {
+	this.mouseOut = function(ev) {
 		var tool = self.toolManager.getLocalTool();
 		tool.newCoord = null;
 		self.toolInCanvas = false;
@@ -219,113 +219,95 @@ function RoomUi() {
 	// This is used for both local and remote users when tool data is received
 	this.handleAction = function(tool, emit) {
 
-		if (emit) pickerToToolColour(); // everything except eyedropper has a tool colour
+		if (emit) self.pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
-			tool.tool == "flood" && 
-			emit && tool.state == "start" && self.finaliseTimeout == null
-		) { 
-			// flood fill - only on mousedown
-			// only when not working on existing processing
-			// only for local user - remote user receives png rather than tool action
-			// flood(tool);
-			// finaliseEdit(tool, emit);
-
-		} else if (
 			tool.tool == "eyedropper" && // eyedropper, is local user only - not remote
 			emit && (tool.state == "start" || tool.state == "drawing")
 		) { 
-			eyedropper(tool); 
+			self.eyedropper(tool); 
 
 			// still need to emit those mouse coords though - for the cursor update on the remote
-			if (emit) emitToolInterval(tool); 
+			if (emit) self.emitToolInterval(tool); 
 
 		} else if (tool.tool == "paint" || tool.tool == "test") { // free drawn line
-			handlePaint(tool, emit);
+			self.handlePaint(tool, emit);
 
 		} else if (tool.tool == "line") { // straight line
-			handleLine(tool, emit);
+			self.handleLine(tool, emit);
 
 		} else if (tool.tool == "text") { // text
-			handleText(tool, emit);
+			self.handleText(tool, emit);
 
 		} else { // always emit those mouse coords
-			if (emit) emitToolInterval(tool);
+			if (emit) self.emitToolInterval(tool);
 		}
 	}
 
 	// drawing a straight line between two points
-	function handleLine(tool, emit) {
+	this.handleLine = function(tool, emit) {
 		if (tool.state == "idle") {
-			if (emit) emitToolInterval(tool);
+			if (emit) self.emitToolInterval(tool);
 			return; // nothing to do when idle
 		}
 
-		var thisCtx = getDrawCtx(tool, emit); 
+		var thisCtx = self.getDrawCtx(tool, emit); 
 		if (tool.state == "start" || tool.state == "drawing") {
 			if (tool.state == "start") {
 				// for lines, base data is the data without the line preview data
 				// it means we can drag a line around on the screen and refresh it
 				// with the stuff behind it
-				initBaseData(thisCtx); 
+				self.initBaseData(thisCtx); 
 			}
 
 			if (emit) {
-				readBrushSize(tool);
-				clearFinalise();
-				drawLine(tool, emit); // always draw - gives smooth local
+				self.readBrushSize(tool);
+				self.clearFinalise();
+				self.drawLine(tool, emit); // always draw - gives smooth local
 				if ($.now() - self.lastEmit > self.lineEmitInterval) { // throttle the line preview
 					self.lastEmit = $.now();
-					emitTool(tool);
+					self.emitTool(tool);
 				}
 			} else { // not emitting - remote user
-				drawLine(tool, emit);
+				self.drawLine(tool, emit);
 			}
 			
 			
 		} else if (tool.state == "end") {
 			// draw line data onto canvas
 			// remember, drawLine is not async. so we can't settimeout it
-			drawLine(tool, emit);
+			self.drawLine(tool, emit);
 
 			// get the line data from the canvas, set into baseData.
 			// this is the final line drawing
 			thisCtx.baseData = thisCtx.getImageData(0, 0, self.width, self.height);
-			finaliseEdit(tool, emit);
+			self.finaliseEdit(tool, emit);
 			tool.state = "idle"; // pretty important to avoid issues
 		}
 	}
 
 	// free form drawing
-	function handlePaint(toolIn, emit) {
-
-		// if (self.iterationTl != null) {
-		// 	// find out how long each cycle lasts
-		// 	self.iterationTl.dump()
-		// }
-		// self.iterationTl = new Timeline("between cycles");
-
-		// var tl = new Timeline("inside cycle");
+	this.handlePaint = function(toolIn, emit) {
 
 		var renderID = toolIn.layerCode;
 		if (toolIn.state == "start" || toolIn.state == "drawing") { // drawing stroke in progress
 			if (emit) { // local user
-				readBrushSize(toolIn);
-				clearFinalise(); // prevent line drawings getting cut off by finaliser
+				self.readBrushSize(toolIn);
+				self.clearFinalise(); // prevent line drawings getting cut off by finaliser
 				var toolOut = JSON.parse(JSON.stringify(toolIn));
 
 				// ensures that starting creates a dot on mousedown
 				if (toolIn.state == "start") {
 					self.drawUi.startStroke(renderID, toolIn); // initialise the stroke
-					drawPaint(toolIn, emit);
-					emitTool(toolOut);
+					self.drawPaint(toolIn, emit);
+					self.emitTool(toolOut);
 				}
 
 				// must put drawPaint in the interval, since it's quite a slow operation
 				if ($.now() - self.lastEmit > self.paintEmitInterval) { 
 					// reached interval
-					drawPaint(toolIn, emit); // draw onto canvas
+					self.drawPaint(toolIn, emit); // draw onto canvas
 					self.lastEmit = $.now();
-					emitTool(toolOut); // version of tool with line coords array
+					self.emitTool(toolOut); // version of tool with line coords array
 
 				}
 			} else if (toolIn.meta.lineEntries != null) {
@@ -333,57 +315,57 @@ function RoomUi() {
 				if (toolIn.state == "start") {
 					self.drawUi.startStroke(renderID, toolIn);
 				}
-				drawPaint(toolIn, emit);
+				self.drawPaint(toolIn, emit);
 			} 
 
 		} else if (toolIn.state == "end") { // mouseup or other line end event
-			if (emit) emitTool(toolIn); // be sure to emit the end event
+			if (emit) self.emitTool(toolIn); // be sure to emit the end event
 			toolIn.state = "idle"; // pretty important to avoid issues
-			drawPaint(toolIn, emit);
+			self.drawPaint(toolIn, emit);
 			self.drawUi.endStroke(renderID, toolIn);
-			finaliseEdit(toolIn, emit);
+			self.finaliseEdit(toolIn, emit);
 
 		} else { // Tool state is idle - just send coords
-			if (emit) emitToolInterval(toolIn);
+			if (emit) self.emitToolInterval(toolIn);
 		}
 		// tl.dump();
 	}
 
 	// drawing text on the canvas
-	function handleText(toolIn, emit) {
-		var thisCtx = getDrawCtx(toolIn, emit); 
+	this.handleText = function(toolIn, emit) {
+		var thisCtx = self.getDrawCtx(toolIn, emit); // won't work - @deprecated
 
 		// intialise the text tool meta if required
 		// undefined check should probably actually be about checking the tool name
 		if (emit && (toolIn.meta == null || typeof(toolIn.meta.text) === "undefined")) {
-			initTextMeta(toolIn);
+			self.initTextMeta(toolIn);
 		}
 		if (emit) {
-			readFontSize(toolIn);
-			readFontFace(toolIn);
+			self.readFontSize(toolIn);
+			self.readFontFace(toolIn);
 		}
 
 		// if start or moving, clear canvas and draw the text
 		if (toolIn.state == "start") {
 			if (emit) { // Local text click and place
-				if (!checkTextBox(tool)) {
+				if (!self.checkTextBox(tool)) {
 					return;
 				}
-				clearFinalise();
-				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
+				self.clearFinalise();
+				self.drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
 				$("#text_input_box").val(self.defaultText);
 				$("#text_input").hide();
-				emitTool(toolIn);
-				initTextMeta(toolIn);
+				self.emitTool(toolIn);
+				self.initTextMeta(toolIn);
 
 			} else { // Remote text click and place
-				drawText(toolIn, emit, thisCtx);
+				self.drawText(toolIn, emit, thisCtx);
 			} 
 			toolIn.state = "end";
-			finaliseEdit(toolIn, emit);
+			self.finaliseEdit(toolIn, emit);
 
 		} else if (toolIn.state == "idle") {
-			textIdle(toolIn, emit);
+			self.textIdle(toolIn, emit);
 		}
 		if (toolIn.state == "end") {
 			toolIn.state = "idle";
@@ -392,7 +374,7 @@ function RoomUi() {
 
 	// Create an empty array of booleans which will store information about 
 	// the current stroke
-	function makeStrokeData() {
+	this.makeStrokeData = function() {
 		var out = new Array(self.width);
 		for (var x = 0; x < self.width; x++) {
 			out[x] = new Array(self.height);
@@ -403,10 +385,10 @@ function RoomUi() {
 		return out;
 	}
 
-	function checkTextBox(toolIn) {
+	this.checkTextBox = function(toolIn) {
 		// no text has been entered, open the text input to hint that it is required
 		if (toolIn.tool == "text" && toolIn.meta.text == "") { 
-			openTextInput(); // make sure text input box is open
+			self.openTextInput(); // make sure text input box is open
 			// $("#text_input_box").select(); // doesn't seem to work :(
 			toolIn.state = "end";
 			return false;
@@ -414,7 +396,7 @@ function RoomUi() {
 		return true;
 	}
 
-	function initTextMeta(toolIn) {
+	this.initTextMeta = function(toolIn) {
 		toolIn.meta = {
 			"text": "",
 			"fontFace": "ubuntuRegular",
@@ -422,18 +404,18 @@ function RoomUi() {
 		}
 	}
 
-	function textIdle(toolIn, emit) {
-		if (emit) emitToolInterval(toolIn);
-		var previewCtx = getDrawCtx(toolIn, emit, "_preview");
+	this.textIdle = function(toolIn, emit) {
+		if (emit) self.emitToolInterval(toolIn);
+		var previewCtx = self.getDrawCtx(toolIn, emit, "_preview");
 		previewCtx.clearRect(0, 0, self.width, self.height); // Clear the canvas
 		if (!emit || self.toolInCanvas) {
-			drawText(toolIn, emit, previewCtx);	
+			self.drawText(toolIn, emit, previewCtx);	
 		}
 	}
 
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
-	function finaliseEdit(toolIn, emit) {
+	this.finaliseEdit = function(toolIn, emit) {
 		if (!emit) { 
 			return // is remote user
 		}
@@ -450,14 +432,14 @@ function RoomUi() {
 		self.finaliseTimeout = setTimeout(function() {
 			// Processing step
 			// Convert canvas to png and send to the server
-			processCanvas(toolOut);
+			self.processCanvas(toolOut);
 
 		}, self.finaliseTimeoutMs);
 	}
 
 	// can pass in either a preview or a drawing canvas context
 	// Draw the text onto the canvas, only
-	function drawText(toolIn, emit, thisCtx) {
+	this.drawText = function(toolIn, emit, thisCtx) {
 		if (toolIn.newCoord == null) { // mouse outside boundaries
 			thisCtx.clearRect(0, 0, self.width, self.height); // Clear the canvas
 			return;
@@ -478,11 +460,11 @@ function RoomUi() {
 	}
 
 	// Draw a straight line onto a canvas
-	function drawLine(toolIn, emit) {
+	this.drawLine = function(toolIn, emit) {
 
 		// This decides whether to use a local or a remote canvas
 		var thisCtx = getDrawCtx(toolIn, emit); 
-		thisCtx.strokeData = makeStrokeData();
+		thisCtx.strokeData = self.makeStrokeData();
 
 		// Create a copy of the base data
 		// must create empty data first
@@ -508,15 +490,16 @@ function RoomUi() {
 		}
 
 		// Draw a line over the copied data
-		plotLine(thisCtx, previewData.data, toolIn, start.x, start.y, end.x, end.y);
+		// TODO - currently not working with new system
+		self.plotLine(thisCtx, previewData.data, toolIn, start.x, start.y, end.x, end.y);
 
 		// Put the modified image data back into canvas DOM element
 		thisCtx.putImageData(previewData, 0, 0);
 	}
 
-	function drawPaint(toolIn, emit) {
+	this.drawPaint = function(toolIn, emit) {
 		// drawPaintOld(toolIn, emit);
-		drawPaintPixi(toolIn, emit);
+		self.drawPaintPixi(toolIn, emit);
 
 		// Reset the coordinates cache
 		var lastEntry = toolIn.meta.lineEntries[toolIn.meta.lineEntries.length - 1];
@@ -524,7 +507,7 @@ function RoomUi() {
 	}
 
 	// Draw free form line onto canvas
-	function drawPaintPixi(toolIn, emit) {
+	this.drawPaintPixi = function(toolIn, emit) {
 		if (toolIn.meta == null) {
 			console.warn("DrawPaint called without data!");
 			return;
@@ -552,54 +535,7 @@ function RoomUi() {
 		self.drawUi.render(renderID);
 	}
 
-	// // Draw woblly line onto canvas
-	// // Draw woblly line onto canvas
-	// function drawPaintOld(toolIn, emit) {
-	// 	var tl = new Timeline();
-	// 	tl.log("old 1");
-
-	// 	if (toolIn.meta == null) {
-	// 		console.warn("drawPaint() called without data!");
-	// 		return;
-	// 	}
-	// 	var thisCtx = getDrawCtx(toolIn, emit);
-	// 	if (toolIn.state == "start" || typeof(thisCtx.strokeData) == "undefined") {
-	// 		thisCtx.strokeData = makeStrokeData();
-	// 	}
-
-	// 	var destData = thisCtx.getImageData(0, 0, width, height);
-
-	// 	var entries = toolIn.meta.lineEntries;
-	// 	var firstCoord = entries[0].coord;
-
-	// 	// draw a dot to start off
-	// 	// this is where it breaks - coord is missing
-	// 	// check for null and do nothing if empty
-
-	// 	if (firstCoord != null) {
-	// 		plotLine(thisCtx, destData.data, toolIn, firstCoord.x, firstCoord.y, firstCoord.x, firstCoord.y);
-	// 	}
-
-	// 	// now draw the rest of the line
-	// 	for (var i = 1; i < entries.length; i++) {
-	// 		var prevCoord = entries[i - 1].coord;
-	// 		var thisCoord = entries[i].coord;
-	// 		if (prevCoord == null || thisCoord == null) {
-	// 			// might happen if mouse is outside the boundaries
-	// 			continue;
-	// 		}
-	// 		plotLine(thisCtx, destData.data, toolIn, prevCoord.x, prevCoord.y, thisCoord.x, thisCoord.y);			
-	// 	}
-
-	// 	// Write data to canvas. Quite slow so should be done sparingly
-	// 	// also this copies the whole image! Could it be done faster using a slice?
-	// 	thisCtx.putImageData(destData, 0, 0);
-
-	// 	tl.log("old 2");
-	// 	tl.dump();
-	// }
-
-	function clearFinalise() {
+	this.clearFinalise = function() {
 		if (self.finaliseTimeout != null) { 
 			// prevent stuff getting overwritten
 			clearTimeout(self.finaliseTimeout);
@@ -607,8 +543,8 @@ function RoomUi() {
 		}
 	}
 
-	// @deprecated
-	function getDrawCtx(toolIn, emit, suffix) {
+	// @deprecated - does not work with pixi
+	this.getDrawCtx = function(toolIn, emit, suffix) {
 		if (typeof(suffix) == "undefined") {
 			suffix = "";
 		}
@@ -619,7 +555,7 @@ function RoomUi() {
 				thisCtx = previewCtx; // local user's preview context
 			}
 		} else { // if it came from remote user, draw on a different canvas
-			var remoteCanvas = getRemoteCanvas(toolIn, suffix);
+			var remoteCanvas = self.getRemoteCanvas(toolIn, suffix);
 			thisCtx = remoteCanvas[0].getContext("2d");
 		}
 		return thisCtx;
@@ -627,15 +563,15 @@ function RoomUi() {
 
 	// Return existing remote canvas. Also bumps the canvas's z-index 
 	// if it's the first time
-	function getRemoteCanvas(tool, suffix) {
+	this.getRemoteCanvas = function(tool, suffix) {
 		var canvasID = "canvas_layer_"+tool.layerCode+suffix;
 		var existingCanvas = $("#"+canvasID);
 		if (existingCanvas.length == 0) {
-			createRemoteCanvas(canvasID);
+			self.createRemoteCanvas(canvasID);
 			existingCanvas = $("#"+canvasID);
 
 			// putting bumpCanvas here will eliminate the flicker bug
-			bumpCanvas(existingCanvas);
+			self.bumpCanvas(existingCanvas);
 		}
 		var element = existingCanvas[0];
 		if (typeof(element.deleteTimeout) !== "undefined") {
@@ -649,21 +585,20 @@ function RoomUi() {
 		return existingCanvas;
 	}
 
-
-
-	function initBaseData(thisCtx) {
+	// @deprecated
+	this.initBaseData = function(thisCtx) {
 		thisCtx.baseData = thisCtx.getImageData(0, 0, self.width, self.height);
 	}
 
 	this.setupControls = function() {
 		SnapshotDialog(self.drawID);
 
-		bindToolButton("eyedropper");
-		bindToolButton("paint");
-		bindToolButton("line");
-		bindToolButton("flood");
-		bindToolButton("text");
-		bindToolButton("test");
+		self.bindToolButton("eyedropper");
+		self.bindToolButton("paint");
+		self.bindToolButton("line");
+		self.bindToolButton("flood");
+		self.bindToolButton("text");
+		self.bindToolButton("test");
 
 		// Special case prevent text button from stealing the focus
 		$("#text").on("mouseup", function() { 
@@ -676,17 +611,17 @@ function RoomUi() {
 			var options = menu.find(".ui-menu-item-wrapper")
 			options.each(function() {
 				var element = $(this);
-				element.css("font-family", getFontValue(element.html()));
+				element.css("font-family", self.getFontValue(element.html()));
 			});
 		}, function(htmlIn) { // getButtonHtml
-			return "<span style=\"font-family: "+getFontValue(htmlIn)+";\">Font</span>"
+			return "<span style=\"font-family: "+self.getFontValue(htmlIn)+";\">Font</span>"
 		});
 
 		$("#mod_button").click(function() {
 			self.modDialog.show();
 		});
 
-		toggleButtons("paint");
+		self.toggleButtons("paint");
 
 		$(window).on("resize", function() {
 			// reposition things that need repositioning
@@ -695,12 +630,12 @@ function RoomUi() {
 			self.fontFaceMenu.position();
 
 			// gets fired before the spectrum has at it
-			positionColourPicker();
-			positionTextInput();
+			self.positionColourPicker();
+			self.positionTextInput();
 		});
 	}
 
-	function getFontValue(htmlIn) {
+	this.getFontValue = function(htmlIn) {
 		var bits = htmlIn.split(" ");
 		var id = "ubuntu"
 		for (var i = 1; i < bits.length; i++) {
@@ -710,9 +645,9 @@ function RoomUi() {
 		return id;
 	}
 
-	function bindToolButton(toolId) {
+	this.bindToolButton = function(toolId) {
 		$("#"+toolId).on("mousedown", function() {
-			toggleButtons(toolId);
+			self.toggleButtons(toolId);
 			self.setTool(toolId);
 		});
 	}
@@ -732,23 +667,23 @@ function RoomUi() {
 		tool.tool = toolId;
 	}
 
-	function readBrushSize(tool) {
+	this.readBrushSize = function(tool) {
 		// better version
 		tool.meta.brushSize = parseInt($("#brush_size").val());
 	}
 
-	function readFontSize(tool) {
+	this.readFontSize = function(tool) {
 		var tool = self.toolManager.getLocalTool();
 		tool.meta.fontSize = parseInt($("#font_size").val());
 	}
 
-	function readFontFace(tool) {
+	this.readFontFace = function(tool) {
 		var tool = self.toolManager.getLocalTool();
 		tool.meta.fontFace = getFontFromMenu();
 	}
 
-	function getFontFromMenu() {
-		return getFontValue($("#font_face").val())
+	this.getFontFromMenu = function() {
+		return self.getFontValue($("#font_face").val())
 	}
 
 	this.initColourPicker = function() {
@@ -756,16 +691,16 @@ function RoomUi() {
 			showAlpha: true,
 			cancelText: "Cancel",
 			chooseText: "OK",
-			show: openColourPicker
+			show: self.openColourPicker
 		});
 	}
 
-	function openColourPicker() {
+	this.openColourPicker = function() {
 		self.closeMenus();
-		positionColourPicker();
+		self.positionColourPicker();
 	}
 
-	function pickerVisible() {
+	this.pickerVisible = function() {
 		var panel = $(".sp-container").first(); 
 		if (!panel.hasClass("sp-hidden")) {
 			return true;
@@ -773,7 +708,7 @@ function RoomUi() {
 		return false;
 	}
 
-	function pickerToToolColour() {
+	this.pickerToToolColour = function() {
 		var tool = self.toolManager.getLocalTool();
 		tool.colour = self.colourPicker.spectrum("get").toRgbString();
 	}
@@ -808,7 +743,7 @@ function RoomUi() {
 		self.lastEmit = $.now();
 	}
 
-	function startLine(tool) {
+	this.startLine = function(tool) {
 		tool.meta = {startCoord: tool.newCoord}
 	}
 
@@ -826,7 +761,7 @@ function RoomUi() {
 		// reset after using the eye dropper tool
 		// but only if CTRL is not pressed
 		if (tool.dropperToggle) { 
-			resetDropperToggle();
+			self.resetDropperToggle();
 		}
 	}
 
@@ -840,25 +775,25 @@ function RoomUi() {
 		self.handleAction(tool, true);
 	}
 
-	function activateDropperToggle() {
+	this.activateDropperToggle = function() {
 		var tool = self.toolManager.getLocalTool();
 		tool.dropperToggle = true;
 		tool.prevTool = tool.tool;
 		tool.tool = "eyedropper";
-		toggleButtons(tool.tool);
+		self.toggleButtons(tool.tool);
 	}
 
-	function resetDropperToggle() {
+	this.resetDropperToggle = function() {
 		var tool = self.toolManager.getLocalTool();
 		tool.dropperToggle = false;
 		tool.tool = tool.prevTool;
 		if (tool.tool == "line") {
 			startLine(tool)
 		}
-		toggleButtons(tool.tool);
+		self.toggleButtons(tool.tool);
 	}
 
-	function makeCircle(toolIn) {
+	this.makeCircle = function(toolIn) {
 		var radius = toolIn.meta.brushSize;
 		var circleData = [];
 		for (x = 0; x < radius * 2 + 1; x++) {
@@ -879,70 +814,22 @@ function RoomUi() {
 	// Plot a line using non-antialiased circle
 	// TODO pass in coord obj instead of seperate xy
 	// @deprecated
-	function plotLine(ctx, data, toolIn, x0, y0, x1, y1) {
-		plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
+	this.plotLine = function(ctx, data, toolIn, x0, y0, x1, y1) {
+		self.plotLineOld(ctx, data, toolIn, x0, y0, x1, y1);
 	}
 
-	// @deprecated
-	// function plotLineOld(ctx, data, toolIn, x0, y0, x1, y1) {
-	// 	var circleData = makeCircle(toolIn);
-	// 	var colour = parseColour(toolIn.colour);
-	// 	var dx =  Math.abs(x1-x0), sx = x0<x1 ? 1 : -1;
-	// 	var dy = -Math.abs(y1-y0), sy = y0<y1 ? 1 : -1;
-	// 	var err = dx+dy, e2;
-
-	// 	for (;;) {
-	// 		var offset = -toolIn.meta.brushSize;
-	// 		for (var x = 0; x < circleData.length; x++) {
-	// 			for (var y = 0; y < circleData[x].length; y++) {
-	// 				if (circleData[x][y] == true) {
-	// 					var xCirc = x0 + offset + x;
-	// 					var yCirc = y0 + offset + y;
-	// 					if (
-	// 						xCirc >= 0 && xCirc < width && 
-	// 						yCirc >= 0 && yCirc < height
-	// 					) {
-	// 						// strokeData tells us which pixels have already been 
-	// 						// painted for this stroke
-	// 						if (!ctx.strokeData[xCirc][yCirc]) {
-	// 							setColour(data, xCirc, yCirc, colour);	
-	// 							ctx.strokeData[xCirc][yCirc] = true;
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-
-	// 		if (x0 == x1 && y0 == y1) break;
-	// 		e2 = 2*err;
-	// 		if (e2 >= dy) { err += dy; x0 += sx; }
-	// 		if (e2 <= dx) { err += dx; y0 += sy; }
-	// 	}
-	// }
-
-	function eyedropper(tool) {
+	this.eyedropper = function(tool) {
 		if (tool.newCoord == null) { // can happen outside of canvas area
 			return;
 		}
 		// get the colour from the scratch canvas at the given coordinate
-		var scratchCtx = drawScratchCanvas();
+		var scratchCtx = self.drawScratchCanvas();
 		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
 		tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
-		colourPicker.spectrum("set", tool.colour);
+		self.colourPicker.spectrum("set", tool.colour);
 	}
-
-	// commented out since we don't want flood fill anymore
-	// function flood(tool) {
-	// 	// Create a flattened canvas to draw from
-	// 	var scratchCtx = drawScratchCanvas();
-
-	// 	// Get the colours from the background image and tool
-	// 	var oldColour = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
-	// 	var newColour = parseColour(tool.colour);
-	// 	floodFill(scratchCtx, ctx, tool.newCoord.x, tool.newCoord.y, oldColour, newColour);
-	// }
-
-	function drawScratchCanvas() {
+	
+	this.drawScratchCanvas = function() {
 		// // step 1. find the background images
 		var elements = []
 		$(".drawing_layer").each(function() {
@@ -981,7 +868,7 @@ function RoomUi() {
 
 	// Non-recursive flood fill algo
 	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
-	function floodFill(sourceCtx, destCtx, x, y, oldColour, newColour) {
+	this.floodFill = function(sourceCtx, destCtx, x, y, oldColour, newColour) {
 		var sourceData = sourceCtx.getImageData(0, 0, self.width, self.height);
 		var destData = destCtx.getImageData(0, 0, self.width, self.height);
 		var queue = []
@@ -995,23 +882,23 @@ function RoomUi() {
 			var x = coords[0];
 			var y = coords[1];
 			
-			var sourceColour = getColour(sourceData.data, x, y);
-			var destColour = getColour(destData.data, x, y);
+			var sourceColour = self.getColour(sourceData.data, x, y);
+			var destColour = self.getColour(destData.data, x, y);
 			var tolerance = 3;
 
 			if( // Found different colour in original image?
-				!rgbaEqual(sourceColour, oldColour, tolerance) ||
+				!self.rgbaEqual(sourceColour, oldColour, tolerance) ||
 
 				// Are we hitting an area that has already been filled?
-				rgbaEqual(destColour, newColour, tolerance)
+				self.rgbaEqual(destColour, newColour, tolerance)
 			) { 
 				continue;
 			}
 
 			// At this point, we are writing data to storage
 			// Data is written to canvas in later step
-			setColour(sourceData.data, x, y, newColour);
-			setColour(destData.data, x, y, newColour);
+			self.setColour(sourceData.data, x, y, newColour);
+			self.setColour(destData.data, x, y, newColour);
 
 			// Determine another cursor movement
 			if (x > 0) {
@@ -1036,7 +923,7 @@ function RoomUi() {
 	}
 
 	// parse CSS colour details
-	function parseColour(strIn) {
+	this.parseColour = function(strIn) {
 		var str = strIn.replace("rgb(", "").replace("rgba(", "").replace(")", "");
 		var bits = str.split(",");
 		var alpha = parseFloat(bits[3]);
@@ -1050,19 +937,19 @@ function RoomUi() {
 	}
 
 	// Get colour from image data
-	function getColour(data, x, y) {
+	this.getColour = function(data, x, y) {
 		var base = getXYBase(x, y);
 		return [data[base], data[base+1], data[base+2], data[base+3]];
 	}
 
 	// from https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
-	function getXYBase(x, y) {
+	this.getXYBase = function(x, y) {
 		return (Math.floor(y) * (width * 4)) + (Math.floor(x) * 4);
 	}
 
 	// Set colour into the image data
 	// This involves RGBA blending
-	function setColour(data, x, y, newColour) {
+	this.setColour = function(data, x, y, newColour) {
 		var base = getXYBase(x, y);
 
 		// Get the existing colour
@@ -1092,7 +979,7 @@ function RoomUi() {
 		data[base + 3] = Math.round(alphaResult * 255);
 	}
 
-	function rgbaEqual(query, target, tolerance) {
+	this.rgbaEqual = function(query, target, tolerance) {
 		for (var i = 0; i < 4; i++) {
 
 			// exact match
@@ -1113,7 +1000,7 @@ function RoomUi() {
 		return true; // identical
 	}
 
-	function toggleButtons(toolId) {
+	this.toggleButtons = function(toolId) {
 		var selectedElement = $("#"+toolId);
 		$(".button_tool").each(function() {
 			var element = $(this);
@@ -1124,9 +1011,9 @@ function RoomUi() {
 			}
 		});
 		if (toolId == "text") {
-			toggleTextInput();
+			self.toggleTextInput();
 		} else {
-			closeTextInput();
+			self.closeTextInput();
 		}
 
 		// toggle option menus
@@ -1147,7 +1034,7 @@ function RoomUi() {
 
 	// Close menus, optionally exclude a particular menu from closing
 	this.closeMenus = function(except) {
-		closeTextInput();
+		self.closeTextInput();
 		if (typeof(except) !== "undefined" && except != "brush_size") {
 			self.brushSizeMenu.close();
 		}
@@ -1160,7 +1047,7 @@ function RoomUi() {
 	}
 
 	// Position colour picker
-	function positionColourPicker() {
+	this.positionColourPicker = function() {
 		var offset = $(".sp-light").first().offset();
 		var panel = $(".sp-container").first(); 
 		panel.css({
@@ -1171,7 +1058,7 @@ function RoomUi() {
 	}
 
 	// Check whether any of the menus are open
-	function menusOpen() {
+	this.menusOpen = function() {
 		// check text input
 		// text is a special case, we the tool is selected, not just if the menu is open
 		if ($("#text").hasClass("button_pressed")) {
@@ -1182,20 +1069,20 @@ function RoomUi() {
 			return true;
 		}
 		// check colour picker
-		if (pickerVisible()) {
+		if (self.pickerVisible()) {
 			return true;
 		}
-		if (nickVisible()) {
+		if (self.nickVisible()) {
 			return true;
 		}
-		if (dialogsVisible()) {
+		if (self.dialogsVisible()) {
 			return true;
 		}
 
 		return false;
 	}
 
-	function dialogsVisible() {
+	this.dialogsVisible = function() {
 		var visible = false;
 		$(".ui-dialog").each(function(element) {
 			if ($(this).is(":visible")) {
@@ -1205,21 +1092,21 @@ function RoomUi() {
 		return visible;
 	}
 
-	function nickVisible() {
+	this.nickVisible = function() {
 		if ($(".ui-dialog").css("display") == "none") {
 			return false;
 		}
 		return true;
 	}
 
-	function toggleTextInput() {
-		($("#text_input").css("display") == "none") ? openTextInput() : closeTextInput();
+	this.toggleTextInput = function() {
+		($("#text_input").css("display") == "none") ? self.openTextInput() : self.closeTextInput();
 	}
 
-	function openTextInput() {
+	this.openTextInput = function() {
 		self.closeMenus();
 		$("#text_input").show();
-		positionTextInput();
+		self.positionTextInput();
 
 		var inputBox = $("#text_input_box");
 		inputBox.focus();
@@ -1234,16 +1121,16 @@ function RoomUi() {
 		});
 		inputBox.keydown(function(ev) {
 			if (ev.keyCode == 13) {
-				closeTextInput();
+				self.closeTextInput();
 			}
 		});
 	}
 
-	function closeTextInput() {
+	this.closeTextInput = function() {
 		$("#text_input").hide();
 	}
 
-	function positionTextInput() {
+	this.positionTextInput = function() {
 		var menu = $("#text_input")
 		if (menu.css("display") == "none") {
 			return; // menu not active, nothing to do
@@ -1260,7 +1147,7 @@ function RoomUi() {
 	}
 
 	// emit a tool action
-	function emitTool(toolIn) { 
+	this.emitTool = function(toolIn) { 
 		var nickname = base.conf["sessionData"]["name"];
 		if (!nickname) {
 			nickname = "Anonymous"
@@ -1269,7 +1156,7 @@ function RoomUi() {
 		self.socket.emit('receive_tool', toolIn);
 	}
 
-	function emitToolInterval(toolIn, beforeEmit) {
+	this.emitToolInterval = function(toolIn, beforeEmit) {
 		// emitTool(toolIn); // version of tool with line coords array
 		if ($.now() - self.lastEmit > self.mouseEmitInterval) { 
 			if (
@@ -1280,7 +1167,7 @@ function RoomUi() {
 				toolIn.meta.lineEntries = null;
 			}
 			// reached interval
-			emitTool(toolIn); // version of tool with line coords array
+			self.emitTool(toolIn); // version of tool with line coords array
 			self.lastEmit = $.now();
 			return true;
 		}
@@ -1289,7 +1176,7 @@ function RoomUi() {
 
 	// receive a tool action from another user
 	// this basically just sets the pointer marker and then performs the tool action
-	function receiveTool(tool) {
+	this.receiveTool = function(tool) {
 		var sockID = tool.socketID;
 		var pointerElement = $("#drawing_pointer_"+sockID);
 
@@ -1342,7 +1229,7 @@ function RoomUi() {
 
 	// Update drawing with new draw data from the server
 	// This resets the layers
-	function receiveDrawing(data) {
+	this.receiveDrawing = function(data) {
 		data = $.parseJSON(data);
 
 		// Add the new layers
@@ -1354,20 +1241,20 @@ function RoomUi() {
 			if (minNew == null || keyInt < minNew) {
 				minNew = keyInt;
 			}
-			addLayer(value);
+			self.addLayer(value);
 		});
 		self.drawUi.render();
 	}
 
-	function receiveLayer(data) {
+	this.receiveLayer = function(data) {
 		data = $.parseJSON(data);
-		addLayer(data.layer);
+		self.addLayer(data.layer);
 		self.drawUi.render();
 	}	
 
 	// get the mouse position inside the canvas
 	// returns null if the mouse is outside the canvas
-	function getMousePos(ev) {
+	this.getMousePos = function(ev) {
 		var rect = self.renderCanvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
 
 		if (ev.clientX == undefined || ev.clientY == undefined) {
@@ -1397,7 +1284,7 @@ function RoomUi() {
 		return mousePos;
 	}
 
-	function createRemoteCanvas(canvasID) {
+	this.createRemoteCanvas = function(canvasID) {
 		var buf = 
 			"<canvas id=\""+canvasID+"\" "+
 				"width=\""+self.width+"\" height=\""+self.height+"\" "+
@@ -1423,7 +1310,7 @@ function RoomUi() {
 		$("#drawing_layers").append(buf)
 	}
 
-	function bumpCanvas(canvasElement) {
+	this.bumpCanvas = function(canvasElement) {
 		$(".drawing_canvas").each(function() { // shift everything else -1 on zindex
 			var element = $(this);
 			var zIndex = parseInt(element.css("z-index")) - 1;
@@ -1437,7 +1324,7 @@ function RoomUi() {
 		previewElement.css("z-index", self.canvasCeiling);
 	}
 
-	function getLayerByCode(code) {
+	this.getLayerByCode = function(code) {
 		var existingLayer = $("#canvas_layer_"+code);
 		if (existingLayer.length > 0) { // avoid a duplicate element
 			return existingLayer;
@@ -1451,7 +1338,7 @@ function RoomUi() {
 	
 	// Add layer data to the dom
 	// Layer data comes from the server
-	function addLayer(layerIn) {
+	this.addLayer = function(layerIn) {
 		// If "components" is set, it means it's a flattened image
 		// Delete component layers, if there are any
 		if (layerIn["components"]) {
@@ -1469,7 +1356,7 @@ function RoomUi() {
 	// Happens when the user times out from not being active for n milliseconds
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
-	function processCanvas(toolIn) {
+	this.processCanvas = function(toolIn) {
 		var sourceCanvas = self.newLocal();
 
 		// $("#drawing_form").append(sourceCanvas);			
@@ -1477,7 +1364,7 @@ function RoomUi() {
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
 		// Crop the canvas to save resources (this is pretty slow, around 20ms)
-		var cropCoords = cropCanvas(sourceCanvas, self.croppingCanvas[0], toolIn);
+		var cropCoords = self.cropCanvas(sourceCanvas, self.croppingCanvas[0], toolIn);
 
 		// First generate a png blob (async)
 		var blob = self.croppingCanvas[0].toBlob(function(blob) {
@@ -1514,7 +1401,7 @@ function RoomUi() {
 		}, "image/png");
 	}
 
-	function duplicateDrawingCanvas(layerCode) {
+	this.duplicateDrawingCanvas = function(layerCode) {
 		var duplicateID = "drawing_canvas_cpy_"+layerCode;
 		var html = "<canvas id=\""+duplicateID+"\" class=\"drawing_canvas_cpy\" "+
 			"width=\""+self.width+"\" height=\""+self.height+"\"></canvas>"
@@ -1532,7 +1419,7 @@ function RoomUi() {
 
 	// Crop a sourceCanvas by alpha=0. Results are written to destCanvas.
 	// Adapted from https://stackoverflow.com/questions/12175991/crop-image-white-space-automatically-using-jquery
-	function cropCanvas(sourceCanvas, destCanvas, toolIn) {
+	this.cropCanvas = function(sourceCanvas, destCanvas, toolIn) {
 		var context = sourceCanvas.getContext("2d");
 
 		var imgWidth = sourceCanvas.width, 
