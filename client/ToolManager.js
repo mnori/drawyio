@@ -16,7 +16,7 @@ function ToolManager() {
 	this.createRepeatTool = function() {
 		self.nTools++;
 		var tool = self._createTool();
-		tool.socketID = "dummy_socket_"+self.nTools
+		tool.socketId = "dummy_socket_"+self.nTools
 		tool.nickname = "Dummy";
 		self._repeatTools.set(tool.socketId, tool);
 		return tool;

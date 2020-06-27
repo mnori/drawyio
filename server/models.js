@@ -398,8 +398,8 @@ function Room(idIn, startLayer, fields, isModified, app) {
 
 		// disconnect all sockets
 		for (var i = 0; i < socketsConnected.length; i++) {
-			var socketID = socketsConnected[i];
-			this.socketNS.connected[socketID].disconnect();
+			var socketId = socketsConnected[i];
+			this.socketNS.connected[socketId].disconnect();
 		}
 
 		// remove socket event listeners
@@ -504,8 +504,8 @@ function Room(idIn, startLayer, fields, isModified, app) {
 
 	// Broadcast mousecoords to all sockets except the originator
 	this.broadcastTool = function(data, socket) {
-		var socketID = socket.id.split("#").pop();
-		data.socketID = socketID; // we need the socket id to keep track of things
+		var socketId = socket.id.split("#").pop();
+		data.socketId = socketId; // we need the socket id to keep track of things
 		socket.broadcast.emit("receive_mouse_coords", data);
 	}
 

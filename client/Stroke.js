@@ -41,12 +41,15 @@ function Stroke(layer) {
 	}
 
 	// Render the stroke data onto the layer render sprite
-	this.endStroke = function(toolIn) { 
+	this.endStroke = function(toolIn) {
+		console.log("endStroke() called")
 		self.layer.renderStroke(toolIn); 
 	}
 
 	this.plotLine = function(x0, y0, x1, y1) {
-		console.log("self.colour: "+self.colour);
+
+		console.log(self.colour);
+
 		self.stroking = true;
 		self.graphics.beginFill(self.colour, 1);
 		self.graphics.lineStyle(self.tool.meta.brushSize, self.colour, 1);
@@ -68,6 +71,7 @@ function Stroke(layer) {
 		if (!self.stroking) { // don't render if there is nothing to do
 			return;
 		}
+
 		// Render stroke stuff onto the render texture
 		self.container.addChild(self.graphics);
 		self.layer.drawUi.renderer.render(self.container, self.renderTexture);

@@ -644,6 +644,7 @@ function RoomUi() {
 			if (toolId == "test") {
 				// special case for test - create unique tool for that test click which is then
 				// shared for subsequent strokes
+				console.log("Creating new tool")
 				tool = self.toolManager.createRepeatTool();
 			} else {
 				// otherwise just use the local tool
@@ -717,7 +718,6 @@ function RoomUi() {
 
 	// Start drawing using the local tool
 	this.startTool = function(coord, tool) {
-		console.log("startTool() called");
 		tool.newCoord = coord;
 		if (tool.newCoord == null) { // make sure mouse is within canvas
 			return;
@@ -736,7 +736,9 @@ function RoomUi() {
 		} else if (tool.tool != "text") { // tool does not have a data attribute
 			tool.meta = null;
 		}
-		self.handleAction(tool, true);
+
+		var emit = tool.socketId ? false : true
+		self.handleAction(tool, emit);
 	}
 
 	this.startPaint = function(tool) {
@@ -758,7 +760,8 @@ function RoomUi() {
 		if (tool.state == "drawing" || tool.state == "start") {
 			tool.state = "end";
 		}
-		self.handleAction(tool, true);
+		var emit = tool.socketId ? false : true
+		self.handleAction(tool, emit);
 
 		// reset after using the eye dropper tool
 		// but only if CTRL is not pressed

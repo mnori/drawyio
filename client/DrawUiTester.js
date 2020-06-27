@@ -3,24 +3,11 @@ function DrawUiTester(roomUi) {
 
 	this.init = function(roomUi) {
 		self.roomUi = roomUi;
-	}
-
-	// this.startLocal = function() {
-	// 	var tool = self.roomUi.toolManager.createRepeatTool();
-	// 	self.initLocalTest(tool);
-	// 	// var tool = self.roomUi.toolManager.getLocalTool();
-	// 	// self.initLocalTest(tool);
-	// }
-
-	this.startRepeat = function(tool) {
-		var tool = self.roomUi.toolManager.createRepeatTool();
-		self.initTest(tool);
+		self.utils = new Utils();
 	}
 
 	// Stops everything
 	this.stop = function() {
-		console.log("STOPPING")
-
 		// Stop local tool
 		var tool = self.roomUi.toolManager.getLocalTool();
 		if (tool.state == "drawing" || tool.state == "start") {
@@ -31,17 +18,28 @@ function DrawUiTester(roomUi) {
 		// ... TODO
 
 		// Handle the action using standard method
-		self.roomUi.handleAction(tool, true);
+		self.roomUi.handleAction(tool, false);
 	}
 
 	// Reset tool - shared between start and interrupt
 	this.initTest = function(tool) {
+		console.log("initTest called");
 		tool.cursor = { // attributes of our virtual mouse
 			x: Math.round(self.roomUi.width / 2),
 			y: Math.round(self.roomUi.height / 2),
 		};
-		self.roomUi.setToolColour(self.getRandomColor()); // set hopefully unique random colour to test
+
+		self.roomUi.setToolColour(self.utils.getRandomColor()); // set hopefully unique random colour to test
 		self.roomUi.pickerToToolColour(tool); // bit of a hack to get the colour set
+
+		console.log("1:", tool.colour);
+
+		// // tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+		// var rgb = self.utils.hexToRgb(self.utils.getRandomColor());
+		// tool.colour = "rgba("+rgb.r+", "+rgb.g+", "+rgb.b+", 0.5)";
+
+		// console.log("2:", tool.colour);
+
 		self.roomUi.startTool(tool.cursor, tool);
 		self.draw(tool);
 	}
@@ -50,16 +48,21 @@ function DrawUiTester(roomUi) {
 	this.interrupt = function(tool) {
 		// We need to pretend to switch tools and then go back to the test mode again, doing it other
 		// ways is complicated and annoying
-		setTimeout(function() {
-			// executed first
-			self.roomUi.setTool("paint", tool);
-			setTimeout(function() {
-				// executed after paint
-				self.roomUi.setTool("test", tool);
-			}, 100);
-		}, 100);
+		// setTimeout(function() {
+		// 	// executed first
+		// 	self.roomUi.setTool("paint", tool);
+		// 	setTimeout(function() {
+		// 		// executed after paint
+		// 		self.roomUi.setTool("test", tool);
+		// 	}, 100);
+		// }, 500);
+
+		tool.state = "end"
+
+		// .. restart the tool
 	}
 	
+	// Make the tool draw
 	this.draw = function(tool) {
 
 		// Do we need to interrupt?
@@ -86,19 +89,17 @@ function DrawUiTester(roomUi) {
 		tool.meta.lineEntries.push(
 			{"state": tool.state, "coord": tool.newCoord});
 
-		// if it has a socket id then we know it should go through receiveTool instead of handleAction
+		// We must handle the tool action and also receive the tool
 		self.roomUi.receiveTool(tool);
-
+		self.manageToolState(tool);
 		setTimeout(function() { self.draw(tool); }, 16);
 	}
 
-	this.getRandomColor = function() {
-		var letters = '0123456789ABCDEF';
-		var color = '#';
-		for (var i = 0; i < 6; i++) {
-			color += letters[Math.floor(Math.random() * 16)];
+	// like handlePaint but without all the chuff.. prepare the tool to be injected into receiveTool
+	this.manageToolState = function(tool) {
+		if (tool.state == "start") {
+			tool.state = "drawing";
 		}
-		return color;
 	}
 
 	var self = this;
