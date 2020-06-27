@@ -49,6 +49,7 @@ function RoomUi() {
 		this.lastEmit = $.now(); // part of general purpose intervalling system
 
 		this.renderCanvas = $("#renderer");
+		this.utils = new Utils();
 
 		// Final setup steps
 		self.newLocal();
@@ -61,14 +62,14 @@ function RoomUi() {
 
 		// Handle cursor down
 		self.renderCanvas.on("pointerdown", $.proxy(function(ev) { 
-			self.pickerToToolColour();
+			var tool = self.toolManager.getLocalTool();
+			self.pickerToToolColour(tool);
 			if (ev.which == 3) { // right click
 				if (menusOpen()) {
 					return;
 				}
 				self.activateDropperToggle();
 			}
-			var tool = self.toolManager.getLocalTool();
 			self.startTool(self.getMousePos(ev), tool);
 			return false;
 		}, this));
@@ -195,18 +196,9 @@ function RoomUi() {
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	this.newLocal = function() {
 		var tool = self.toolManager.getLocalTool();
-		tool.layerCode = self.randomString(self.layerCodeLen);
+		tool.layerCode = self.utils.randomString(self.layerCodeLen);
 		var oldCanvas = self.drawUi.newLocal(tool.layerCode);
 		return oldCanvas;
-	}
-
-	this.randomString = function(length) {
-		var text = "";
-		var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
-		for (var i = 0; i < length; i++) { 
-			text += charset.charAt(Math.floor(Math.random() * charset.length));
-		}
-		return text;
 	}
 
 	this.mouseOut = function(ev) {
@@ -218,8 +210,8 @@ function RoomUi() {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	this.handleAction = function(tool, emit) {
+		if (emit) self.pickerToToolColour(tool); // everything except eyedropper has a tool colour
 
-		if (emit) self.pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
 			tool.tool == "eyedropper" && // eyedropper, is local user only - not remote
 			emit && (tool.state == "start" || tool.state == "drawing")
@@ -648,19 +640,31 @@ function RoomUi() {
 	this.bindToolButton = function(toolId) {
 		$("#"+toolId).on("mousedown", function() {
 			self.toggleButtons(toolId);
-			self.setTool(toolId);
+			var tool;
+			if (toolId == "test") {
+				// special case for test - create unique tool for that test click which is then
+				// shared for subsequent strokes
+				tool = self.toolManager.createRepeatTool();
+			} else {
+				// otherwise just use the local tool
+				tool = self.toolManager.getLocalTool();
+			}
+			self.setTool(toolId, tool);
 		});
 	}
 
 	// Set tool via the UI, this will always be the local tool, not remote tool
 	// I.e. the tool being changed will be the emitter
-	this.setTool = function(toolId) {
-		var tool = self.toolManager.getLocalTool();
-		// Do we need to start / stop the tester?
-		if (toolId == "test" && tool.tool != "test") {
-			self.tester.start();
-		} else if (tool.tool == "test" && toolId != "test") { 
-			self.tester.stop();
+	// note: toolId is the type of tool (TODO change to reflect this!)
+	this.setTool = function(toolId, tool) {
+		// // Do we need to start / stop the tester?
+		// if (toolId == "test" && tool.tool != "test") {
+		// 	self.tester.startLocal();
+		// } else if (tool.tool == "test" && toolId != "test") { 
+		// 	self.tester.stop();
+		if (toolId == "test") {
+			// Repeat tool button click. Spawn another tool simulation
+			self.tester.initTest(tool);
 		}
 
 		// Set tool identifier into the tool
@@ -668,7 +672,6 @@ function RoomUi() {
 	}
 
 	this.readBrushSize = function(tool) {
-		// better version
 		tool.meta.brushSize = parseInt($("#brush_size").val());
 	}
 
@@ -708,14 +711,13 @@ function RoomUi() {
 		return false;
 	}
 
-	this.pickerToToolColour = function() {
-		var tool = self.toolManager.getLocalTool();
+	this.pickerToToolColour = function(tool) {
 		tool.colour = self.colourPicker.spectrum("get").toRgbString();
 	}
 
 	// Start drawing using the local tool
 	this.startTool = function(coord, tool) {
-
+		console.log("startTool() called");
 		tool.newCoord = coord;
 		if (tool.newCoord == null) { // make sure mouse is within canvas
 			return;
@@ -763,16 +765,6 @@ function RoomUi() {
 		if (tool.dropperToggle) { 
 			self.resetDropperToggle();
 		}
-	}
-
-	// Stop test, a bit like stopTool but for automated local test
-	// Fake remote tests handled separately
-	this.stopLocalTest = function(interrupt) {
-		var tool = self.toolManager.getLocalTool();
-		if (tool.state == "drawing" || tool.state == "start") {
-			tool.state = "end";
-		}
-		self.handleAction(tool, true);
 	}
 
 	this.activateDropperToggle = function() {
@@ -1381,7 +1373,7 @@ function RoomUi() {
 				}
 
 				// Render the layer image - this replaces the canvas
-				addLayer(layer);
+				self.addLayer(layer);
 				self.drawUi.render();
 
 

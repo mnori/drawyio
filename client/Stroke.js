@@ -46,13 +46,13 @@ function Stroke(layer) {
 	}
 
 	this.plotLine = function(x0, y0, x1, y1) {
+		console.log("self.colour: "+self.colour);
 		self.stroking = true;
 		self.graphics.beginFill(self.colour, 1);
 		self.graphics.lineStyle(self.tool.meta.brushSize, self.colour, 1);
 	    self.graphics.moveTo(x0, y0); 
 	    self.graphics.lineTo(x1, y1);
 	    self.graphics.endFill();
-
 	 	self.placeCircleSprite(x0, y0, self.radius);
 	 	self.placeCircleSprite(x1, y1, self.radius);
 	}

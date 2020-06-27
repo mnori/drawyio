@@ -11,7 +11,7 @@ module.exports = {
 		"Timeline.js",
 		"Base.js",
 		"GalleryUi.js",
-		"DrawUtils.js",
+		"Utils.js",
 		"Stroke.js",
 		"ImageLayer.js",
 		"Layer.js",

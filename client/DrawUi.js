@@ -22,7 +22,7 @@ function DrawUi(roomUI) {
 		self.imageLayers = new AssocArray();
 		this.localId = null;
 		self.localLayer = null;
-		self.utils = new DrawUtils(self);
+		self.utils = new Utils();
 
 		// This is for cropping images and sending to the server
 		self.stagingContainer = new PIXI.Container();

@@ -1,8 +1,7 @@
 // Utilities shared amongst DrawUi associated classes
 
-function DrawUtils(drawUi) {
+function Utils() {
 	var self = this;
-	self.drawUi = drawUi;
 
 	// Generic RenderTexture and Sprite creation
 	self.createRenderSprite = function(self) {
@@ -53,5 +52,14 @@ function DrawUtils(drawUi) {
 
 	self.rgbaTrim = function(str) {
 		return str.replace(/^\s+|\s+$/gm,'');
+	}
+
+	self.randomString = function(length) {
+		var text = "";
+		var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+		for (var i = 0; i < length; i++) { 
+			text += charset.charAt(Math.floor(Math.random() * charset.length));
+		}
+		return text;
 	}
 }
