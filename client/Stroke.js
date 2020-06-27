@@ -37,6 +37,9 @@ function Stroke(layer) {
 		self.width = self.tool.meta.brushSize;
 		self.radius = parseInt(self.tool.meta.brushSize / 2);
 		self.colour = self.drawUi.utils.rgbaToHex(self.tool.colour);
+
+		console.log("self.colour: "+self.colour)
+
 		self.renderSprite.alpha = self.drawUi.utils.rgbaToAlpha(self.tool.colour);
 		self.createCircleSprite();
 	}

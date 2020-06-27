@@ -32,8 +32,6 @@ function DrawUiTester(roomUi) {
 		// self.roomUi.setToolColour(self.utils.getRandomColor()); // set hopefully unique random colour to test
 		// self.roomUi.pickerToToolColour(tool); // bit of a hack to get the colour set
 
-		console.log("1:", tool.colour);
-
 		// tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
 		var rgb = self.utils.hexToRgb(self.utils.getRandomColor());
 		tool.colour = "rgba("+rgb.r+", "+rgb.g+", "+rgb.b+", 0.5)";
@@ -98,8 +96,12 @@ function DrawUiTester(roomUi) {
 
 	// like handlePaint but without all the chuff.. prepare the tool to be injected into receiveTool
 	this.manageToolState = function(tool) {
-		if (tool.state == "start") {
+
+		if (tool.state == "start" && tool.meta.lineEntries != null) {
+			tool.layerCode = self.utils.randomString(self.roomUi.layerCodeLen);
 			tool.state = "drawing";
+			self.roomUi.drawUi.startStroke(tool.layerCode, tool);
+
 		}
 	}
 
