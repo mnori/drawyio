@@ -3,16 +3,20 @@
 // is fully working
 
 function RoomUi() {
+	
+	// TODO - make all this shit use this and put in init method
+	var self = this;
+
 	var drawID = opts["roomID"];
 	var width = this.width = opts["width"];
 	var height = this.height = opts["height"];
 
 	// var emitInterval = 33; // ~= 30FPS
-	var emitInterval = 33; // ~= 30FPS
+	var emitInterval = 16; // ~= 30FPS
 	var paintEmitInterval = emitInterval; 
 	var lineEmitInterval = emitInterval; 
 	var textEmitInterval = emitInterval;
-	var mouseEmitInterval = 33; // throttle all misc mouse output
+	var mouseEmitInterval = 16; // throttle all misc mouse output
 	// var drawingCanvas = $("#drawing_canvas");
 	// var renderCanvas = $("#drawing_canvas_preview");
 	var croppingCanvas = $("#crop_canvas");
@@ -49,14 +53,14 @@ function RoomUi() {
 	var fontSizeMenu = null; // initialised later
 	var fontFaceMenu = null
 	var toolInCanvas = false;
-	var self = this; // scoping help
 
 	// Metadata about the action being performed
-	this.tool = {
-		state: "idle",
-		tool: "paint",
-		meta: null
-	};
+	this.toolManager = new ToolManager();
+	// this.tool = {
+	// 	state: "idle",
+	// 	tool: "paint",
+	// 	meta: null
+	// };
 	this.drawUi = new DrawUi(this);
 	this.tester = new DrawUiTester(this);
 	this.lastEmit = $.now(); // part of general purpose intervalling system
@@ -64,7 +68,7 @@ function RoomUi() {
 	var renderCanvas = $("#renderer");
 
 	this.init = function() { 
-
+		
 		setupControls();
 		var body = $("body");
 
@@ -77,7 +81,8 @@ function RoomUi() {
 				}
 				activateDropperToggle();
 			}
-			self.startTool(getMousePos(ev));
+			var tool = self.toolManager.getLocalTool();
+			self.startTool(getMousePos(ev), tool);
 			return false;
 		}, this));
 
@@ -88,7 +93,8 @@ function RoomUi() {
 				return;
 			}
 			if (event.which == 1) { // left mouse button is pressed
-				self.startTool(getMousePos(ev));
+				var tool = self.toolManager.getLocalTool();
+				self.startTool(getMousePos(ev), tool);
 			}
 		});
 
@@ -98,9 +104,11 @@ function RoomUi() {
 		// the subevents we can draw a smooth line at max time resolution
 		renderCanvas.on("pointermove", function(ev) {
 
+			var tool = self.toolManager.getLocalTool();
+
 			// Change tool state to drawing if we're at the beginning of a tool action
-			if (self.tool.state == "start") {
-				self.tool.state = "drawing";
+			if (tool.state == "start") {
+				tool.state = "drawing";
 			}
 					
 			// Loop through events in the frame 
@@ -111,18 +119,16 @@ function RoomUi() {
 				var coalescedEvent = events[i];
 
 				// This is where processing occurs
-				self.tool.newCoord = getMousePos(coalescedEvent);
-				if (self.tool.tool == "paint" && self.tool.state == "drawing") {
-					self.tool.meta.lineEntries.push({"state": self.tool.state, "coord": self.tool.newCoord});
+				tool.newCoord = getMousePos(coalescedEvent);
+				if (tool.tool == "paint" && tool.state == "drawing") {
+					tool.meta.lineEntries.push({"state": tool.state, "coord": tool.newCoord});
 				}
 			}
-			if (self.tool.newCoord == null && self.tool.tool != "eyedropper") { 
-				self.stopTool();
+			if (tool.newCoord == null && tool.tool != "eyedropper") { 
+				self.stopTool(tool);
 			} else {
-				self.handleAction(self.tool, true);
+				self.handleAction(tool, true);
 			}
-
-			// self.tl.log("handleAction: b"); // b => c takes a long time -- why?
 			return false;
 		});
 
@@ -131,21 +137,22 @@ function RoomUi() {
 
 		// key bindings
 		body.keydown($.proxy(function(ev) {
+			var tool = self.toolManager.getLocalTool();
 			if (ev.which == 16) { // shift - select the colour picker
 				if (menusOpen()) {
 					return;
 				}
 				self.closeMenus();
 				activateDropperToggle();
-				self.startTool(self.tool.newCoord); // use the old coord, since there is no mouse data
+				self.startTool(tool.newCoord, tool); // use the old coord, since there is no mouse data
 
 			} else if ( // Text box enter key handler
 				ev.which == 13 && 
-				self.tool.tool == "text" &&
+				tool.tool == "text" &&
 				!$("#text_input").is(":visible")
 			) {
 				openTextInput();
-			} else if (ev.which == 27 && self.tool.tool == "text") {
+			} else if (ev.which == 27 && tool.tool == "text") {
 				closeTextInput()
 			}
 
@@ -196,8 +203,9 @@ function RoomUi() {
 
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
 	function newLocal() {
-		self.tool.layerCode = randomString(layerCodeLen);
-		var oldCanvas = self.drawUi.newLocal(self.tool.layerCode);
+		var tool = self.toolManager.getLocalTool();
+		tool.layerCode = randomString(layerCodeLen);
+		var oldCanvas = self.drawUi.newLocal(tool.layerCode);
 		return oldCanvas;
 	}
 
@@ -211,9 +219,10 @@ function RoomUi() {
 	}
 
 	function mouseOut(ev) {
-		self.tool.newCoord = null;
+		var tool = self.toolManager.getLocalTool();
+		tool.newCoord = null;
 		toolInCanvas = false;
-		self.stopTool();
+		self.stopTool(tool);
 	}
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
@@ -494,6 +503,7 @@ function RoomUi() {
 
 		// Check both coords are present
 		// This is expected when the mouse is outside the canvas
+		// (TODO: this probably isn't working right with new system)
 		if (toolIn.meta == null) {
 			return;
 		}
@@ -716,16 +726,19 @@ function RoomUi() {
 		});
 	}
 
+	// Set tool via the UI, this will always be the local tool, not remote tool
+	// I.e. the tool being changed will be the emitter
 	this.setTool = function(toolId) {
+		var tool = self.toolManager.getLocalTool();
 		// Do we need to start / stop the tester?
-		if (toolId == "test" && self.tool.tool != "test") {
+		if (toolId == "test" && tool.tool != "test") {
 			self.tester.start();
-		} else if (self.tool.tool == "test" && toolId != "test") { 
+		} else if (tool.tool == "test" && toolId != "test") { 
 			self.tester.stop();
 		}
 
 		// Set tool identifier into the tool
-		self.tool.tool = toolId;
+		tool.tool = toolId;
 	}
 
 	function readBrushSize(tool) {
@@ -734,11 +747,13 @@ function RoomUi() {
 	}
 
 	function readFontSize(tool) {
-		self.tool.meta.fontSize = parseInt($("#font_size").val());
+		var tool = self.toolManager.getLocalTool();
+		tool.meta.fontSize = parseInt($("#font_size").val());
 	}
 
 	function readFontFace(tool) {
-		self.tool.meta.fontFace = getFontFromMenu();
+		var tool = self.toolManager.getLocalTool();
+		tool.meta.fontFace = getFontFromMenu();
 	}
 
 	function getFontFromMenu() {
@@ -768,36 +783,37 @@ function RoomUi() {
 	}
 
 	function pickerToToolColour() {
-		self.tool.colour = self.colourPicker.spectrum("get").toRgbString();
+		var tool = self.toolManager.getLocalTool();
+		tool.colour = self.colourPicker.spectrum("get").toRgbString();
 	}
 
 	// Start drawing using the local tool
-	this.startTool = function(coord) {
+	this.startTool = function(coord, tool) {
 
-		self.tool.newCoord = coord;
-		if (self.tool.newCoord == null) { // make sure mouse is within canvas
+		tool.newCoord = coord;
+		if (tool.newCoord == null) { // make sure mouse is within canvas
 			return;
 		}
 		// only when outside the timeout
-		self.tool.state = "start";
+		tool.state = "start";
 		// only create new layer code when outside rolling timeout, or when there is no layer code yet
 
 		// do we need to set the tool data?
-		if (self.tool.tool == "paint") { // paints have a list of entries
-			self.startPaint(self.tool);
+		if (tool.tool == "paint") { // paints have a list of entries
+			self.startPaint(tool);
 
-		} else if (self.tool.tool == "line") {
-			startLine(self.tool);
+		} else if (tool.tool == "line") {
+			startLine(tool);
 
-		} else if (self.tool.tool != "text") { // tool does not have a data attribute
-			self.tool.meta = null;
+		} else if (tool.tool != "text") { // tool does not have a data attribute
+			tool.meta = null;
 		}
-		self.handleAction(self.tool, true);
+		self.handleAction(tool, true);
 	}
 
-	this.startPaint = function(toolIn2) {
-		var metaBit = {"lineEntries": [{"state": toolIn2.state, "coord": toolIn2.newCoord}]};
-		toolIn2.meta = metaBit;
+	this.startPaint = function(tool) {
+		var metaBit = {"lineEntries": [{"state": tool.state, "coord": tool.newCoord}]};
+		tool.meta = metaBit;
 		self.lastEmit = $.now();
 	}
 
@@ -806,45 +822,49 @@ function RoomUi() {
 	}
 
 	// Stop drawing but only if already drawing
-	this.stopTool = function() {
-		if (self.tool.tool == "test") {
+	this.stopTool = function(tool) {
+		if (tool.tool == "test") {
 			// Ignore attempts to stop tool from test mode, this is done through a seperate method
 			return;
 		}
-		if (self.tool.state == "drawing" || self.tool.state == "start") {
-			self.tool.state = "end";
+		if (tool.state == "drawing" || tool.state == "start") {
+			tool.state = "end";
 		}
-		self.handleAction(self.tool, true);
+		self.handleAction(tool, true);
 
 		// reset after using the eye dropper tool
 		// but only if CTRL is not pressed
-		if (self.tool.dropperToggle) { 
+		if (tool.dropperToggle) { 
 			resetDropperToggle();
 		}
 	}
 
-	// Stop test, a bit like stopTool but for automated test
-	this.stopTest = function(interrupt) {
-		if (self.tool.state == "drawing" || self.tool.state == "start") {
-			self.tool.state = "end";
+	// Stop test, a bit like stopTool but for automated local test
+	// Fake remote tests handled separately
+	this.stopLocalTest = function(interrupt) {
+		var tool = self.toolManager.getLocalTool();
+		if (tool.state == "drawing" || tool.state == "start") {
+			tool.state = "end";
 		}
-		self.handleAction(self.tool, true);
+		self.handleAction(tool, true);
 	}
 
 	function activateDropperToggle() {
-		self.tool.dropperToggle = true;
-		self.tool.prevTool = self.tool.tool;
-		self.tool.tool = "eyedropper";
-		toggleButtons(self.tool.tool);
+		var tool = self.toolManager.getLocalTool();
+		tool.dropperToggle = true;
+		tool.prevTool = tool.tool;
+		tool.tool = "eyedropper";
+		toggleButtons(tool.tool);
 	}
 
 	function resetDropperToggle() {
-		self.tool.dropperToggle = false;
-		self.tool.tool = self.tool.prevTool;
-		if (self.tool.tool == "line") {
-			startLine(self.tool)
+		var tool = self.toolManager.getLocalTool();
+		tool.dropperToggle = false;
+		tool.tool = tool.prevTool;
+		if (tool.tool == "line") {
+			startLine(tool)
 		}
-		toggleButtons(self.tool.tool);
+		toggleButtons(tool.tool);
 	}
 
 	function makeCircle(toolIn) {
@@ -910,14 +930,14 @@ function RoomUi() {
 	// }
 
 	function eyedropper(tool) {
-		if (self.tool.newCoord == null) { // can happen outside of canvas area
+		if (tool.newCoord == null) { // can happen outside of canvas area
 			return;
 		}
 		// get the colour from the scratch canvas at the given coordinate
 		var scratchCtx = drawScratchCanvas();
-		var col = scratchCtx.getImageData(self.tool.newCoord.x, self.tool.newCoord.y, 1, 1).data;
-		self.tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
-		colourPicker.spectrum("set", self.tool.colour);
+		var col = scratchCtx.getImageData(tool.newCoord.x, tool.newCoord.y, 1, 1).data;
+		tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+		colourPicker.spectrum("set", tool.colour);
 	}
 
 	// commented out since we don't want flood fill anymore
@@ -1689,5 +1709,5 @@ function ToolOptionMenu(drawUi, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isM
 		return false
 	}
 
-	this.init(drawUi);
+	self.init(drawUi);
 }

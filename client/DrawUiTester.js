@@ -18,14 +18,14 @@ function DrawUiTester(roomUi) {
 			y: Math.round(self.roomUi.height / 2),
 		};
 		self.roomUi.setToolColour(self.getRandomColor()); // set hopefully unique random colour to test
-		self.roomUi.startTool(self.cursor)
-		self.draw();
+		var tool = self.roomUi.toolManager.getLocalTool();
+		self.roomUi.startTool(self.cursor, tool);
+		self.draw(tool);
 	}
 
-	// Only to be called when the user physically picks a different tool.
 	this.stop = function() {
 		self.active = false;
-		self.roomUi.stopTest();
+		self.roomUi.stopLocalTest();
 	}
 
 	// Called when a new stroke needs to be introduced for testing
@@ -38,19 +38,18 @@ function DrawUiTester(roomUi) {
 			setTimeout(function() {
 				// executed after paint
 				self.roomUi.setTool("test");
-			}, 500);
-		}, 500);
+			}, 100);
+		}, 100);
 	}
 	
-	this.draw = function() {
+	this.draw = function(tool) {
 
-		var drawTl = new Timeline("draw() call");
-
-		if (self.iterationTl != null) {
-			// find out how long each cycle lasts
-			self.iterationTl.dump()
-		}
-		self.iterationTl = new Timeline("between test draws");
+		// uncomment to get performance info
+		// if (self.iterationTl != null) {
+		// 	// find out how long each cycle lasts
+		// 	self.iterationTl.dump()
+		// }
+		// self.iterationTl = new Timeline("between test draws");
 
 		if (!self.active) {
 			return;
@@ -76,15 +75,13 @@ function DrawUiTester(roomUi) {
 			y: self.cursor.y + (-1 + Math.floor(Math.random() * 3)) * 5
 		};
 
-		self.roomUi.tool.newCoord = self.cursor;
-		self.roomUi.tool.meta.lineEntries.push(
-			{"state": self.roomUi.tool.state, "coord": self.roomUi.tool.newCoord});
+		tool.newCoord = self.cursor;
+		tool.meta.lineEntries.push(
+			{"state": tool.state, "coord": tool.newCoord});
 
-		self.roomUi.handleAction(self.roomUi.tool, true);
-		// setTimeout(self.draw, 16);
-		setTimeout(self.draw, 200);
+		self.roomUi.handleAction(tool, true);
 
-		drawTl.dump();
+		setTimeout(function() { self.draw(tool); }, 16);
 	}
 
 	this.getRandomColor = function() {

@@ -3,6 +3,9 @@
 // It's supposed to be a replacement for various parts of RoomUI.js
 // All PIXI.* library calls go here.
 
+// Note: It's slow with Chrome on Linux due to lack of GPU acceleration
+// Nice and quick on Firefox though
+
 function DrawUi(roomUI) {
 	var self = this;
 
@@ -101,6 +104,7 @@ function DrawUi(roomUI) {
 	// Render the main container
 	// Should only be called once per frame - WIP
 	this.render = function() {
+
 		// Empty the container
 		self.container.removeChildren();
 
@@ -117,6 +121,8 @@ function DrawUi(roomUI) {
 			self.container.addChild(self.localLayer.stroke.renderSprite);
 		}
 		
+		// This render call makes it slow. The code above this call is fast.
+
 		// true means we're clearing before render
 		self.renderer.render(self.container, null, true);
 	}
