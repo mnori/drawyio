@@ -3,75 +3,65 @@
 // is fully working
 
 function RoomUi() {
-	
-	// TODO - make all this shit use this and put in init method
-	var self = this;
-
-	var drawID = opts["roomID"];
-	var width = this.width = opts["width"];
-	var height = this.height = opts["height"];
-
-	// var emitInterval = 33; // ~= 30FPS
-	var emitInterval = 16; // ~= 30FPS
-	var paintEmitInterval = emitInterval; 
-	var lineEmitInterval = emitInterval; 
-	var textEmitInterval = emitInterval;
-	var mouseEmitInterval = 16; // throttle all misc mouse output
-	// var drawingCanvas = $("#drawing_canvas");
-	// var renderCanvas = $("#drawing_canvas_preview");
-	var croppingCanvas = $("#crop_canvas");
-	// var ctx = drawingCanvas[0].getContext('2d'); // the user editable element
-	// var previewCtx = renderCanvas[0].getContext('2d'); // the user editable element
-	var doc = $(document);
-	var socket = io.connect("/drawing_socket_"+drawID);
-	var layerCodeLen = 32;
-	var highestLayerId = 1;
-	var lastPaintProcess = $.now(); // paint interval stuff 
-	var paintProcessCutoff = 250;
-	var modDialog = new ModDialog("room", drawID);
-
-	// Delete a remote canvas after a certain amount of time
-	var remoteCanvasDeleteCutoff = 4000;
-	var labelFadeOutMs = 120;
-	// var labelFadeOutMs = 60000;
-	var canvasCeiling = 999999999;
-	this.colourPicker = $("#colour_picker");
-	var finaliseTimeout = null;
-
-	/*
-	finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
-	Low values place moar load on the server, higher values mean a shitty user experience
-	*/
-	var finaliseTimeoutMs = 1000; 
-
-	// This timeout handles the pointer fading when inactive
-	var pointerTimeoutMs = 4000;
-	var textMargin = 10; // pixels to offset the text box preview
-	var defaultText = "Enter text";
-	var roomMenu = null;
-	var brushSizeMenu = null; // initialised later
-	var fontSizeMenu = null; // initialised later
-	var fontFaceMenu = null
-	var toolInCanvas = false;
-
-	// Metadata about the action being performed
-	this.toolManager = new ToolManager();
-	this.drawUi = new DrawUi(this);
-	this.tester = new DrawUiTester(this);
-	this.lastEmit = $.now(); // part of general purpose intervalling system
-	newLocal(); // create the new layer code
-	var renderCanvas = $("#renderer");
 
 	this.init = function() { 
+
+		// Define a bunch of variables and objects
+		this.drawID = opts["roomID"];
+		this.width = opts["width"];
+		this.height = opts["height"];
+		this.emitInterval = 16; // ~= 30FPS
+		this.paintEmitInterval = this.emitInterval;
+		this.lineEmitInterval = this.emitInterval;
+		this.mouseEmitInterval = 16; // throttle all misc mouse output
+
+		this.croppingCanvas = $("#crop_canvas");
+
+		this.doc = $(document);
+		this.socket = io.connect("/drawing_socket_"+self.drawID);
+		this.layerCodeLen = 32;
+		this.modDialog = new ModDialog("room", self.drawID);
+
+		// Delete a remote canvas after a certain amount of time
+		this.remoteCanvasDeleteCutoff = 4000;
+		this.labelFadeOutMs = 120;	
+		this.canvasCeiling = 999999999;
+		this.colourPicker = $("#colour_picker");
+		this.finaliseTimeout = null;
+
+		// finaliseTimeoutMs is a rolling timeout parameter for processing the canvas
+		// High value = less server load but inferior user experience
+		this.finaliseTimeoutMs = 1000; 
+
+		// This timeout handles the pointer fading when inactive
+		this.pointerTimeoutMs = 4000;
+		this.textMargin = 10; // pixels to offset the text box preview
+		this.defaultText = "Enter text";
+		this.brushSizeMenu = null; // initialised later
+		this.fontSizeMenu = null; // initialised later
+		this.fontFaceMenu = null
+		this.toolInCanvas = false;
+
+		// Metadata about the action being performed
+		this.toolManager = new ToolManager();
+		this.drawUi = new DrawUi(this);
+		this.tester = new DrawUiTester(this);
+		this.lastEmit = $.now(); // part of general purpose intervalling system
+
+		this.renderCanvas = $("#renderer");
+
+		// Final setup steps
+		self.newLocal();
 		self.initUi();
-		getDrawing();
+		self.getDrawing();
 	}
 
 	this.initUi = function() {
 		var body = $("body");
 
 		// Handle cursor down
-		renderCanvas.on("pointerdown", $.proxy(function(ev) { 
+		self.renderCanvas.on("pointerdown", $.proxy(function(ev) { 
+			console.log("click")
 			pickerToToolColour();
 			if (ev.which == 3) { // right click
 				if (menusOpen()) {
@@ -85,8 +75,8 @@ function RoomUi() {
 		}, this));
 
 		// Handle cursor entering canvas 
-		renderCanvas.on("pointerenter", function(ev) {
-			toolInCanvas = true;
+		self.renderCanvas.on("pointerenter", function(ev) {
+			self.toolInCanvas = true;
 			if (pickerVisible()) { // no mouse enter when colour picker is visible
 				return;
 			}
@@ -100,7 +90,7 @@ function RoomUi() {
 		// This function gets called about 60 frames per second. Each event parameter contains
 		// a list of coalesced events that happened over about 1/60th of a second. By processing
 		// the subevents we can draw a smooth line at max time resolution
-		renderCanvas.on("pointermove", function(ev) {
+		self.renderCanvas.on("pointermove", function(ev) {
 
 			var tool = self.toolManager.getLocalTool();
 
@@ -131,7 +121,7 @@ function RoomUi() {
 		});
 
 		// Right click activates the eye dropper - not the contex menu
-		renderCanvas.contextmenu(function(ev) { return false; });
+		self.renderCanvas.contextmenu(function(ev) { return false; });
 
 		// key bindings
 		body.keydown($.proxy(function(ev) {
@@ -168,20 +158,20 @@ function RoomUi() {
 		}, this));
 
 		// stop the tool on mouseup
-		doc.on("pointerup", function() {
+		self.doc.on("pointerup", function() {
 			var tool = self.toolManager.getLocalTool();
 			self.stopTool(tool);
 		});
 
 		// if mouse leaves preview canvas or window, set newCoord to null and stop the tool
-		renderCanvas.on("pointerleave", mouseOut);
-		doc.on("pointerleave", mouseOut);
+		self.renderCanvas.on("pointerleave", mouseOut);
+		self.doc.on("pointerleave", mouseOut);
 
 		// Listen for new drawing data from the server
-		socket.on("update_drawing", receiveDrawing);
-		socket.on("add_layer", receiveLayer);
-		socket.on("receive_mouse_coords", receiveTool);
-		socket.on("disconnect", onDisconnect);
+		self.socket.on("update_drawing", receiveDrawing);
+		self.socket.on("add_layer", receiveLayer);
+		self.socket.on("receive_mouse_coords", receiveTool);
+		self.socket.on("disconnect", onDisconnect);
 
 		// disable mouse select on drawing page
 		$("body").attr("style", 
@@ -204,9 +194,9 @@ function RoomUi() {
 	}
 
 	// Only generates the layer code if it's empty, i.e. after finalise has been called
-	function newLocal() {
+	this.newLocal = function() {
 		var tool = self.toolManager.getLocalTool();
-		tool.layerCode = randomString(layerCodeLen);
+		tool.layerCode = randomString(self.layerCodeLen);
 		var oldCanvas = self.drawUi.newLocal(tool.layerCode);
 		return oldCanvas;
 	}
@@ -223,7 +213,7 @@ function RoomUi() {
 	function mouseOut(ev) {
 		var tool = self.toolManager.getLocalTool();
 		tool.newCoord = null;
-		toolInCanvas = false;
+		self.toolInCanvas = false;
 		self.stopTool(tool);
 	}
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
@@ -233,7 +223,7 @@ function RoomUi() {
 		if (emit) pickerToToolColour(); // everything except eyedropper has a tool colour
 		if (
 			tool.tool == "flood" && 
-			emit && tool.state == "start" && finaliseTimeout == null
+			emit && tool.state == "start" && self.finaliseTimeout == null
 		) { 
 			// flood fill - only on mousedown
 			// only when not working on existing processing
@@ -284,7 +274,7 @@ function RoomUi() {
 				readBrushSize(tool);
 				clearFinalise();
 				drawLine(tool, emit); // always draw - gives smooth local
-				if ($.now() - self.lastEmit > lineEmitInterval) { // throttle the line preview
+				if ($.now() - self.lastEmit > self.lineEmitInterval) { // throttle the line preview
 					self.lastEmit = $.now();
 					emitTool(tool);
 				}
@@ -300,7 +290,7 @@ function RoomUi() {
 
 			// get the line data from the canvas, set into baseData.
 			// this is the final line drawing
-			thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+			thisCtx.baseData = thisCtx.getImageData(0, 0, self.width, self.height);
 			finaliseEdit(tool, emit);
 			tool.state = "idle"; // pretty important to avoid issues
 		}
@@ -332,7 +322,7 @@ function RoomUi() {
 				}
 
 				// must put drawPaint in the interval, since it's quite a slow operation
-				if ($.now() - self.lastEmit > paintEmitInterval) { 
+				if ($.now() - self.lastEmit > self.paintEmitInterval) { 
 					// reached interval
 					drawPaint(toolIn, emit); // draw onto canvas
 					self.lastEmit = $.now();
@@ -382,7 +372,7 @@ function RoomUi() {
 				}
 				clearFinalise();
 				drawText(toolIn, emit, thisCtx); // draw text and save the snapshot
-				$("#text_input_box").val(defaultText);
+				$("#text_input_box").val(self.defaultText);
 				$("#text_input").hide();
 				emitTool(toolIn);
 				initTextMeta(toolIn);
@@ -404,10 +394,10 @@ function RoomUi() {
 	// Create an empty array of booleans which will store information about 
 	// the current stroke
 	function makeStrokeData() {
-		var out = new Array(width);
-		for (var x = 0; x < width; x++) {
-			out[x] = new Array(height);
-			for (var y = 0; y < height; y++) {
+		var out = new Array(self.width);
+		for (var x = 0; x < self.width; x++) {
+			out[x] = new Array(self.height);
+			for (var y = 0; y < self.height; y++) {
 				out[x][y] = false;
 			}
 		}
@@ -436,8 +426,8 @@ function RoomUi() {
 	function textIdle(toolIn, emit) {
 		if (emit) emitToolInterval(toolIn);
 		var previewCtx = getDrawCtx(toolIn, emit, "_preview");
-		previewCtx.clearRect(0, 0, width, height); // Clear the canvas
-		if (!emit || toolInCanvas) {
+		previewCtx.clearRect(0, 0, self.width, self.height); // Clear the canvas
+		if (!emit || self.toolInCanvas) {
 			drawText(toolIn, emit, previewCtx);	
 		}
 	}
@@ -453,24 +443,24 @@ function RoomUi() {
 		// Copy the tool so we can modify it before sending to client
 		var toolOut = JSON.parse(JSON.stringify(toolIn));
 		toolOut.state = "end";
-		if (finaliseTimeout != null) {
+		if (self.finaliseTimeout != null) {
 			// ah but what if finaliseTimeout is already running?
 			// you'll get two timeouts overlapping each other
-			clearTimeout(finaliseTimeout);
+			clearTimeout(self.finaliseTimeout);
 		}
-		finaliseTimeout = setTimeout(function() {
+		self.finaliseTimeout = setTimeout(function() {
 			// Processing step
 			// Convert canvas to png and send to the server
 			processCanvas(toolOut);
 
-		}, finaliseTimeoutMs);
+		}, self.finaliseTimeoutMs);
 	}
 
 	// can pass in either a preview or a drawing canvas context
 	// Draw the text onto the canvas, only
 	function drawText(toolIn, emit, thisCtx) {
 		if (toolIn.newCoord == null) { // mouse outside boundaries
-			thisCtx.clearRect(0, 0, width, height); // Clear the canvas
+			thisCtx.clearRect(0, 0, self.width, self.height); // Clear the canvas
 			return;
 		}
 		// Put cached image data back into canvas DOM element, overwriting earlier text preview
@@ -481,7 +471,7 @@ function RoomUi() {
 
 		// Position the text next to the cursor
 		var coords = {
-			x: toolIn.newCoord.x - textMargin,
+			x: toolIn.newCoord.x - self.textMargin,
 			y: toolIn.newCoord.y + (Math.ceil(toolIn.meta.fontSize / 2))
 		}
 		thisCtx.fillText(toolIn.meta.text, coords.x, coords.y)
@@ -497,7 +487,7 @@ function RoomUi() {
 
 		// Create a copy of the base data
 		// must create empty data first
-		var previewData = thisCtx.createImageData(width, height);
+		var previewData = thisCtx.createImageData(self.width, self.height);
 		if (typeof(thisCtx.baseData) !== "undefined") {
 			// fill out the empty preview data with base data
 			previewData.data.set(thisCtx.baseData.data.slice()); 
@@ -611,10 +601,10 @@ function RoomUi() {
 	// }
 
 	function clearFinalise() {
-		if (finaliseTimeout != null) { 
+		if (self.finaliseTimeout != null) { 
 			// prevent stuff getting overwritten
-			clearTimeout(finaliseTimeout);
-			finaliseTimeout = null;
+			clearTimeout(self.finaliseTimeout);
+			self.finaliseTimeout = null;
 		}
 	}
 
@@ -656,18 +646,18 @@ function RoomUi() {
 		// waiting for processing, it will disappear and then reappear
 		element.deleteTimeout = setTimeout(function() {
 			existingCanvas.remove();
-		}, remoteCanvasDeleteCutoff);
+		}, self.remoteCanvasDeleteCutoff);
 		return existingCanvas;
 	}
 
 
 
 	function initBaseData(thisCtx) {
-		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
+		thisCtx.baseData = thisCtx.getImageData(0, 0, self.width, self.height);
 	}
 
 	this.setupControls = function() {
-		SnapshotDialog(drawID);
+		SnapshotDialog(self.drawID);
 
 		bindToolButton("eyedropper");
 		bindToolButton("paint");
@@ -680,9 +670,9 @@ function RoomUi() {
 		$("#text").on("mouseup", function() { 
 			$("#text_input_box").focus();
 		});
-		brushSizeMenu = new ToolOptionMenu(self, "brush_size", null, null);
-		fontSizeMenu = new ToolOptionMenu(self, "font_size", null, null);
-		fontFaceMenu = new ToolOptionMenu(self, "font_face", function(id) { // onOpen
+		self.brushSizeMenu = new ToolOptionMenu(self, "brush_size", null, null);
+		self.fontSizeMenu = new ToolOptionMenu(self, "font_size", null, null);
+		self.fontFaceMenu = new ToolOptionMenu(self, "font_face", function(id) { // onOpen
 			var menu = $("#"+id+"-menu").parent();
 			var options = menu.find(".ui-menu-item-wrapper")
 			options.each(function() {
@@ -694,16 +684,16 @@ function RoomUi() {
 		});
 
 		$("#mod_button").click(function() {
-			modDialog.show();
+			self.modDialog.show();
 		});
 
 		toggleButtons("paint");
 
 		$(window).on("resize", function() {
 			// reposition things that need repositioning
-			brushSizeMenu.position();
-			fontSizeMenu.position();
-			fontFaceMenu.position();
+			self.brushSizeMenu.position();
+			self.fontSizeMenu.position();
+			self.fontFaceMenu.position();
 
 			// gets fired before the spectrum has at it
 			positionColourPicker();
@@ -975,10 +965,10 @@ function RoomUi() {
 
 		// Draw the background images onto a flood fill canvas
 		var scatchCanvas = scratchCanvas[0];
-		scatchCanvas.setAttribute("width", width);
-		scatchCanvas.setAttribute("height", height);
+		scatchCanvas.setAttribute("width", self.width);
+		scatchCanvas.setAttribute("height", self.height);
 		var scratchCtx = scatchCanvas.getContext('2d'); // the user editable element
-		scratchCtx.clearRect(0, 0, width, height); // Clear the canvas
+		scratchCtx.clearRect(0, 0, self.width, self.height); // Clear the canvas
 
 		for (var i = 0; i < elements.length; i++) {
 			var el = elements[i];
@@ -993,8 +983,8 @@ function RoomUi() {
 	// Non-recursive flood fill algo
 	// Adapted from https://stackoverflow.com/questions/21865922/non-recursive-implementation-of-flood-fill-algorithm
 	function floodFill(sourceCtx, destCtx, x, y, oldColour, newColour) {
-		var sourceData = sourceCtx.getImageData(0, 0, width, height);
-		var destData = destCtx.getImageData(0, 0, width, height);
+		var sourceData = sourceCtx.getImageData(0, 0, self.width, self.height);
+		var destData = destCtx.getImageData(0, 0, self.width, self.height);
 		var queue = []
 
 		queue.push([x, y]);
@@ -1033,11 +1023,11 @@ function RoomUi() {
 				queue.push([x, y - 1]);
 			}
 		 
-			if (x < width - 1) {
+			if (x < self.width - 1) {
 				queue.push([x + 1, y]);
 			}
 		 
-			if (y < height - 1) {
+			if (y < self.height - 1) {
 				queue.push([x, y + 1]);
 			}
 		}
@@ -1160,13 +1150,13 @@ function RoomUi() {
 	this.closeMenus = function(except) {
 		closeTextInput();
 		if (typeof(except) !== "undefined" && except != "brush_size") {
-			brushSizeMenu.close();
+			self.brushSizeMenu.close();
 		}
 		if (typeof(except) !== "undefined" && except != "font_size") {
-			fontSizeMenu.close();
+			self.fontSizeMenu.close();
 		}
 		if (typeof(except) !== "undefined" && except != "font_face") {
-			fontFaceMenu.close();
+			self.fontFaceMenu.close();
 		}
 	}
 
@@ -1189,7 +1179,7 @@ function RoomUi() {
 			return true;
 		}
 		// check the brush size menu 
-		if (brushSizeMenu.isOpen()) {
+		if (self.brushSizeMenu.isOpen()) {
 			return true;
 		}
 		// check colour picker
@@ -1237,7 +1227,7 @@ function RoomUi() {
 		inputBox.css("font-family", getFontFromMenu());
 		inputBox.focus(function() { $(this).select(); } );
 		inputBox.keyup(function() {
-			if ($(this).val() == defaultText) { // no text entered
+			if ($(this).val() == self.defaultText) { // no text entered
 				return;
 			}
 			tool.meta.text = $(this).val();
@@ -1277,12 +1267,12 @@ function RoomUi() {
 			nickname = "Anonymous"
 		}
 		toolIn.nickname = nickname;
-		socket.emit('receive_tool', toolIn);
+		self.socket.emit('receive_tool', toolIn);
 	}
 
 	function emitToolInterval(toolIn, beforeEmit) {
 		// emitTool(toolIn); // version of tool with line coords array
-		if ($.now() - self.lastEmit > mouseEmitInterval) { 
+		if ($.now() - self.lastEmit > self.mouseEmitInterval) { 
 			if (
 				toolIn.tool == "paint" && 
 				toolIn.meta != null && 
@@ -1305,7 +1295,7 @@ function RoomUi() {
 		var pointerElement = $("#drawing_pointer_"+sockID);
 
 		if (tool.newCoord == null) {
-			pointerElement.fadeOut(labelFadeOutMs, function() {
+			pointerElement.fadeOut(self.labelFadeOutMs, function() {
 				pointerElement.remove();
 			});
 			self.handleAction(tool, false);
@@ -1335,18 +1325,18 @@ function RoomUi() {
 			clearTimeout(pointerElement[0].timeout)
 		}
 		pointerElement[0].timeout = setTimeout(function() {
-			pointerElement.fadeOut(labelFadeOutMs, function() {
+			pointerElement.fadeOut(self.labelFadeOutMs, function() {
 				pointerElement.remove();
 			});
-		}, pointerTimeoutMs)
+		}, self.pointerTimeoutMs)
 
 		self.handleAction(tool, false);
 	}
 
 	// Ask the server for drawing data
-	function getDrawing() {
-		socket.emit("get_drawing", {
-			"drawID": drawID,
+	this.getDrawing = function() {
+		self.socket.emit("get_drawing", {
+			"drawID": self.drawID,
 			"sessionID": getCookie("sessionID")
 		});
 	}
@@ -1379,7 +1369,7 @@ function RoomUi() {
 	// get the mouse position inside the canvas
 	// returns null if the mouse is outside the canvas
 	function getMousePos(ev) {
-		var rect = renderCanvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
+		var rect = self.renderCanvas[0].getBoundingClientRect(); // [0] gets DOM object from jquery obj
 
 		if (ev.clientX == undefined || ev.clientY == undefined) {
 			return null;
@@ -1411,7 +1401,7 @@ function RoomUi() {
 	function createRemoteCanvas(canvasID) {
 		var buf = 
 			"<canvas id=\""+canvasID+"\" "+
-				"width=\""+width+"\" height=\""+height+"\" "+
+				"width=\""+self.width+"\" height=\""+self.height+"\" "+
 				"style=\"z-index: 0;\" "+ // bumpCanvas will take care of the z-index
 				"class=\"drawing_canvas\"> "+
 			"</canvas>"+
@@ -1427,7 +1417,7 @@ function RoomUi() {
 			https://philipwalton.com/articles/what-no-one-told-you-about-z-index/ 
 			*/
 			"<canvas id=\""+canvasID+"_preview\" "+
-				"width=\""+width+"\" height=\""+height+"\" "+
+				"width=\""+self.width+"\" height=\""+self.height+"\" "+
 				"style=\"z-index: 0;\" "+ // bumpCanvas will take care of the z-index
 				"class=\"drawing_canvas\"> "+
 			"</canvas>";
@@ -1444,8 +1434,8 @@ function RoomUi() {
 
 		// move the canvas of interest to the top position
 		var previewElement = $("#"+canvasElement.attr("id")+"_preview");
-		canvasElement.css("z-index", canvasCeiling);
-		previewElement.css("z-index", canvasCeiling);
+		canvasElement.css("z-index", self.canvasCeiling);
+		previewElement.css("z-index", self.canvasCeiling);
 	}
 
 	function getLayerByCode(code) {
@@ -1488,17 +1478,17 @@ function RoomUi() {
 		var layerCode = toolIn.layerCode; // must keep copy since it gets reset to null
 
 		// Crop the canvas to save resources (this is pretty slow, around 20ms)
-		var cropCoords = cropCanvas(sourceCanvas, croppingCanvas[0], toolIn);
+		var cropCoords = cropCanvas(sourceCanvas, self.croppingCanvas[0], toolIn);
 
 		// First generate a png blob (async)
-		var blob = croppingCanvas[0].toBlob(function(blob) {
+		var blob = self.croppingCanvas[0].toBlob(function(blob) {
 
 			// Generate data URL, to be displayed on the front end, from the blob
 			var fr = new FileReader();
 			fr.onload = function(e) {
 				
 				var layer = {
-					drawID: drawID,
+					drawID: self.drawID,
 					base64: e.target.result, 
 					offsets: cropCoords,
 					code: layerCode
@@ -1517,7 +1507,7 @@ function RoomUi() {
 				fr.readAsDataURL(blob); 
 				fr.onloadend = function() {
 					var base64 = fr.result;
-					socket.emit("add_layer", layer);
+					self.socket.emit("add_layer", layer);
 				}
 			}
 			fr.readAsDataURL(blob);
@@ -1528,9 +1518,9 @@ function RoomUi() {
 	function duplicateDrawingCanvas(layerCode) {
 		var duplicateID = "drawing_canvas_cpy_"+layerCode;
 		var html = "<canvas id=\""+duplicateID+"\" class=\"drawing_canvas_cpy\" "+
-			"width=\""+width+"\" height=\""+height+"\"></canvas>"
+			"width=\""+self.width+"\" height=\""+self.height+"\"></canvas>"
 		var newElement = $(html);
-		var drawData = ctx.getImageData(0, 0, width, height);
+		var drawData = ctx.getImageData(0, 0, self.width, self.height);
 		newElement[0].getContext("2d").putImageData(drawData, 0, 0);
 		newElement.insertBefore(drawingCanvas);
 
@@ -1708,5 +1698,6 @@ function ToolOptionMenu(drawUi, idIn, onOpenIn, getButtonHtmlIn, onSelectIn, isM
 		return false
 	}
 
-	self.init(drawUi);
+	var self = this;
+	self.init();
 }
