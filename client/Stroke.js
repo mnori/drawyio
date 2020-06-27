@@ -32,6 +32,7 @@ function Stroke(layer) {
 	}
 
 	this.startStroke = function(toolIn) {
+		console.log("startStroke() called");
 		self.tool = toolIn;
 		self.width = self.tool.meta.brushSize;
 		self.radius = parseInt(self.tool.meta.brushSize / 2);
@@ -48,7 +49,7 @@ function Stroke(layer) {
 
 	this.plotLine = function(x0, y0, x1, y1) {
 
-		console.log(self.colour);
+		console.log(self.tool);
 
 		self.stroking = true;
 		self.graphics.beginFill(self.colour, 1);

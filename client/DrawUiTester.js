@@ -29,14 +29,14 @@ function DrawUiTester(roomUi) {
 			y: Math.round(self.roomUi.height / 2),
 		};
 
-		self.roomUi.setToolColour(self.utils.getRandomColor()); // set hopefully unique random colour to test
-		self.roomUi.pickerToToolColour(tool); // bit of a hack to get the colour set
+		// self.roomUi.setToolColour(self.utils.getRandomColor()); // set hopefully unique random colour to test
+		// self.roomUi.pickerToToolColour(tool); // bit of a hack to get the colour set
 
 		console.log("1:", tool.colour);
 
-		// // tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
-		// var rgb = self.utils.hexToRgb(self.utils.getRandomColor());
-		// tool.colour = "rgba("+rgb.r+", "+rgb.g+", "+rgb.b+", 0.5)";
+		// tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
+		var rgb = self.utils.hexToRgb(self.utils.getRandomColor());
+		tool.colour = "rgba("+rgb.r+", "+rgb.g+", "+rgb.b+", 0.5)";
 
 		// console.log("2:", tool.colour);
 
@@ -90,8 +90,9 @@ function DrawUiTester(roomUi) {
 			{"state": tool.state, "coord": tool.newCoord});
 
 		// We must handle the tool action and also receive the tool
-		self.roomUi.receiveTool(tool);
 		self.manageToolState(tool);
+		self.roomUi.receiveTool(tool);
+		
 		setTimeout(function() { self.draw(tool); }, 16);
 	}
 
