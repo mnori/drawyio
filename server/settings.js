@@ -8,12 +8,14 @@ module.exports = {
 	VERSION_TXT: "v0.2.2",
 	
 	CLIENT_JS: [ // names of the client source files before minification
+		"Timeline.js",
 		"Base.js",
 		"GalleryUi.js",
 		"DrawUtils.js",
 		"Stroke.js",
 		"ImageLayer.js",
 		"Layer.js",
+		"DrawUiTester.js",
 		"DrawUi.js",
 		"RoomUi.js",
 		"SnapshotUi.js",

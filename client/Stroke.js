@@ -71,11 +71,6 @@ function Stroke(layer) {
 		// Render stroke stuff onto the render texture
 		self.container.addChild(self.graphics);
 		self.layer.drawUi.renderer.render(self.container, self.renderTexture);
-
-		// clear for next iteration. 
-		// We shouldn't do this here, because it removves the circle textures....
-		// self.container.removeChildren(); // <-- TODO, remove this and the comment 
-		// above when confirmed working!
 		self.stroking = false;
 	}
 

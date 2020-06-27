@@ -164,29 +164,3 @@ function AssocArray() {
 		delete this.values[key]
 	}
 }
-
-// For performance measurements
-function Timeline() {
-	this.entries = [];
-	this.log = function(name) {
-		var ts = window.performance.now();
-		this.entries.push({
-			name: name,
-			ts: ts
-		});
-	};
-	this.dump = function() {
-		console.log("Timeline.dump() invoked")
-		var currEntry;
-		var prevEntry = null;
-		for (var i = 0; i < this.entries.length; i++) {
-			var currEntry = this.entries[i];
-			if (prevEntry != null) {
-				var diffMs = currEntry.ts - prevEntry.ts;
-				console.log("["+prevEntry.name+"] => ["+currEntry.name+"] "+diffMs+" ms");
-			}
-			prevEntry = currEntry;
-		}
-	}
-}
-
