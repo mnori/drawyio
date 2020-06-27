@@ -56,11 +56,6 @@ function RoomUi() {
 
 	// Metadata about the action being performed
 	this.toolManager = new ToolManager();
-	// this.tool = {
-	// 	state: "idle",
-	// 	tool: "paint",
-	// 	meta: null
-	// };
 	this.drawUi = new DrawUi(this);
 	this.tester = new DrawUiTester(this);
 	this.lastEmit = $.now(); // part of general purpose intervalling system
@@ -68,8 +63,11 @@ function RoomUi() {
 	var renderCanvas = $("#renderer");
 
 	this.init = function() { 
-		
-		setupControls();
+		self.initUi();
+		getDrawing();
+	}
+
+	this.initUi = function() {
 		var body = $("body");
 
 		// Handle cursor down
@@ -164,12 +162,16 @@ function RoomUi() {
 					return;
 				}
 				resetDropperToggle(ev); 
-				self.stopTool();
+				var tool = self.toolManager.getLocalTool();
+				self.stopTool(tool);
 			}
 		}, this));
 
 		// stop the tool on mouseup
-		doc.on("pointerup", self.stopTool);
+		doc.on("pointerup", function() {
+			var tool = self.toolManager.getLocalTool();
+			self.stopTool(tool);
+		});
 
 		// if mouse leaves preview canvas or window, set newCoord to null and stop the tool
 		renderCanvas.on("pointerleave", mouseOut);
@@ -193,8 +195,8 @@ function RoomUi() {
 			"</style>"
 		);
 		
-		initColourPicker();
-		getDrawing();
+		self.initColourPicker();
+		self.setupControls();
 	}
 
 	function onDisconnect() {
@@ -664,7 +666,7 @@ function RoomUi() {
 		thisCtx.baseData = thisCtx.getImageData(0, 0, width, height);
 	}
 
-	function setupControls() {
+	this.setupControls = function() {
 		SnapshotDialog(drawID);
 
 		bindToolButton("eyedropper");
@@ -760,7 +762,7 @@ function RoomUi() {
 		return getFontValue($("#font_face").val())
 	}
 
-	function initColourPicker() {
+	this.initColourPicker = function() {
 		self.colourPicker.spectrum({
 			showAlpha: true,
 			cancelText: "Cancel",
@@ -1433,9 +1435,6 @@ function RoomUi() {
 	}
 
 	function bumpCanvas(canvasElement) {
-
-		console.log("bumpCanvas() called");
-
 		$(".drawing_canvas").each(function() { // shift everything else -1 on zindex
 			var element = $(this);
 			var zIndex = parseInt(element.css("z-index")) - 1;
