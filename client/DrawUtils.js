@@ -1,3 +1,5 @@
+// Utilities shared amongst DrawUi associated classes
+
 function DrawUtils(drawUi) {
 	var self = this;
 	self.drawUi = drawUi;
