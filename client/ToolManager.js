@@ -31,7 +31,7 @@ function ToolManager() {
 			state: "idle",
 			tool: "paint",
 			meta: {
-				"brushSize": 3,
+				"brushSize": 13,
 				"lineEntries": []
 			}
 		};

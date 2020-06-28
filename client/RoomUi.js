@@ -10,10 +10,10 @@ function RoomUi() {
 		this.drawID = opts["roomID"];
 		this.width = opts["width"];
 		this.height = opts["height"];
-		this.emitInterval = 16; // ~= 30FPS
+		this.emitInterval = 33; // ~= 30FPS
 		this.paintEmitInterval = this.emitInterval;
 		this.lineEmitInterval = this.emitInterval;
-		this.mouseEmitInterval = 16; // throttle all misc mouse output
+		this.mouseEmitInterval = 33; // throttle all misc mouse output
 
 		this.croppingCanvas = $("#crop_canvas");
 
@@ -1175,8 +1175,7 @@ function RoomUi() {
 	// receive a tool action from another user
 	// this basically just sets the pointer marker and then performs the tool action
 	this.receiveTool = function(tool) {
-		var sockID = tool.socketID;
-		var pointerElement = $("#drawing_pointer_"+sockID);
+		var pointerElement = $("#drawing_pointer_"+tool.socketId);
 
 		if (tool.newCoord == null) {
 			pointerElement.fadeOut(self.labelFadeOutMs, function() {
@@ -1187,12 +1186,12 @@ function RoomUi() {
 
 		if (pointerElement.length == 0) { // avoid a duplicate element
 			var divBuf = 
-				"<div id=\"drawing_pointer_"+sockID+"\" class=\"drawing_pointer\">"+
+				"<div id=\"drawing_pointer_"+tool.socketId+"\" class=\"drawing_pointer\">"+
 					"<div class=\"pointer_dot\"></div>"+
-					"<div id=\"drawing_pointer_label_"+sockID+"\" class=\"pointer_label\"></div>"+
+					"<div id=\"drawing_pointer_label_"+tool.socketId+"\" class=\"pointer_label\"></div>"+
 				"</div>";
 			$("#drawing_layers").append(divBuf)
-			pointerElement = $("#drawing_pointer_"+sockID);
+			pointerElement = $("#drawing_pointer_"+tool.socketId);
 		}
 		// position the pointer element
 		pointerElement.css({
@@ -1200,7 +1199,7 @@ function RoomUi() {
 			top: tool.newCoord.y+"px"
 		});
 		var nick = !tool.nickname ? "Anonymous" : tool.nickname;
-		$("#drawing_pointer_label_"+sockID).text(nick);
+		$("#drawing_pointer_label_"+tool.socketId).text(nick);
 
 		// Pointer has a rolling fade timeout
 		// We're being lazy by attaching it to the DOM element

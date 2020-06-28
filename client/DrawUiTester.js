@@ -23,11 +23,9 @@ function DrawUiTester(roomUi) {
 			y: Math.round(self.roomUi.height / 2),
 		};
 
-		// tool.colour = "rgba("+col[0]+", "+col[1]+", "+col[2]+", "+col[3]+")";
 		var rgb = self.utils.hexToRgb(self.utils.getRandomColor());
 		tool.colour = "rgba("+rgb.r+", "+rgb.g+", "+rgb.b+", 0.5)";
 		tool.layerCode = self.utils.randomString(self.roomUi.layerCodeLen);
-		tool.testReceive = true;
 		tool.state = "start";
 		self.draw(tool);
 	}
@@ -39,6 +37,10 @@ function DrawUiTester(roomUi) {
 	
 	// Make the tool draw
 	this.draw = function(tool) {
+
+		// remember, this gets set to false every draw() interation so we
+		// need to put it back again.
+		tool.testReceive = true; 
 
 		// Do we need to interrupt?
 		if (	// random restart
@@ -67,7 +69,7 @@ function DrawUiTester(roomUi) {
 		// We must handle the tool action and also receive the tool
 		// self.manageToolState(tool);
 		self.roomUi.handleAction(tool);
-		setTimeout(function() { self.draw(tool); }, 16);
+		setTimeout(function() { self.draw(tool); }, self.roomUi.emitInterval);
 	}
 
 	var self = this;
