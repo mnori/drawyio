@@ -30,7 +30,10 @@ function ToolManager() {
 		return {
 			state: "idle",
 			tool: "paint",
-			meta: {"brushSize": 3}
+			meta: {
+				"brushSize": 3,
+				"lineEntries": []
+			}
 		};
 	}
 
