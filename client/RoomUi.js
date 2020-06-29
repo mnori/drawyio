@@ -193,7 +193,8 @@ function RoomUi() {
 		$("#disconnected_indicator").show();
 	}
 
-	// Only generates the layer code if it's empty, i.e. after finalise has been called
+	// Replace the existing local layer with a new one. Return a canvas with the existing
+	// image data, as we will need to process it.
 	this.newLocal = function() {
 		var tool = self.toolManager.getLocalTool();
 		tool.layerCode = self.utils.randomString(self.layerCodeLen);
@@ -210,6 +211,15 @@ function RoomUi() {
 	// Takes a tool and does stuff based on its data, representing what the user wants to do
 	// This is used for both local and remote users when tool data is received
 	this.handleAction = function(tool) {
+
+		// // Profile time between calls
+		// if (self.betweenTl) {
+		// 	self.betweenTl.dump();
+		// }
+		// self.betweenTl = new Timeline("between");
+		// // Profile how quick function is
+		// var withinTl = new Timeline("within");
+
 		var emit = self.toolEmits(tool);
 		if (emit) self.pickerToToolColour(tool); // everything except eyedropper has a tool colour
 		if (
@@ -237,6 +247,9 @@ function RoomUi() {
 			tool.testReceive = false;
 			self.receiveTool(tool);
 		}
+
+		// Print profile of how quick function is
+		// withinTl.dump();
 	}
 
 	this.toolEmits = function(tool) {
@@ -321,6 +334,7 @@ function RoomUi() {
 			} 
 
 		} else if (tool.state == "end") { // mouseup or other line end event
+
 			if (emit) self.emitTool(tool); // be sure to emit the end event
 			tool.state = "idle"; // pretty important to avoid issues
 			self.drawPaint(tool);
@@ -419,13 +433,14 @@ function RoomUi() {
 
 	// only does stuff for the local user
 	// the actual processing step is on a rolling timeout
+	// Sets off a timer to flatten the edit into the image
 	this.finaliseEdit = function(tool) {
-		var emit = self.toolEmits(tool);
-		if (!emit) { 
-			return // is remote user
+
+		if (!tool.requiresFlatten) { 
+			return // is remote user or fake remote user used for testing
 		}
 
-		// this bit is local user only
+		// this bit is local only
 		// Copy the tool so we can modify it before sending to client
 		var toolOut = JSON.parse(JSON.stringify(tool));
 		toolOut.state = "end";
@@ -1151,11 +1166,12 @@ function RoomUi() {
 			nickname = "Anonymous"
 		}
 		tool.nickname = nickname;
-		self.socket.emit('receive_tool', tool);
+		var copy = JSON.parse(JSON.stringify(tool));
+		copy.requiresFlatten = false; // ensures we don't try and flatten genuine remote tools
+		self.socket.emit('receive_tool', copy);
 	}
 
 	this.emitToolInterval = function(tool, beforeEmit) {
-		// emitTool(tool); // version of tool with line coords array
 		if ($.now() - self.lastEmit > self.mouseEmitInterval) { 
 			if (
 				tool.tool == "paint" && 
@@ -1176,7 +1192,6 @@ function RoomUi() {
 	// this basically just sets the pointer marker and then performs the tool action
 	this.receiveTool = function(tool) {
 		var pointerElement = $("#drawing_pointer_"+tool.socketId);
-
 		if (tool.newCoord == null) {
 			pointerElement.fadeOut(self.labelFadeOutMs, function() {
 				pointerElement.remove();
@@ -1353,10 +1368,16 @@ function RoomUi() {
 	// Turn a canvas into an image which is then sent to the server
 	// Image is smart cropped before sending to save server some image processing
 	this.processCanvas = function(tool) {
-		var sourceCanvas = self.newLocal();
+		var sourceCanvas;
+		if (tool.socketId) {
+			// if it has a socketId, it's a repeat test
+			sourceCanvas = self.drawUi.finishRepeat(tool.layerCode)
 
-		// $("#drawing_form").append(sourceCanvas);			
-
+		} else {
+			// normal local canvas processing
+			sourceCanvas = self.newLocal();
+		}
+		
 		var layerCode = tool.layerCode; // must keep copy since it gets reset to null
 
 		// Crop the canvas to save resources (this is pretty slow, around 20ms)

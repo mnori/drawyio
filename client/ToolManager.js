@@ -30,6 +30,7 @@ function ToolManager() {
 		return {
 			state: "idle",
 			tool: "paint",
+			requiresFlatten: true,
 			meta: {
 				"brushSize": 13,
 				"lineEntries": []

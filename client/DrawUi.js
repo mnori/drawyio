@@ -44,8 +44,8 @@ function DrawUi(roomUI) {
 		view.attr("id", "renderer");
 	}
 
-	// Create new local layer, setting the old one to being a normal layer
-	// Returns canvas of the old layer
+	// Create new local layer with ID of layerId
+	// Return a canvas containing the old image data, for processing
 	this.newLocal = function(layerId) {
 		var oldLayer = null;
 		if (self.localLayer) {
@@ -57,12 +57,22 @@ function DrawUi(roomUI) {
 
 		// now we generate a png image from the old local
 		if (oldLayer) {
-			return self.getLocalPixels(oldLayer);
+			return self.convertToCanvas(oldLayer);
 		}
 		return null;
 	}
 
-	this.getLocalPixels = function(oldLayer) {
+	// Finish a repeat layer by returning its pixels
+	this.finishRepeat = function(repeatId) {
+		var layer = self.layers.get(repeatId);
+		if (layer) {
+			self.layers.remove(repeatId);
+			return self.convertToCanvas(layer);
+		}
+		return null;
+	}
+
+	this.convertToCanvas = function(oldLayer) {
 		// Extract pixels from render sprite
 		self.stagingContainer.removeChildren();
 		self.stagingContainer.addChild(oldLayer.renderSprite);
@@ -114,6 +124,10 @@ function DrawUi(roomUI) {
 		// Bind the layer sets
 		self.bindSorted(self.imageLayers);
 		self.bindSorted(self.layers);
+
+		console.log("render()");
+		console.log(" - self.imageLayers: "+self.imageLayers.getLength());
+		console.log(" - self.layers: "+self.layers.getLength());
 
 		// Add the local layer last, so user's strokes always appear on top
 		if (self.localLayer) {

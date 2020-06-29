@@ -30,9 +30,10 @@ function DrawUiTester(roomUi) {
 		self.draw(tool);
 	}
 
-	// Called when a new stroke needs to be introduced for testing
+	// Called when stroke ends
 	this.interrupt = function(tool) {
 		tool.state = "end"
+		self.roomUi.handleAction(tool);
 	}
 	
 	// Make the tool draw
